@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import subprocess
+from types import SimpleNamespace
 
-from klipperai_agent.hostsystem import CommandResult, HostSystemCollector
+from klipperai_agent.infrastructure.host.system import (
+    CommandResult,
+    HostSystemCollector,
+)
 
 
 class _FakeRunner:
@@ -68,4 +72,65 @@ def test_host_system_collector_reports_missing_commands_and_timeouts() -> None:
 
     assert artifacts == []
     assert any("systemctl is not available on this host." == note for note in notes)
-    assert any("Timed out while collecting journalctl output for moonraker.service." == note for note in notes)
+    assert any(
+        "Timed out while collecting journalctl output for moonraker.service." == note
+        for note in notes
+    )
+
+
+def test_system_command_runner_captures_and_strips_output(monkeypatch) -> None:
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *args, **kwargs: SimpleNamespace(returncode=7, stdout=" out \n", stderr=" err \n"),
+    )
+    runner = __import__(
+        "klipperai_agent.infrastructure.host.system", fromlist=["SystemCommandRunner"]
+    ).SystemCommandRunner(2.5)
+    result = runner.run(("test", "arg"))
+    assert result.returncode == 7
+    assert result.stdout == "out"
+    assert result.stderr == "err"
+
+
+class _EdgeRunner:
+    def __init__(self, result: CommandResult) -> None:
+        self.result = result
+
+    def run(self, command: tuple[str, ...]) -> CommandResult:
+        return CommandResult(
+            command, self.result.returncode, self.result.stdout, self.result.stderr
+        )
+
+
+def test_host_system_collector_reports_failed_and_empty_commands() -> None:
+    failed = HostSystemCollector(runner=_EdgeRunner(CommandResult((), 1, "stdout failure", "")))
+    artifacts, notes = failed.collect()
+    assert artifacts == []
+    assert any("systemctl show failed" in note for note in notes)
+    assert any("journalctl failed" in note for note in notes)
+
+    empty = HostSystemCollector(runner=_EdgeRunner(CommandResult((), 0, "", "")))
+    artifacts, notes = empty.collect()
+    assert artifacts == []
+    assert any("returned no data" in note for note in notes)
+    assert any("returned no lines" in note for note in notes)
+
+
+def test_host_system_collector_handles_remaining_errors_and_clipping() -> None:
+    class Runner:
+        def run(self, command: tuple[str, ...]) -> CommandResult:
+            if command[0] == "systemctl":
+                raise subprocess.TimeoutExpired(command, 1)
+            raise FileNotFoundError("journalctl")
+
+    artifacts, notes = HostSystemCollector(runner=Runner()).collect()
+    assert artifacts == []
+    assert any("Timed out while collecting systemctl" in note for note in notes)
+    assert "journalctl is not available on this host." in notes
+
+    text = HostSystemCollector._clip_text("a" * 100, 80, 50)
+    assert "...[truncated]..." in text
+    items = ["same"]
+    HostSystemCollector._append_unique(items, "same")
+    assert items == ["same"]

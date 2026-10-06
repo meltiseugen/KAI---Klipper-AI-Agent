@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from klipperai_agent.settings import get_settings
+import pytest
+from pydantic import ValidationError
+
+from klipperai_agent.runtime.settings import (
+    Settings,
+    _load_klipperai_cfg_values,
+    get_settings,
+)
 
 
 def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) -> None:
@@ -122,3 +129,40 @@ def test_settings_load_without_printer_geometry_section(monkeypatch, tmp_path: P
     assert settings.port == 8811
 
     get_settings.cache_clear()
+
+
+def test_settings_validators_and_directory_creation(tmp_path: Path) -> None:
+    settings = Settings(
+        data_dir=tmp_path / "data",
+        checkpoint_db=tmp_path / "checkpoints" / "db.sqlite",
+        printer_data_root=tmp_path / "printer-data",
+        firmware_flavor="  ",
+        log_tail_lines_overrides={" Klippy ": 20, "": 10, "bad": -1},
+        excluded_logs=[" KlippyAI.log ", "klippyai.log", "", "CROWSNEST"],
+    )
+    assert settings.firmware_flavor is None
+    assert settings.log_tail_lines_overrides == {"klippy": 20}
+    assert settings.excluded_logs == ["klippyai.log", "crowsnest"]
+    settings.ensure_directories()
+    assert settings.data_dir.is_dir()
+    assert settings.checkpoint_db.parent.is_dir()
+    assert settings.host_logs_dir().is_dir()
+    absolute_logs = tmp_path / "absolute-logs"
+    assert Settings(logs_dir_path=absolute_logs).host_logs_dir() == absolute_logs
+
+    assert Settings._normalize_log_tail_lines_overrides(None) == {}
+    assert Settings._normalize_excluded_logs(None) == []
+    assert Settings._normalize_excluded_logs("a,b\r\nc") == ["a", "b", "c"]
+    with pytest.raises(ValueError, match="mapping"):
+        Settings._normalize_log_tail_lines_overrides("bad")
+    with pytest.raises(ValueError, match="string or list"):
+        Settings._normalize_excluded_logs(3)
+    with pytest.raises(ValidationError, match="must not be blank"):
+        Settings(agent_log_level=" ")
+
+
+def test_config_loader_handles_missing_file_and_default_tail(tmp_path: Path) -> None:
+    assert _load_klipperai_cfg_values(tmp_path / "missing.cfg") == {}
+    cfg = tmp_path / "config.cfg"
+    cfg.write_text("[log_tail_lines]\ndefault = 55\n", encoding="utf-8")
+    assert _load_klipperai_cfg_values(cfg)["log_tail_lines_default"] == "55"

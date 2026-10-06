@@ -1,0 +1,12 @@
+[
+  "agent.js",
+  "investigation.js",
+  "conversation.js",
+  "store.js",
+  "transport.js",
+  "markdown.js",
+  "message-view.js",
+  "shell-view.js",
+  "chat-application.js",
+  "embed.js"
+]

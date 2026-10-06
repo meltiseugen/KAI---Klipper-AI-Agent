@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from klippyai_agent._compat import export_legacy_environment
+from klipperai_agent.cli.legacy import export_legacy_environment
 
 
 def test_legacy_environment_is_mapped_without_overriding_new_values(monkeypatch) -> None:

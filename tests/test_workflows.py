@@ -3,14 +3,17 @@ from types import SimpleNamespace
 
 import pytest
 
-from klipperai_agent.hostlogs import HostLogCollector
-from klipperai_agent.printerconfig import ConfigCollector
-from klipperai_agent.printerconfig import ConfigSnapshot, infer_config_request_target
-from klipperai_agent.workflows import compose_config_response
-from klipperai_agent.workflows import compose_response
-from klipperai_agent.workflows import collect_config_context
-from klipperai_agent.workflows import detect_config_target
-from klipperai_agent.workflows import resolve_config_lookup
+from klipperai_agent.config.collector import ConfigCollector
+from klipperai_agent.config.models import ConfigSnapshot
+from klipperai_agent.config.targeting import infer_config_request_target
+from klipperai_agent.infrastructure.host.logs import HostLogCollector
+from klipperai_agent.workflows.configuration import (
+    collect_config_context,
+    compose_config_response,
+    detect_config_target,
+    resolve_config_lookup,
+)
+from klipperai_agent.workflows.diagnosis import compose_response
 
 
 def test_compose_response_prefers_findings_and_keeps_output_compact() -> None:
@@ -264,7 +267,9 @@ def test_resolve_config_lookup_can_return_section_body_without_llm() -> None:
 
 
 @pytest.mark.asyncio
-async def test_collect_config_context_skips_host_logs_for_config_lookup_by_default(tmp_path: Path) -> None:
+async def test_collect_config_context_skips_host_logs_for_config_lookup_by_default(
+    tmp_path: Path,
+) -> None:
     config_dir = tmp_path / "printer_data" / "config"
     logs_dir = tmp_path / "printer_data" / "logs"
     config_dir.mkdir(parents=True)
@@ -291,7 +296,9 @@ async def test_collect_config_context_includes_unincluded_files_for_lookup(tmp_p
     klippy_dir = config_dir / "Klippy"
     klippy_dir.mkdir(parents=True)
     (config_dir / "printer.cfg").write_text("[printer]\nkinematics: cartesian\n", encoding="utf-8")
-    (klippy_dir / "filament.cfg").write_text("[gcode_macro SFS_ENABLE]\ngcode:\n  M118 enabled\n", encoding="utf-8")
+    (klippy_dir / "filament.cfg").write_text(
+        "[gcode_macro SFS_ENABLE]\ngcode:\n  M118 enabled\n", encoding="utf-8"
+    )
 
     runtime = SimpleNamespace(
         context=SimpleNamespace(
@@ -310,12 +317,19 @@ async def test_collect_config_context_includes_unincluded_files_for_lookup(tmp_p
     )
 
     document_paths = [document["path"] for document in result["config_snapshot"]["documents"]]
-    assert any(path.endswith("Klippy/filament.cfg") or path.endswith("Klippy\\filament.cfg") for path in document_paths)
-    assert any("Additional config file collected" in note for note in result["config_snapshot"]["notes"])
+    assert any(
+        path.endswith("Klippy/filament.cfg") or path.endswith("Klippy\\filament.cfg")
+        for path in document_paths
+    )
+    assert any(
+        "Additional config file collected" in note for note in result["config_snapshot"]["notes"]
+    )
 
 
 @pytest.mark.asyncio
-async def test_collect_config_context_merges_request_artifacts_with_host_logs_when_needed(tmp_path: Path) -> None:
+async def test_collect_config_context_merges_request_artifacts_with_host_logs_when_needed(
+    tmp_path: Path,
+) -> None:
     config_dir = tmp_path / "printer_data" / "config"
     logs_dir = tmp_path / "printer_data" / "logs"
     config_dir.mkdir(parents=True)
@@ -342,7 +356,7 @@ async def test_collect_config_context_merges_request_artifacts_with_host_logs_wh
                     "label": "question-context",
                     "content": "[fan]\npin: PA1\n",
                 }
-            ]
+            ],
         },
         runtime,
     )

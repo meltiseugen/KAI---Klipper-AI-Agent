@@ -6,14 +6,34 @@ This backlog is organized around the current chosen architecture:
 - Moonraker underneath
 - supported Mainsail custom-navigation entry in `v1`
 - same-origin KlipperAI page at `/klipperai/`
-- LangGraph for explicit workflow orchestration
+- bounded class-based agent orchestration with read-only tools and optional web search
+
+## Refactoring And Agent Runtime
+
+- [x] Replace the redundant src wrapper with a flat package and focused subpackages
+- [x] Split large config/profile/provider modules and introduce composed detectors and proposal strategies
+- [x] Preserve the existing behavior tests and the 100% coverage gate
+- [x] Add an iterative tool loop with typed tools, bounded calls/time/context and recoverable errors
+- [x] Add read-only printer/config/diagnostics tools and configurable hosted web search
+- [x] Show streamed action progress, evidence sources and completed/limited/error states
+- [x] Add architecture/sequence diagrams and a regenerable module, symbol, test and import index
+- [ ] Validate tool selection and answer quality against a real printer and live provider
+- [x] Persist conversations and dated evidence across chats and service restarts
+- [x] Add manual-only proposal validation, section comparison and stale-revision rechecks
+- [x] Introduce shared domain objects and narrow read-only tool interfaces
+- [ ] Resume interrupted in-flight investigations after service restart
+
+## Reminders After Investigation And Review Work
+
+- [ ] Finish simplifying the surrounding product (frontend and installer)
+- [ ] Measure whether the agent solves printer problems using realistic investigations
 
 ## Milestone 0: Project Foundation
 
 - [x] Define the initial system architecture
 - [x] Scaffold the FastAPI agent service
 - [x] Add a minimal embedded UI
-- [x] Add LangGraph diagnostics workflow scaffolding
+- [x] Add deterministic local workflow scaffolding
 - [x] Add a deterministic diagnostics rule engine
 - [x] Add deployment examples for `systemd` and `nginx`
 - [x] Add an interactive Linux installer
@@ -36,8 +56,8 @@ This backlog is organized around the current chosen architecture:
 
 - [ ] Improve the embedded chat UI to show findings, evidence, and next actions as distinct cards
 - [ ] Add artifact upload support for pasted files and drag-and-drop log snippets
-- [ ] Add session history persistence beyond the current in-memory session store
-- [ ] Add streaming responses for long-running diagnostics
+- [x] Persist investigation history independently of ephemeral UI sessions
+- [x] Stream agent action events and the final response for long-running investigations
 - [ ] Add explicit error states for Moonraker unavailable, missing provider config, and invalid session
 - [ ] Add UI affordances for follow-up questions and drill-down analysis
 
@@ -67,18 +87,17 @@ This backlog is organized around the current chosen architecture:
 - [x] Build typed proposal objects for generated config changes
 - [ ] Support managed include fragments under a KlipperAI-owned directory
 - [ ] Support patch generation against existing config files
-- [ ] Add config validation passes before any proposal is shown
+- [x] Add conservative static review before proposals are shown; full firmware/hardware validation remains future work
 - [ ] Add deeper feature-specific generation beyond scaffold-level proposals
-- [ ] Add diff rendering in the embedded UI
+- [x] Show proposed-section comparisons in the UI
 
-## Milestone 6: Safe Apply Flow
+## Milestone 6: Manual Configuration Review
 
-- [ ] Add backup creation for targeted config files
-- [ ] Add LangGraph `interrupt()` approval flow for user-reviewed writes
-- [ ] Add resume and cancel paths after user approval decisions
-- [ ] Add rollback metadata and restore command support
-- [ ] Add optional `RESTART` or `FIRMWARE_RESTART` suggestion flow without automatic execution
-- [ ] Keep write actions disabled by default until reviewed and tested
+- [x] Keep all printer configuration edits manual; no apply/approval endpoints
+- [x] Associate reviews with config revisions and detect stale proposals
+- [x] Store review results only in application-owned memory
+- [ ] Expand option/version validation and manual verification guidance
+- Printer writes, automatic restarts and rollback execution are outside the current product scope.
 
 ## Milestone 7: Provider And Credential Management
 
@@ -118,7 +137,7 @@ This backlog is organized around the current chosen architecture:
 
 ## Open Product Questions
 
-- [ ] Should the first write-capable workflow only create managed include files, or also patch existing `printer.cfg` content?
+- [x] Printer config changes remain manual; the application only drafts and reviews them.
 - [ ] How much of the assistant should be accessible without any external LLM provider configured?
 - [ ] Should a future native shell integration target Mainsail only, or keep Fluidd parity close behind?
 - [ ] What is the right long-term secret storage method for a local appliance-style install?

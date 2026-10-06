@@ -37,15 +37,29 @@ ignore_globs:  # Comma-separated exclude globs. Examples: backups/**, archive/**
 port: 8811  # Local agent port. Examples: 8811, 9911
 root_path: /klipperai  # Public reverse-proxy path. Examples: /klipperai, /ai
 data_dir: /var/lib/klipperai  # Local runtime data directory. Examples: /var/lib/klipperai, /srv/klipperai/data
-checkpoint_db: /var/lib/klipperai/checkpoints.sqlite  # SQLite checkpoint DB path. Examples: /var/lib/klipperai/checkpoints.sqlite, /srv/klipperai/checkpoints.sqlite
-enable_write_actions: false  # Reserved for future write actions. Keep this false.
+checkpoint_db: /var/lib/klipperai/checkpoints.sqlite  # Legacy reserved path; investigation storage uses data_dir/investigations.sqlite3. Examples: /var/lib/klipperai/checkpoints.sqlite, /srv/klipperai/checkpoints.sqlite
+enable_write_actions: false  # Compatibility setting; runtime always keeps printer writes disabled.
 
 [chat]
 conversation_history_pairs: 10  # Previous user/assistant pairs sent with each request. Use 0 to disable. Examples: 0, 5, 10
+memory_cross_chat: true  # Reuse dated evidence from other chats about this printer.
+memory_retention_days: 90  # Retain application-owned investigation records for this many days.
 
 [llm]
 llm_provider: stub  # Chat backend provider. Examples: stub, openai
 openai_model: gpt-5.4-mini  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
+
+[agent]
+agent_enabled: true  # Use iterative tool calling with the OpenAI provider.
+web_search_enabled: true  # Allow public documentation search; uses provider credits.
+web_search_domains:  # Optional comma-separated domains without https://.
+agent_max_steps: 8
+agent_max_tool_calls: 12
+agent_tool_timeout_seconds: 30
+agent_run_timeout_seconds: 180
+agent_max_context_chars: 120000
+agent_max_result_chars: 16000
+agent_max_output_tokens: 6000
 
 [logs]
 collect_host_logs: true  # Whether to collect host logs. Examples: true, false

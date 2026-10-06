@@ -1,14 +1,12 @@
 from __future__ import annotations
 
 import json
-import os
 import socket
 import subprocess
 import threading
 from pathlib import Path
 
-
-def test_auto_reapply_runner_coordinates_pending_update(tmp_path: Path) -> None:
+def test_auto_reapply_runner_coordinates_pending_update(tmp_path: Path, shell, shell_env) -> None:
     repo_root = Path(__file__).resolve().parents[1]
     patch_script = repo_root / "integrations/octoeverywhere/apply-local-klipperai-route-patch.sh"
     install_script = repo_root / "integrations/octoeverywhere/install-auto-reapply.sh"
@@ -80,17 +78,16 @@ def test_auto_reapply_runner_coordinates_pending_update(tmp_path: Path) -> None:
     systemd_dir = tmp_path / "systemd"
     state_dir = tmp_path / "state"
     env = {
-        **os.environ,
-        "PATH": f"{fake_bin}:{os.environ['PATH']}",
+        **shell_env,
         "KLIPPERAI_NO_SUDO": "1",
-        "KLIPPERAI_OE_RUNNER_PATH": str(runner),
-        "KLIPPERAI_SYSTEMD_DIR": str(systemd_dir),
-        "KLIPPERAI_STATE_DIR": str(state_dir),
+        "KLIPPERAI_OE_RUNNER_PATH": runner.as_posix(),
+        "KLIPPERAI_SYSTEMD_DIR": systemd_dir.as_posix(),
+        "KLIPPERAI_STATE_DIR": state_dir.as_posix(),
     }
 
     try:
         subprocess.run(
-            ["sh", str(patch_script), "--oe-root", str(oe_root)],
+            [shell, patch_script.as_posix(), "--oe-root", oe_root.as_posix()],
             check=True,
             env=env,
             capture_output=True,
@@ -98,12 +95,12 @@ def test_auto_reapply_runner_coordinates_pending_update(tmp_path: Path) -> None:
         )
         subprocess.run(
             [
-                "sh",
-                str(install_script),
+                shell,
+                install_script.as_posix(),
                 "--install-dir",
-                str(repo_root),
+                repo_root.as_posix(),
                 "--oe-root",
-                str(oe_root),
+                oe_root.as_posix(),
                 "--moonraker-url",
                 f"http://127.0.0.1:{server_port}",
             ],
@@ -122,8 +119,9 @@ def test_auto_reapply_runner_coordinates_pending_update(tmp_path: Path) -> None:
         state["commits_behind"] = 0
         runner_env = env.copy()
         runner_env.pop("HOME", None)
+        runner_env.pop("KLIPPERAI_STATE_DIR", None)
         subprocess.run(
-            [str(runner)],
+            [shell, runner.as_posix()],
             check=True,
             env=runner_env,
             capture_output=True,

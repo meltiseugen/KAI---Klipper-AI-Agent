@@ -4,10 +4,14 @@ from types import SimpleNamespace
 
 import pytest
 
-from klipperai_agent.printerprofile import PrinterProfile
-from klipperai_agent.schemas import ChatRequest
-from klipperai_agent.services import ChatService
-from klipperai_agent.sessions import InMemorySessionStore
+import klipperai_agent.application.request_context as services_module
+from klipperai_agent.application.chat import (
+    ChatService,
+)
+from klipperai_agent.application.request_context import _infer_inline_question_artifact
+from klipperai_agent.application.sessions import InMemorySessionStore
+from klipperai_agent.contracts.api import ChatHistoryMessage, ChatRequest
+from klipperai_agent.profile.models import PrinterProfile
 
 
 class _FakeGraph:
@@ -149,7 +153,9 @@ async def test_chat_service_routes_macro_name_correction_to_config_graph() -> No
     session = sessions.create()
 
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
-    config_graph = _FakeGraph("config", {"response_text": "SFS_ENABLE is defined in filament.cfg:1."})
+    config_graph = _FakeGraph(
+        "config", {"response_text": "SFS_ENABLE is defined in filament.cfg:1."}
+    )
     service = ChatService(
         provider_name="stub",
         root_path="",
@@ -466,3 +472,125 @@ async def test_bootstrap_includes_printer_profile_summary() -> None:
     assert response.printer_profile is not None
     assert response.printer_profile.firmware_flavor == "Kalico"
     assert "read-only-mode" in response.features
+
+
+def _service(sessions, diagnosis_graph=None, root_path="") -> ChatService:
+    return ChatService(
+        provider_name="stub",
+        root_path=root_path,
+        diagnosis_graph=diagnosis_graph or _FakeGraph("diagnostics", {}),
+        config_graph=_FakeGraph("config", {}),
+        workflow_context=SimpleNamespace(
+            collector=_FakeCollector(),
+            profile=PrinterProfile(firmware_flavor="Kalico"),
+        ),
+        sessions=sessions,
+    )
+
+
+@pytest.mark.asyncio
+async def test_create_ui_session_and_invalid_session_errors() -> None:
+    sessions = InMemorySessionStore(ttl_seconds=60)
+    service = _service(sessions, root_path="/klippyai")
+    created = await service.create_ui_session()
+    assert created.embed_path == f"/klippyai/embed?session={created.session_id}"
+
+    with pytest.raises(ValueError, match="Invalid or expired"):
+        await service.bootstrap("missing")
+    with pytest.raises(ValueError, match="Invalid or expired"):
+        await service.chat(ChatRequest(session_id="missing", message="help"))
+
+
+@pytest.mark.asyncio
+async def test_diagnostics_chat_maps_all_output_and_preserves_thread() -> None:
+    sessions = InMemorySessionStore(ttl_seconds=60)
+    session = sessions.create()
+    graph = _FakeGraph(
+        "diagnostics",
+        {
+            "response_text": "diagnosed",
+            "findings": [
+                {
+                    "code": "x",
+                    "severity": "low",
+                    "source": "log",
+                    "summary": "summary",
+                    "evidence": "evidence",
+                    "proposed_fix": "fix",
+                }
+            ],
+            "next_actions": ["act"],
+            "patch_proposals": [
+                {"target_file": "printer.cfg", "summary": "s", "diff": "d", "rationale": "r"}
+            ],
+            "moonraker_reachable": True,
+        },
+    )
+    response = await _service(sessions, graph).chat(
+        ChatRequest(session_id=session.session_id, thread_id="known", message="Why did it stop?")
+    )
+    assert response.thread_id == "known"
+    assert response.findings[0].code == "x"
+    assert response.patch_proposals[0].target_file == "printer.cfg"
+    assert graph.calls[0]["config"]["configurable"]["thread_id"] == "diagnostics:known"
+
+
+@pytest.mark.asyncio
+async def test_chat_propagates_graph_errors() -> None:
+    class FailingGraph:
+        async def ainvoke(self, *_args, **_kwargs):
+            raise RuntimeError("boom")
+
+    sessions = InMemorySessionStore(ttl_seconds=60)
+    session = sessions.create()
+    with pytest.raises(RuntimeError, match="boom"):
+        await _service(sessions, FailingGraph()).chat(
+            ChatRequest(session_id=session.session_id, message="diagnose this")
+        )
+
+
+def test_inline_artifact_ignores_blank_message() -> None:
+    assert _infer_inline_question_artifact("   ", "diagnostics") is None
+
+
+@pytest.mark.asyncio
+async def test_intent_router_failure_and_zero_confidence_fall_back() -> None:
+    class FailingRouter:
+        async def classify(self, _message):
+            raise RuntimeError("offline")
+
+    class UncertainRouter:
+        async def classify(self, _message):
+            return {"intent": "config_explain", "confidence": 0}
+
+    sessions = InMemorySessionStore(ttl_seconds=60)
+    failing = _service(sessions)
+    failing.workflow_context.intent_router = FailingRouter()
+    assert (await failing._classify_chat_intent("plain question")).intent == "general"
+
+    uncertain = _service(sessions)
+    uncertain.workflow_context.intent_router = UncertainRouter()
+    assert (await uncertain._classify_chat_intent("plain question")).intent == "general"
+
+
+def test_history_and_inline_artifact_edge_cases() -> None:
+    assert services_module._format_conversation_context([], max_pairs=0) == ""
+    history = [
+        ChatHistoryMessage(role="user", text="x" * 5000),
+        ChatHistoryMessage(role="assistant", text="answer"),
+    ]
+    context = services_module._format_conversation_context(history, max_pairs=1)
+    assert "...[truncated]..." in context
+    assert "KlipperAI: answer" in context
+    blank = ChatHistoryMessage.construct(role="user", text=" ")
+    assert services_module._format_conversation_context([blank], max_pairs=1) == ""
+
+    assert services_module._build_contextual_classification_message("hello", "") == "hello"
+    artifacts = services_module._build_chat_artifacts(
+        "[fan]\npin: PA1",
+        "config",
+        [],
+    )
+    assert artifacts[0].kind == "config_snippet"
+    notes = services_module._infer_inline_question_artifact("\n".join(["line"] * 8), "config")
+    assert notes is not None and notes.kind == "notes"

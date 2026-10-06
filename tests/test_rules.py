@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from klipperai_agent.diagnostics import RuleEngine
-from klipperai_agent.printerconfig import ConfigCollector
-from klipperai_agent.schemas import ArtifactInput
+from klipperai_agent.config.collector import ConfigCollector
+from klipperai_agent.contracts.api import ArtifactInput
+from klipperai_agent.diagnostics.rules import RuleEngine
 
 
 def test_timer_too_close_is_detected() -> None:
@@ -56,14 +56,11 @@ def test_placeholder_config_value_is_detected(tmp_path: Path) -> None:
     extras_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/fan.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include extras/fan.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "fan.cfg").write_text(
-        "[fan]\n"
-        "pin: YOUR_PIN_HERE\n",
+        "[fan]\npin: YOUR_PIN_HERE\n",
         encoding="utf-8",
     )
 

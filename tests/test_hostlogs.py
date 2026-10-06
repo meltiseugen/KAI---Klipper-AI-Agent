@@ -4,11 +4,14 @@ from pathlib import Path
 
 import pytest
 
-from klipperai_agent.diagnostics import DiagnosticsCollector, RuleEngine
-from klipperai_agent.hostlogs import HostLogCollector
+from klipperai_agent.diagnostics.collector import DiagnosticsCollector
+from klipperai_agent.diagnostics.rules import RuleEngine
+from klipperai_agent.infrastructure.host.logs import HostLogCollector
 
 
-def test_host_log_collector_reads_all_current_log_files_and_tails_last_lines(tmp_path: Path) -> None:
+def test_host_log_collector_reads_all_current_log_files_and_tails_last_lines(
+    tmp_path: Path,
+) -> None:
     logs_dir = tmp_path / "printer_data" / "logs"
     logs_dir.mkdir(parents=True)
 
@@ -38,8 +41,12 @@ def test_host_log_collector_reads_all_current_log_files_and_tails_last_lines(tmp
 def test_host_log_collector_supports_per_log_tail_lengths(tmp_path: Path) -> None:
     logs_dir = tmp_path / "printer_data" / "logs"
     logs_dir.mkdir(parents=True)
-    (logs_dir / "klippy.log").write_text("\n".join(f"klippy {index}" for index in range(1, 151)), encoding="utf-8")
-    (logs_dir / "moonraker.log").write_text("\n".join(f"moonraker {index}" for index in range(1, 251)), encoding="utf-8")
+    (logs_dir / "klippy.log").write_text(
+        "\n".join(f"klippy {index}" for index in range(1, 151)), encoding="utf-8"
+    )
+    (logs_dir / "moonraker.log").write_text(
+        "\n".join(f"moonraker {index}" for index in range(1, 251)), encoding="utf-8"
+    )
 
     collector = HostLogCollector(
         tmp_path / "printer_data",
@@ -49,7 +56,9 @@ def test_host_log_collector_supports_per_log_tail_lengths(tmp_path: Path) -> Non
     artifacts, _notes = collector.collect()
 
     klippy_artifact = next(artifact for artifact in artifacts if artifact.label == "klippy.log")
-    moonraker_artifact = next(artifact for artifact in artifacts if artifact.label == "moonraker.log")
+    moonraker_artifact = next(
+        artifact for artifact in artifacts if artifact.label == "moonraker.log"
+    )
     assert "Selection: last 40 line(s)" in klippy_artifact.content
     assert "klippy 111" in klippy_artifact.content
     assert "klippy 110" not in klippy_artifact.content
@@ -136,3 +145,29 @@ async def test_diagnostics_collector_merges_host_logs_into_snapshot(tmp_path: Pa
     assert any(artifact.label == "klippy.log" for artifact in snapshot.artifacts)
     assert findings
     assert findings[0].code == "mcu_timer_too_close"
+
+
+def test_host_log_collector_reports_missing_invalid_and_empty_directories(tmp_path: Path) -> None:
+    collector = HostLogCollector(tmp_path / "missing")
+    assert "does not exist" in collector.collect()[1][0]
+
+    root = tmp_path / "file-root"
+    root.mkdir()
+    (root / "logs").write_text("not a directory", encoding="utf-8")
+    assert "not a directory" in HostLogCollector(root).collect()[1][0]
+
+    empty_root = tmp_path / "empty-root"
+    (empty_root / "logs").mkdir(parents=True)
+    assert "No current" in HostLogCollector(empty_root).collect()[1][0]
+
+
+def test_host_log_collector_skips_blank_files_and_clips_large_artifacts(tmp_path: Path) -> None:
+    logs = tmp_path / "logs"
+    logs.mkdir()
+    (logs / "blank.log").write_text(" \n", encoding="utf-8")
+    (logs / "large.log").write_text("x" * 1000, encoding="utf-8")
+    collector = HostLogCollector(tmp_path, artifact_char_limit=80)
+    artifacts, _notes = collector.collect()
+    assert [artifact.label for artifact in artifacts] == ["large.log"]
+    assert "...[truncated]..." in artifacts[0].content
+    assert HostLogCollector._read_last_lines(logs / "large.log", 0) == ("", False)

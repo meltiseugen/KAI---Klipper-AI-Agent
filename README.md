@@ -20,7 +20,7 @@ KlipperAI is meant to close that gap by giving the user one assistant that can:
 - connect symptoms to likely root causes
 - suggest the next safest fix to try
 - help generate or improve Klipper config fragments
-- eventually apply changes through a controlled review-and-approve flow
+- review proposed config changes with evidence and comparisons, then edit files manually
 
 ## Project Direction
 
@@ -40,12 +40,17 @@ That gives the project:
 
 ## Current State
 
-This repository is currently an early scaffold. What exists today:
+This repository is an early implementation. What exists today:
 
 - FastAPI-based async agent service
 - full-page and embedded chat UI served by the agent
 - Moonraker client abstraction
-- lightweight local diagnostics workflow
+- bounded tool-using agent loop for OpenAI, with deterministic offline workflows
+- read-only config, profile, printer-status and diagnostics tools
+- configurable public web search with cited sources
+- streamed tool activity and typed completion status
+- persistent investigations and dated evidence memory across chats
+- static proposal review, section comparisons and read-only revalidation
 - direct OpenAI-compatible provider integration path
 - deterministic rule engine for a small set of common Klipper failures
 - host-side current `*.log` collection with configurable line-tail excerpts
@@ -64,8 +69,8 @@ What does not exist yet:
 
 - real Moonraker agent registration flow
 - broader host diagnostics beyond the current Moonraker/Klipper service scope
-- config diff generation and apply endpoints
-- safe write/apply flow
+- complete firmware/hardware validation of proposed configuration
+- automatic recovery of interrupted in-flight investigations
 - deeper config specialization beyond the current broad scaffold generation path
 - multi-provider support beyond the current initial OpenAI path and local `stub`
 
@@ -112,6 +117,8 @@ What does not exist yet:
 
 ### Workflow Engine
 
+OpenAI requests use a bounded tool loop by default. The model can inspect evidence, call another tool, search public documentation, and then compose a cited answer. Set `web_search_enabled: false` to disable search, or `agent_enabled: false` to use the former single-pass workflow. Search and model calls use provider credits.
+
 - keep explicit, deterministic local workflows for diagnostics and config assistance
 - keep host access deterministic and tightly bounded
 - avoid Rust-backed runtime dependencies in the default host install so embedded printer images can install the package
@@ -122,16 +129,16 @@ What does not exist yet:
 - `Moonraker`: canonical source for printer state, managed files, and future integration points
 - `Mainsail integration`: supported custom-nav link in `v1`, optional native patch for advanced installs
 - `KlipperAI UI`: chat-style assistant UI served from the same origin
-- `KlipperAI local workflows`: orchestration for diagnostics, config proposals, and future approval flows
+- `KlipperAI local workflows`: diagnostics and proposals, followed by manual-only review
 
-More detail lives in [docs/architecture.md](docs/architecture.md) and [docs/mainsail-shell.md](docs/mainsail-shell.md).
+Start discovery at [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). Runtime and sequence diagrams live in [docs/architecture.md](docs/architecture.md); tool extension and settings are in [docs/agent-development.md](docs/agent-development.md). Memory and manual proposal review are documented in [docs/investigations.md](docs/investigations.md). See [docs/refactoring.md](docs/refactoring.md) for the layout migration and reinstall instructions. Mainsail integration is covered in [docs/mainsail-shell.md](docs/mainsail-shell.md).
 
 ## Supported Providers
 
 Current code support:
 
 - `stub`: no external LLM call, useful for local UI and deterministic workflow development
-- `openai`: direct HTTP integration with OpenAI-compatible chat completions
+- `openai`: iterative Responses API tool calling and hosted web search; optional single-pass compatibility mode
 
 Planned provider support is tracked in [BACKLOG.md](BACKLOG.md).
 
@@ -362,7 +369,9 @@ The main `klipperai.cfg` values are:
 - `excluded_logs`: optional denylist for current host log files by name, stem, or glob
 - `collect_systemd_diagnostics`: enable or disable service-status and journal collection
 - `journal_lines`: number of journal lines to include per service when diagnostics are collected
-- `enable_write_actions`: reserved for future work and forced to `false` by the runtime
+- `enable_write_actions`: obsolete compatibility setting, always forced to `false`
+- `memory_cross_chat`: reuse relevant historical observations between chats (default `true`)
+- `memory_retention_days`: storage retention (default `90`); storage is `data_dir/investigations.sqlite3`
 
 Environment-file values are intentionally hidden from the Mainsail-editable config:
 
@@ -406,13 +415,15 @@ The intended security stance is:
 - provider API keys stay server-side only
 - the browser never gets raw provider credentials
 - host access should come from deterministic tools, not arbitrary shell execution by the LLM
-- the current runtime is intentionally shackled and does not write printer/config files
-- any future config mutations should go through reviewable diffs and explicit approval
+- the runtime cannot change printer configuration; users make all printer edits manually
+- application-owned memory and runtime logs can be written; storage must stay outside printer config/G-code directories
 - `v1` should remain diagnostics-first and read-heavy
 
 ## Repository Layout
 
-- `src/klipperai_agent/`: application code
+- `klipperai_agent/`: flat Python package, split by responsibility
+- `docs/PROJECT_MAP.md`: task-to-code navigation and generated symbol/test indexes
+- `tools/project_map.py`: regenerate architecture discovery artifacts
 - `tests/`: unit tests for deterministic logic
 - `docs/architecture.md`: system design and responsibilities
 - `docs/mainsail-shell.md`: Mainsail integration plan
@@ -426,9 +437,9 @@ The intended security stance is:
 
 ## Development Notes
 
-- The FastAPI app exposes `/`, `/healthz`, `/api/ui-sessions`, `/api/bootstrap`, `/api/chat`, and `/embed`.
+- The FastAPI app exposes `/`, `/healthz`, `/api/ui-sessions`, `/api/bootstrap`, `/api/chat`, `/api/chat/stream`, and `/embed`.
 - The default provider is `stub`, so the app can boot without any external API key.
-- The runtime uses local in-process workflows for host installs; durable chat history is still planned.
+- OpenAI requests use an iterative agent that selects tools and follows up on their results. `stub` retains deterministic local workflows. Conversations and dated evidence persist in application-owned SQLite storage; interrupted in-flight calls are not resumed.
 - Host log collection currently targets current `.log` files directly under `printer_data/logs` and sends the configured last lines from each file.
 - KlipperAI itself also writes a rotating runtime log at `printer_data/logs/klipperai.log`, intended to be visible from Mainsail alongside the other printer-host logs.
 - Systemd diagnostics currently target `systemctl show` plus the last `journalctl` lines for the configured Moonraker and Klipper units.

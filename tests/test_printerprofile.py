@@ -4,13 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from klipperai_agent.printerconfig import ConfigCollector
-from klipperai_agent.printerprofile import (
-    PrinterProfileCollector,
-    build_profile_from_settings,
-    write_profile_to_cfg,
-)
-from klipperai_agent.settings import Settings
+from klipperai_agent.config.collector import ConfigCollector
+from klipperai_agent.profile.collector import PrinterProfileCollector
+from klipperai_agent.profile.persistence import write_profile_to_cfg
+from klipperai_agent.profile.saved import build_profile_from_settings
+from klipperai_agent.runtime.settings import Settings
 
 
 class _FakeMoonraker:
@@ -124,10 +122,7 @@ async def test_profile_collector_detects_firmware_addons_and_board_hints(tmp_pat
         encoding="utf-8",
     )
     (extras_dir / "stealthburner_ebb36.cfg").write_text(
-        "[beacon]\n"
-        "x_offset: 0\n\n"
-        "[adxl345]\n"
-        "cs_pin: toolhead:PA15\n",
+        "[beacon]\nx_offset: 0\n\n[adxl345]\ncs_pin: toolhead:PA15\n",
         encoding="utf-8",
     )
 
@@ -183,8 +178,14 @@ async def test_profile_collector_applies_mainboard_and_toolhead_overrides(tmp_pa
 
     assert profile.mainboard == "LDO Leviathan"
     assert profile.toolhead == "Dragon Burner"
-    assert any(item.source == "klipperai.cfg" and "Mainboard declared" in item.summary for item in profile.evidence)
-    assert any(item.source == "klipperai.cfg" and "Toolhead declared" in item.summary for item in profile.evidence)
+    assert any(
+        item.source == "klipperai.cfg" and "Mainboard declared" in item.summary
+        for item in profile.evidence
+    )
+    assert any(
+        item.source == "klipperai.cfg" and "Toolhead declared" in item.summary
+        for item in profile.evidence
+    )
 
 
 def test_build_profile_from_settings_uses_persisted_identity() -> None:
@@ -268,10 +269,7 @@ async def test_write_profile_to_cfg_persists_detected_identity(tmp_path: Path) -
         encoding="utf-8",
     )
     (extras_dir / "stealthburner_ebb36.cfg").write_text(
-        "[beacon]\n"
-        "x_offset: 0\n\n"
-        "[adxl345]\n"
-        "cs_pin: toolhead:PA15\n",
+        "[beacon]\nx_offset: 0\n\n[adxl345]\ncs_pin: toolhead:PA15\n",
         encoding="utf-8",
     )
 
@@ -284,7 +282,9 @@ async def test_write_profile_to_cfg_persists_detected_identity(tmp_path: Path) -
 
     contents = config_file.read_text(encoding="utf-8")
     assert "# Firmware comment should be preserved" in contents
-    assert "firmware_flavor: Kalico  # Main firmware flavor running on the printer stack." in contents
+    assert (
+        "firmware_flavor: Kalico  # Main firmware flavor running on the printer stack." in contents
+    )
     assert "mainboard:  # Printer controller board model." in contents
     assert "toolhead: BTT EBB36  # Toolhead board / electronics model." in contents
     assert "probe_type: beacon" in contents

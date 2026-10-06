@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KlipperAI</title>
+    <style>{{ embed_css | safe }}</style>
+  </head>
+  <body data-session-id="{{ session_id }}" data-api-base="{{ api_base }}">
+    <div class="app-shell">
+      <aside id="shell-sidebar" class="sidebar">
+        <div class="brand-lockup">
+          <span class="brand-copy">
+            <strong class="brand-title">KlipperAI</strong>
+            <span class="brand-label">Diagnostics Assistant</span>
+          </span>
+        </div>
+
+        <section class="sidebar-history">
+          <div class="sidebar-history-header">
+            <h2 class="sidebar-history-title">Chat History</h2>
+            <button id="new-chat-button" class="secondary-button history-action-button" type="button">
+              <span class="history-action-icon" aria-hidden="true"></span>
+              <span>New chat</span>
+            </button>
+          </div>
+
+          <div id="history-list" class="history-list"></div>
+        </section>
+      </aside>
+
+      <button id="shell-scrim" class="shell-scrim" type="button" aria-label="Close chat history"></button>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div class="topbar-leading">
+            <button id="shell-menu-toggle" class="menu-toggle" type="button" aria-label="Toggle chat history">
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+            <div class="status-panel topbar-status-panel">
+              <span id="provider-badge" class="badge">Provider: loading</span>
+              <span id="model-badge" class="badge">Model: loading</span>
+              <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
+              <span id="klipper-badge" class="badge muted">Klipper: checking</span>
+            </div>
+          </div>
+        </header>
+
+        <main class="workspace-main">
+          <div class="conversation-panel">
+            <section id="messages" class="messages">
+              <article class="message assistant">
+                <div class="message-meta">KlipperAI</div>
+                <div class="message-body">
+                  Ask what failed or ask for config help like "where is my extruder defined?". Current host logs are collected automatically, and you can paste extra config or log text directly into the question field.
+                </div>
+              </article>
+            </section>
+
+            <section class="composer-shell">
+              <div class="composer-column">
+                <label class="field">
+                  <span>Question</span>
+                  <textarea id="message-input" rows="5" maxlength="40000" placeholder="Why is the printer shutting down during homing? You can paste relevant config or log text here too."></textarea>
+                </label>
+
+                <div class="actions">
+                  <button id="send-button" type="button">Analyze</button>
+                  <div id="composer-status" class="composer-status" aria-live="polite"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </main>
+      </section>
+    </div>
+
+    <template id="message-template">
+      <article class="message">
+        <div class="message-meta"></div>
+        <div class="message-body"></div>
+      </article>
+    </template>
+
+    <script>{{ embed_js | safe }}</script>
+  </body>
+</html>

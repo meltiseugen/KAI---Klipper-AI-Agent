@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from klipperai_agent.printerconfig import (
-    build_config_lookup_response,
-    ConfigCollector,
+from klipperai_agent.config.collector import ConfigCollector
+from klipperai_agent.config.lookup import build_config_lookup_response
+from klipperai_agent.config.targeting import (
     infer_config_request_target,
     looks_like_config_request,
 )
@@ -16,15 +16,11 @@ def test_config_collector_reads_printer_cfg_and_includes(tmp_path: Path) -> None
     extras_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/fan.cfg]\n"
-        "[include klipperai/*.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include extras/fan.cfg]\n[include klipperai/*.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "fan.cfg").write_text(
-        "[fan]\n"
-        "pin: PA1\n",
+        "[fan]\npin: PA1\n",
         encoding="utf-8",
     )
 
@@ -47,14 +43,11 @@ def test_config_collector_auto_detects_nonstandard_root_file(tmp_path: Path) -> 
     extras_dir.mkdir(parents=True)
 
     (machine_dir / "printer-main.cfg").write_text(
-        "[include ../../extras/toolhead.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: corexy\n",
+        "[include ../../extras/toolhead.cfg]\n\n[printer]\nkinematics: corexy\n",
         encoding="utf-8",
     )
     (extras_dir / "toolhead.cfg").write_text(
-        "[fan]\n"
-        "pin: PA1\n",
+        "[fan]\npin: PA1\n",
         encoding="utf-8",
     )
 
@@ -74,19 +67,15 @@ def test_config_collector_respects_ignore_globs(tmp_path: Path) -> None:
     backup_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/**/*.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include extras/**/*.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "fan.cfg").write_text(
-        "[fan]\n"
-        "pin: PA1\n",
+        "[fan]\npin: PA1\n",
         encoding="utf-8",
     )
     (backup_dir / "old.cfg").write_text(
-        "[fan_generic archived]\n"
-        "pin: PB1\n",
+        "[fan_generic archived]\npin: PB1\n",
         encoding="utf-8",
     )
 
@@ -99,7 +88,9 @@ def test_config_collector_respects_ignore_globs(tmp_path: Path) -> None:
     assert any(path.endswith("printer.cfg") for path in collected_paths)
     assert any(path.endswith("fan.cfg") for path in collected_paths)
     assert not any(path.endswith("old.cfg") for path in collected_paths)
-    assert any("Ignored config file due to config_context.ignore_globs" in note for note in snapshot.notes)
+    assert any(
+        "Ignored config file due to config_context.ignore_globs" in note for note in snapshot.notes
+    )
 
 
 def test_config_collector_detects_active_placeholder_values(tmp_path: Path) -> None:
@@ -108,14 +99,11 @@ def test_config_collector_detects_active_placeholder_values(tmp_path: Path) -> N
     extras_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/fan.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include extras/fan.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "fan.cfg").write_text(
-        "[fan]\n"
-        "pin: YOUR_PIN_HERE\n",
+        "[fan]\npin: YOUR_PIN_HERE\n",
         encoding="utf-8",
     )
 
@@ -136,22 +124,19 @@ def test_config_collector_tracks_section_locations_in_active_include_tree(tmp_pa
     extras_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/toolhead.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: corexy\n",
+        "[include extras/toolhead.cfg]\n\n[printer]\nkinematics: corexy\n",
         encoding="utf-8",
     )
     (extras_dir / "toolhead.cfg").write_text(
-        "[extruder]\n"
-        "step_pin: PA1\n\n"
-        "[fan]\n"
-        "pin: PB1\n",
+        "[extruder]\nstep_pin: PA1\n\n[fan]\npin: PB1\n",
         encoding="utf-8",
     )
 
     snapshot = ConfigCollector(tmp_path / "printer_data").collect()
 
-    matches = [location for location in snapshot.section_locations if location.section == "extruder"]
+    matches = [
+        location for location in snapshot.section_locations if location.section == "extruder"
+    ]
     assert len(matches) == 1
     assert matches[0].path.endswith("toolhead.cfg")
     assert matches[0].line_number == 1
@@ -174,14 +159,12 @@ def test_config_collector_includes_all_files_from_active_include_tree(tmp_path: 
         file_name = f"part_{index}.cfg"
         include_lines.append(f"[include extras/{file_name}]")
         (extras_dir / file_name).write_text(
-            f"[fan_generic part_{index}]\n"
-            f"pin: P{index}\n",
+            f"[fan_generic part_{index}]\npin: P{index}\n",
             encoding="utf-8",
         )
 
     (config_dir / "printer.cfg").write_text(
-        "\n".join(include_lines)
-        + "\n\n[printer]\nkinematics: cartesian\n",
+        "\n".join(include_lines) + "\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
 
@@ -199,20 +182,19 @@ def test_config_collector_keeps_full_file_text_by_default(tmp_path: Path) -> Non
     long_line = "A" * 15_000
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/long.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include extras/long.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "long.cfg").write_text(
-        "[gcode_macro LONG_TEST]\n"
-        f"description: {long_line}\n",
+        f"[gcode_macro LONG_TEST]\ndescription: {long_line}\n",
         encoding="utf-8",
     )
 
     snapshot = ConfigCollector(tmp_path / "printer_data").collect()
 
-    long_document = next(document for document in snapshot.documents if document.path.endswith("long.cfg"))
+    long_document = next(
+        document for document in snapshot.documents if document.path.endswith("long.cfg")
+    )
     assert "[truncated]" not in long_document.content
     assert long_line in long_document.content
 
@@ -285,14 +267,11 @@ def test_build_config_lookup_response_returns_exact_section_locations(tmp_path: 
     extras_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/toolhead.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: corexy\n",
+        "[include extras/toolhead.cfg]\n\n[printer]\nkinematics: corexy\n",
         encoding="utf-8",
     )
     (extras_dir / "toolhead.cfg").write_text(
-        "[extruder]\n"
-        "step_pin: PA1\n",
+        "[extruder]\nstep_pin: PA1\n",
         encoding="utf-8",
     )
 
@@ -312,10 +291,7 @@ def test_build_config_lookup_response_returns_exact_macro_definition_file(tmp_pa
     klippy_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include Klippy/filament.cfg]\n"
-        "[include macros.cfg]\n\n"
-        "[printer]\n"
-        "kinematics: cartesian\n",
+        "[include Klippy/filament.cfg]\n[include macros.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (klippy_dir / "filament.cfg").write_text(
@@ -326,10 +302,7 @@ def test_build_config_lookup_response_returns_exact_macro_definition_file(tmp_pa
         encoding="utf-8",
     )
     (config_dir / "macros.cfg").write_text(
-        "[gcode_macro PRINT_START]\n"
-        "gcode:\n"
-        "  G28\n"
-        "  SFS_ENABLE\n",
+        "[gcode_macro PRINT_START]\ngcode:\n  G28\n  SFS_ENABLE\n",
         encoding="utf-8",
     )
 

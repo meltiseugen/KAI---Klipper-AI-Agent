@@ -1,0 +1,87 @@
+# Generated module index
+
+Regenerate with `python tools/project_map.py`. Listed tests directly import the module; integration tests may cover it indirectly.
+
+| Module | Lines | Classes / functions | Direct tests |
+| --- | ---: | --- | --- |
+| [__main__](../../klipperai_agent/__main__.py) | 37 | `main` | [test_main](../../tests/test_main.py) |
+| [agent.models](../../klipperai_agent/agent/models.py) | 67 | `AgentAnswer`, `ToolCall`, `ModelTurn`, `AgentModel`, `SearchResult`, `WebSearch`, `AgentLimits` | [test_agent](../../tests/test_agent.py), [test_agent_integration](../../tests/test_agent_integration.py), [test_investigations](../../tests/test_investigations.py) |
+| [agent.ports](../../klipperai_agent/agent/ports.py) | 54 | `ConfigReader`, `DiagnosticReader`, `FindingRules`, `SavedProfile`, `PrinterReader`, `ToolServices` |  |
+| [agent.prompts](../../klipperai_agent/agent/prompts.py) | 26 |  |  |
+| [agent.registry](../../klipperai_agent/agent/registry.py) | 75 | `ToolRegistry` | [test_agent](../../tests/test_agent.py) |
+| [agent.runner](../../klipperai_agent/agent/runner.py) | 182 | `AgentRun`, `AgentRunner` | [test_agent](../../tests/test_agent.py) |
+| [agent.tools.base](../../klipperai_agent/agent/tools/base.py) | 64 | `ToolArguments`, `ToolContext`, `Tool` | [test_agent](../../tests/test_agent.py) |
+| [agent.tools.config](../../klipperai_agent/agent/tools/config.py) | 90 | `InspectConfigArguments`, `InspectConfigTool`, `ReadConfigArguments`, `ReadConfigTool` |  |
+| [agent.tools.printer](../../klipperai_agent/agent/tools/printer.py) | 72 | `PrinterProfileTool`, `PrinterStatusTool`, `DiagnosticsArguments`, `DiagnosticsTool` |  |
+| [agent.tools.search](../../klipperai_agent/agent/tools/search.py) | 33 | `SearchArguments`, `WebSearchTool` |  |
+| [agent.workflow](../../klipperai_agent/agent/workflow.py) | 67 | `AgentWorkflow` | [test_agent](../../tests/test_agent.py), [test_agent_integration](../../tests/test_agent_integration.py), [test_investigations](../../tests/test_investigations.py) |
+| [application.chat](../../klipperai_agent/application/chat.py) | 281 | `ChatService` | [test_agent_integration](../../tests/test_agent_integration.py), [test_investigations](../../tests/test_investigations.py), [test_services](../../tests/test_services.py) |
+| [application.intent](../../klipperai_agent/application/intent.py) | 172 | `ChatIntentOutput`, `IntentRouterProvider`, `classify_deterministic_intent`, `route_for_intent` | [test_intent_extra](../../tests/test_intent_extra.py), [test_llm_output](../../tests/test_llm_output.py) |
+| [application.investigations](../../klipperai_agent/application/investigations.py) | 96 | `InvestigationMemory` | [test_investigations](../../tests/test_investigations.py) |
+| [application.proposal_review](../../klipperai_agent/application/proposal_review.py) | 31 | `ProposalReviewService` | [test_investigations](../../tests/test_investigations.py), [test_proposal_review](../../tests/test_proposal_review.py) |
+| [application.request_context](../../klipperai_agent/application/request_context.py) | 88 |  | [test_services](../../tests/test_services.py) |
+| [application.sessions](../../klipperai_agent/application/sessions.py) | 43 | `UiSession`, `InMemorySessionStore` | [test_agent_integration](../../tests/test_agent_integration.py), [test_investigations](../../tests/test_investigations.py), [test_services](../../tests/test_services.py), [test_sessions](../../tests/test_sessions.py) |
+| [bootstrap.container](../../klipperai_agent/bootstrap/container.py) | 160 | `AppContainer`, `build_container` | [test_agent_integration](../../tests/test_agent_integration.py), [test_container](../../tests/test_container.py) |
+| [cli.detect_profile](../../klipperai_agent/cli/detect_profile.py) | 111 | `build_argument_parser`, `main` | [test_detect_profile](../../tests/test_detect_profile.py) |
+| [cli.legacy](../../klipperai_agent/cli/legacy.py) | 25 | `export_legacy_environment`, `agent_main`, `detect_main` | [test_legacy_compat](../../tests/test_legacy_compat.py), [test_main](../../tests/test_main.py) |
+| [config.collector](../../klipperai_agent/config/collector.py) | 296 | `ConfigCollector` | [test_agent](../../tests/test_agent.py), [test_investigations](../../tests/test_investigations.py), [test_printerconfig](../../tests/test_printerconfig.py), [test_printerconfig_extra](../../tests/test_printerconfig_extra.py), [test_printerprofile](../../tests/test_printerprofile.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py), [test_proposal_review](../../tests/test_proposal_review.py), [test_rules](../../tests/test_rules.py), [test_workflows](../../tests/test_workflows.py) |
+| [config.lookup](../../klipperai_agent/config/lookup.py) | 259 | `build_config_lookup_response` | [test_printerconfig](../../tests/test_printerconfig.py), [test_printerconfig_extra](../../tests/test_printerconfig_extra.py) |
+| [config.macro_names](../../klipperai_agent/config/macro_names.py) | 118 |  | [test_printerconfig_extra](../../tests/test_printerconfig_extra.py) |
+| [config.matching](../../klipperai_agent/config/matching.py) | 34 |  | [test_printerconfig_extra](../../tests/test_printerconfig_extra.py) |
+| [config.models](../../klipperai_agent/config/models.py) | 255 | `ConfigDocument`, `ConfigPlaceholder`, `ConfigSectionLocation`, `ConfigSnapshot`, `ConfigRequestTarget` | [test_llm_config](../../tests/test_llm_config.py), [test_llm_extra](../../tests/test_llm_extra.py), [test_printerconfig_extra](../../tests/test_printerconfig_extra.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py), [test_proposal_review](../../tests/test_proposal_review.py), [test_workflows](../../tests/test_workflows.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [config.parser](../../klipperai_agent/config/parser.py) | 97 | `ConfigParser` | [test_printerconfig_extra](../../tests/test_printerconfig_extra.py) |
+| [config.requests](../../klipperai_agent/config/requests.py) | 17 | `ConfigPromptPayload` | [test_llm_config](../../tests/test_llm_config.py), [test_llm_extra](../../tests/test_llm_extra.py) |
+| [config.review](../../klipperai_agent/config/review.py) | 129 | `ProposalReviewer` | [test_proposal_review](../../tests/test_proposal_review.py) |
+| [config.targeting](../../klipperai_agent/config/targeting.py) | 213 | `infer_config_request_target`, `looks_like_config_request`, `looks_like_config_content_request` | [test_printerconfig](../../tests/test_printerconfig.py), [test_printerconfig_extra](../../tests/test_printerconfig_extra.py), [test_workflows](../../tests/test_workflows.py) |
+| [config.templates.calibration](../../klipperai_agent/config/templates/calibration.py) | 79 | `ProbeProposal`, `InputShaperProposal`, `BedMeshProposal` |  |
+| [config.templates.catalog](../../klipperai_agent/config/templates/catalog.py) | 70 | `ProposalTemplate`, `ProposalCatalog` |  |
+| [config.templates.guidance](../../klipperai_agent/config/templates/guidance.py) | 112 | `ProposalGuidance` |  |
+| [config.templates.macros](../../klipperai_agent/config/templates/macros.py) | 79 | `MacroProposal`, `FilamentProposal`, `GenericProposal` |  |
+| [config.templates.motion](../../klipperai_agent/config/templates/motion.py) | 82 | `CanbusProposal`, `StepperProposal`, `ExtruderProposal` |  |
+| [config.templates.thermal](../../klipperai_agent/config/templates/thermal.py) | 73 | `FanProposal`, `SensorProposal`, `HeaterProposal` |  |
+| [config.vocabulary](../../klipperai_agent/config/vocabulary.py) | 142 |  |  |
+| [contracts.api](../../klipperai_agent/contracts/api.py) | 115 | `DetectedAddonSummary`, `PrinterProfileSummary`, `ChatRequest`, `ChatResponse`, `BootstrapResponse`, `UiSessionResponse` | [test_agent](../../tests/test_agent.py), [test_agent_integration](../../tests/test_agent_integration.py), [test_diagnostics_extra](../../tests/test_diagnostics_extra.py), [test_investigations](../../tests/test_investigations.py), [test_llm_extra](../../tests/test_llm_extra.py), [test_rules](../../tests/test_rules.py), [test_schemas](../../tests/test_schemas.py), [test_services](../../tests/test_services.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [contracts.base](../../klipperai_agent/contracts/base.py) | 1 |  |  |
+| [diagnostics.collector](../../klipperai_agent/diagnostics/collector.py) | 68 | `DiagnosticsCollector` | [test_diagnostics_extra](../../tests/test_diagnostics_extra.py), [test_hostlogs](../../tests/test_hostlogs.py) |
+| [diagnostics.models](../../klipperai_agent/diagnostics/models.py) | 31 | `DiagnosticsSnapshot` | [test_agent](../../tests/test_agent.py), [test_diagnostics_extra](../../tests/test_diagnostics_extra.py), [test_llm_extra](../../tests/test_llm_extra.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [diagnostics.requests](../../klipperai_agent/diagnostics/requests.py) | 18 | `DiagnosisPromptPayload` | [test_llm_extra](../../tests/test_llm_extra.py) |
+| [diagnostics.rules](../../klipperai_agent/diagnostics/rules.py) | 124 | `RuleEngine` | [test_agent](../../tests/test_agent.py), [test_diagnostics_extra](../../tests/test_diagnostics_extra.py), [test_hostlogs](../../tests/test_hostlogs.py), [test_rules](../../tests/test_rules.py) |
+| [domain.base](../../klipperai_agent/domain/base.py) | 14 | `BaseModel` |  |
+| [domain.evidence](../../klipperai_agent/domain/evidence.py) | 53 | `ArtifactInput`, `IssueFinding`, `SourceCitation`, `AgentEvent` |  |
+| [domain.investigation](../../klipperai_agent/domain/investigation.py) | 98 | `utc_now`, `Evidence`, `InvestigationRequest`, `MemorySource`, `InvestigationResult`, `InvestigationTurn`, `Investigation` | [test_agent](../../tests/test_agent.py), [test_investigations](../../tests/test_investigations.py), [test_proposal_review](../../tests/test_proposal_review.py) |
+| [domain.messages](../../klipperai_agent/domain/messages.py) | 16 | `ChatHistoryMessage` | [test_investigations](../../tests/test_investigations.py) |
+| [domain.proposals](../../klipperai_agent/domain/proposals.py) | 90 | `PatchProposal`, `ProposalReview`, `ConfigProposal` | [test_proposal_review](../../tests/test_proposal_review.py) |
+| [domain.repositories](../../klipperai_agent/domain/repositories.py) | 19 | `InvestigationConflict`, `InvestigationRepository` | [test_investigations](../../tests/test_investigations.py) |
+| [infrastructure.host.logs](../../klipperai_agent/infrastructure/host/logs.py) | 167 | `KnownLogKind`, `HostLogCollector` | [test_hostlogs](../../tests/test_hostlogs.py), [test_workflows](../../tests/test_workflows.py) |
+| [infrastructure.host.system](../../klipperai_agent/infrastructure/host/system.py) | 206 | `CommandResult`, `SystemCommandRunner`, `ServiceUnit`, `HostSystemCollector` | [test_hostsystem](../../tests/test_hostsystem.py) |
+| [infrastructure.investigations](../../klipperai_agent/infrastructure/investigations.py) | 137 | `SqliteInvestigationRepository` | [test_investigations](../../tests/test_investigations.py) |
+| [infrastructure.moonraker](../../klipperai_agent/infrastructure/moonraker.py) | 105 | `MoonrakerError`, `MoonrakerClient` | [test_detect_profile](../../tests/test_detect_profile.py), [test_diagnostics_extra](../../tests/test_diagnostics_extra.py), [test_moonraker](../../tests/test_moonraker.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py) |
+| [profile.addons](../../klipperai_agent/profile/addons.py) | 94 | `AddonDetector` |  |
+| [profile.capabilities](../../klipperai_agent/profile/capabilities.py) | 108 | `CapabilityDetector` |  |
+| [profile.collector](../../klipperai_agent/profile/collector.py) | 241 | `PrinterProfileCollector` | [test_printerprofile](../../tests/test_printerprofile.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py) |
+| [profile.hardware](../../klipperai_agent/profile/hardware.py) | 255 | `HardwareDetector` |  |
+| [profile.host](../../klipperai_agent/profile/host.py) | 95 | `HostDetector` |  |
+| [profile.models](../../klipperai_agent/profile/models.py) | 260 | `ProfileEvidence`, `DetectedAddon`, `PrinterProfile` | [test_agent](../../tests/test_agent.py), [test_agent_integration](../../tests/test_agent_integration.py), [test_detect_profile](../../tests/test_detect_profile.py), [test_investigations](../../tests/test_investigations.py), [test_llm_config](../../tests/test_llm_config.py), [test_llm_extra](../../tests/test_llm_extra.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py), [test_services](../../tests/test_services.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [profile.persistence](../../klipperai_agent/profile/persistence.py) | 261 | `write_profile_to_cfg` | [test_printerprofile](../../tests/test_printerprofile.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py) |
+| [profile.saved](../../klipperai_agent/profile/saved.py) | 61 | `build_profile_from_settings` | [test_printerprofile](../../tests/test_printerprofile.py), [test_printerprofile_extra](../../tests/test_printerprofile_extra.py) |
+| [profile.values](../../klipperai_agent/profile/values.py) | 17 |  | [test_printerprofile_extra](../../tests/test_printerprofile_extra.py) |
+| [providers.config_stub](../../klipperai_agent/providers/config_stub.py) | 40 | `StubConfigAssistantProvider` | [test_llm_config](../../tests/test_llm_config.py), [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.factory](../../klipperai_agent/providers/factory.py) | 48 | `build_diagnosis_provider`, `build_config_provider`, `build_intent_router` | [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.json_client](../../klipperai_agent/providers/json_client.py) | 41 | `OpenAIJsonClient` | [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.models](../../klipperai_agent/providers/models.py) | 66 | `DiagnosisLLMOutput`, `ConfigAssistantOutput`, `DiagnosisProvider`, `ConfigAssistantProvider` | [test_llm_extra](../../tests/test_llm_extra.py), [test_llm_output](../../tests/test_llm_output.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [providers.normalization](../../klipperai_agent/providers/normalization.py) | 121 |  | [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.openai](../../klipperai_agent/providers/openai.py) | 128 | `OpenAIDiagnosisProvider`, `OpenAIIntentRouterProvider`, `OpenAIConfigAssistantProvider` | [test_llm_config](../../tests/test_llm_config.py), [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.responses](../../klipperai_agent/providers/responses.py) | 93 | `ProviderError`, `ResponsesClient`, `OpenAIAgentModel` | [test_agent_providers](../../tests/test_agent_providers.py) |
+| [providers.stub](../../klipperai_agent/providers/stub.py) | 51 | `StubIntentRouterProvider`, `StubDiagnosisProvider` | [test_llm_extra](../../tests/test_llm_extra.py) |
+| [providers.web_search](../../klipperai_agent/providers/web_search.py) | 64 | `OpenAIWebSearch` | [test_agent_providers](../../tests/test_agent_providers.py) |
+| [runtime.logging](../../klipperai_agent/runtime/logging.py) | 66 | `configure_runtime_logging` | [test_runtime_logging](../../tests/test_runtime_logging.py) |
+| [runtime.settings](../../klipperai_agent/runtime/settings.py) | 235 | `Settings`, `get_settings` | [test_agent_integration](../../tests/test_agent_integration.py), [test_app](../../tests/test_app.py), [test_container](../../tests/test_container.py), [test_investigations](../../tests/test_investigations.py), [test_llm_extra](../../tests/test_llm_extra.py), [test_printerprofile](../../tests/test_printerprofile.py), [test_runtime_logging](../../tests/test_runtime_logging.py), [test_settings](../../tests/test_settings.py) |
+| [web.app](../../klipperai_agent/web/app.py) | 168 | `create_app` | [test_agent_integration](../../tests/test_agent_integration.py), [test_app](../../tests/test_app.py), [test_investigations](../../tests/test_investigations.py) |
+| [web.investigations](../../klipperai_agent/web/investigations.py) | 75 | `investigation_routes` |  |
+| [web.streaming](../../klipperai_agent/web/streaming.py) | 53 | `ChatEventStream` | [test_agent_integration](../../tests/test_agent_integration.py) |
+| [workflows.citations](../../klipperai_agent/workflows/citations.py) | 190 |  | [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [workflows.configuration](../../klipperai_agent/workflows/configuration.py) | 222 | `detect_config_target`, `collect_config_context`, `resolve_config_lookup`, `call_config_llm`, `compose_config_response`, `route_config_request` | [test_workflows](../../tests/test_workflows.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [workflows.context](../../klipperai_agent/workflows/context.py) | 74 | `WorkflowContext`, `WorkflowRuntime`, `Workflow`, `DiagnosisState`, `ConfigState` |  |
+| [workflows.diagnosis](../../klipperai_agent/workflows/diagnosis.py) | 116 | `collect_context`, `run_rules`, `call_llm`, `compose_response` | [test_workflows](../../tests/test_workflows.py), [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [workflows.engine](../../klipperai_agent/workflows/engine.py) | 65 | `SimpleWorkflow`, `ConfigWorkflow`, `build_diagnosis_graph`, `build_config_graph` | [test_workflows_extra](../../tests/test_workflows_extra.py) |
+| [workflows.text](../../klipperai_agent/workflows/text.py) | 27 |  | [test_workflows_extra](../../tests/test_workflows_extra.py) |

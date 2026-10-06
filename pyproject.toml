@@ -23,17 +23,18 @@ dev = [
   "mypy>=1.15,<2.0",
   "pytest>=8.3,<9.0",
   "pytest-asyncio>=0.26,<1.0",
+  "pytest-cov>=7.0,<8.0",
   "ruff>=0.11,<1.0",
 ]
 
 [project.scripts]
 klipperai-agent = "klipperai_agent.__main__:main"
-klipperai-detect-profile = "klipperai_agent.detect_profile:main"
-klippyai-agent = "klippyai_agent.__main__:main"
-klippyai-detect-profile = "klippyai_agent.detect_profile:main"
+klipperai-detect-profile = "klipperai_agent.cli.detect_profile:main"
+klippyai-agent = "klipperai_agent.cli.legacy:agent_main"
+klippyai-detect-profile = "klipperai_agent.cli.legacy:detect_main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/klipperai_agent", "src/klippyai_agent"]
+packages = ["klipperai_agent"]
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -43,9 +44,32 @@ include = [
   "/deployment",
   "/docs",
   "/pyproject.toml",
-  "/src",
+  "/klipperai_agent",
+  "/tools",
   "/tests",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = [
+  "--cov=klipperai_agent",
+  "--cov-report=term-missing",
+  "--cov-fail-under=100",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.coverage.run]
+source = ["klipperai_agent"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+exclude_also = [
+  "if __name__ == .__main__.:",
+]

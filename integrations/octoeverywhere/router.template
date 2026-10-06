@@ -1,0 +1,28 @@
+        # KlipperAI local route patch init start
+        self.KlipperAiRootPath = "@@klipperai_prefix@@"
+        self.KlipperAiHostAndPortStr = "127.0.0.1:@@klipperai_port@@"
+        # KlipperAI local route patch init end
+
+
+@@BLOCK@@
+    # KlipperAI local route patch helper start
+    def _MapKlipperAiPathIfNeeded(self, relativeUrl:str, protocol:str) -> Optional[str]:
+        if not relativeUrl:
+            return None
+        relativeUrlLower = relativeUrl.split("?", 1)[0].lower()
+        klipperAiRootPathLower = self.KlipperAiRootPath.lower()
+        if relativeUrlLower == klipperAiRootPathLower or relativeUrlLower.startswith(klipperAiRootPathLower + "/"):
+            suffix = relativeUrl[len(self.KlipperAiRootPath):]
+            if not suffix or suffix.startswith("?"):
+                suffix = "/" + suffix
+            return protocol + self.KlipperAiHostAndPortStr + suffix
+        return None
+    # KlipperAI local route patch helper end
+
+
+@@BLOCK@@
+            # KlipperAI local route patch map start
+            klipperAiUrl = self._MapKlipperAiPathIfNeeded(relativeUrl, protocol)
+            if klipperAiUrl is not None:
+                return klipperAiUrl
+            # KlipperAI local route patch map end

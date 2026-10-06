@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from klipperai_agent.llm import ConfigPromptPayload, OpenAIConfigAssistantProvider, StubConfigAssistantProvider
-from klipperai_agent.printerconfig import ConfigRequestTarget, ConfigSnapshot
-from klipperai_agent.printerprofile import PrinterProfile
+from klipperai_agent.config.models import ConfigRequestTarget, ConfigSnapshot
+from klipperai_agent.config.requests import ConfigPromptPayload
+from klipperai_agent.profile.models import PrinterProfile
+from klipperai_agent.providers.config_stub import StubConfigAssistantProvider
+from klipperai_agent.providers.openai import OpenAIConfigAssistantProvider
 
 
 @pytest.mark.asyncio
