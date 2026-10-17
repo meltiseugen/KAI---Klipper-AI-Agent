@@ -60,6 +60,11 @@ textarea {
   outline-offset: 2px;
 }
 
+.mode-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mode-controls select { color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 6px; padding: 6px 12px; }
+.mode-description { flex-basis: 100%; margin: 0 0 10px; color: var(--muted); font-size: 0.85rem; }
+.context-receipt li { margin: 8px 0; overflow-wrap: anywhere; }
+
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
@@ -276,6 +281,7 @@ textarea {
 }
 
 .workspace-main {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
@@ -285,6 +291,37 @@ textarea {
   min-height: 0;
   padding: 18px;
   overflow: hidden;
+}
+
+[hidden] { display: none !important; }
+.knowledge-panel {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow-y: auto;
+  padding: 24px;
+  background: #121a23;
+  overflow-wrap: anywhere;
+}
+.knowledge-panel > p { max-width: 1000px; line-height: 1.6; }
+.knowledge-panel h2 { margin: 0 auto 0 0; }
+.providers-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 20px 0; }
+.providers-form fieldset { min-width: 0; border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+.providers-form .field { margin: 8px 0; }
+.providers-form input, .providers-form select, #providers-key { width: 100%; min-width: 0; padding: 10px; color: inherit; background: var(--surface-soft); border: 1px solid var(--border); border-radius: 8px; }
+.knowledge-panel .actions { flex-wrap: wrap; }
+.knowledge-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 20px 0; }
+.knowledge-form fieldset { min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+.knowledge-form .field { margin: 8px 0; }
+.knowledge-form input, .knowledge-form select { width: 100%; padding: 9px; background: #182330; color: var(--text); border: 1px solid var(--border); border-radius: 5px; }
+.knowledge-form input[type="checkbox"] { width: auto; align-self: flex-start; }
+#knowledge-records a { margin-right: 12px; }
+#knowledge-records button { margin: 6px 0; }
+#knowledge-toggle { flex-shrink: 0; }
+@media (max-width: 700px) {
+  .knowledge-panel { padding: 16px; }
+  .knowledge-form { grid-template-columns: minmax(0, 1fr); }
+  .topbar { flex-wrap: wrap; }
 }
 
 .status-panel {

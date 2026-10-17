@@ -69,11 +69,15 @@ async def test_chat_exposes_actions_and_capabilities_without_router_preflight(ag
     agent_service.workflow_context.intent_router.classify.assert_not_called()
 
 
+@pytest.mark.parametrize("prefix", ["", "/klipperai", "/assistant/printer"])
 def test_stream_endpoint_session_validation_events_final_and_assets(
-    monkeypatch, tmp_path, agent_service
+    monkeypatch, tmp_path, agent_service, prefix
 ):
     settings = Settings(
-        data_dir=tmp_path / "data", printer_data_root=tmp_path, checkpoint_db=tmp_path / "db"
+        data_dir=tmp_path / "data",
+        printer_data_root=tmp_path,
+        checkpoint_db=tmp_path / "db",
+        root_path=prefix,
     )
     container = SimpleNamespace(
         sessions=agent_service.sessions,
@@ -99,11 +103,52 @@ def test_stream_endpoint_session_validation_events_final_and_assets(
             client.post("/api/chat/stream", json={"session_id": "bad", "message": "hi"}).status_code
             == 403
         )
-        assert "class ChatStreamReader" in client.get("/").text
-        assert client.get("/assets/agent.js").status_code == 200
+        for route in ("/", "/direct?rescue=1", "/embed"):
+            page = client.get(prefix + route)
+            assert page.status_code == 200
+            assert page.headers["cache-control"] == "no-store"
+            assert f'data-api-base="{prefix}/api"' in page.text
+            for symbol in (
+                "ChatStreamReader",
+                "ConversationStore",
+                "ChatTransport",
+                "MessageView",
+                "ShellView",
+                "ChatApplication",
+            ):
+                assert f"class {symbol}" in page.text
+            assert "<script src=" not in page.text
+        assert (
+            client.post(
+                prefix + "/api/chat/stream",
+                json={"session_id": session, "message": "Which firmware?"},
+            ).status_code
+            == 200
+        )
+        assert client.get(prefix + "/assets/agent.js").status_code == 200
         assert client.post(
             "/api/chat", json={"session_id": session, "message": "Which firmware?"}
         ).json()["agent_events"]
+        for endpoint in ("/api/chat", "/api/chat/stream"):
+            assert (
+                client.post(
+                    endpoint, json={"session_id": session, "message": "hello", "mode": "unknown"}
+                ).status_code
+                == 422
+            )
+        debug = client.post(
+            "/api/chat", json={"session_id": session, "message": "Inspect printer", "mode": "debug"}
+        ).json()
+        assert debug["mode"] == "debug" and debug["context_included"]
+        agent_service.agent_workflow = None
+        for endpoint in ("/api/chat", "/api/chat/stream"):
+            unavailable = client.post(
+                endpoint, json={"session_id": session, "message": "hello", "mode": "debug"}
+            )
+            assert (
+                unavailable.status_code == 400
+                and "Debug mode requires" in unavailable.json()["detail"]
+            )
     container.aclose.assert_awaited_once()
 
 

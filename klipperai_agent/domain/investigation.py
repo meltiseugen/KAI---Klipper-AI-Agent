@@ -9,6 +9,7 @@ from uuid import uuid4
 from pydantic import Field, validator
 
 from klipperai_agent.domain.base import BaseModel
+from klipperai_agent.domain.context import AgentMode, ContextItem
 from klipperai_agent.domain.evidence import AgentEvent, ArtifactInput, IssueFinding, SourceCitation
 from klipperai_agent.domain.messages import ChatHistoryMessage
 from klipperai_agent.domain.proposals import ConfigProposal, PatchProposal
@@ -39,6 +40,7 @@ class Evidence(BaseModel):
 
 class InvestigationRequest(BaseModel):
     user_message: str
+    mode: AgentMode = "chat"
     conversation_context: str = ""
     artifacts: list[ArtifactInput] = Field(default_factory=list)
     memory: list[Evidence] = Field(default_factory=list)
@@ -51,6 +53,8 @@ class MemorySource(BaseModel):
 
 
 class InvestigationResult(BaseModel):
+    mode: AgentMode = "chat"
+    context_included: list[ContextItem] = Field(default_factory=list)
     response_text: str = Field(default="No response generated.", min_length=1)
     next_actions: list[str] = Field(default_factory=list)
     findings: list[IssueFinding] = Field(default_factory=list)

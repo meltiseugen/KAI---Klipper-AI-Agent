@@ -40,12 +40,23 @@ data_dir: /var/lib/klipperai  # Local runtime data directory. Examples: /var/lib
 checkpoint_db: /var/lib/klipperai/checkpoints.sqlite  # Legacy reserved path; investigation storage uses data_dir/investigations.sqlite3. Examples: /var/lib/klipperai/checkpoints.sqlite, /srv/klipperai/checkpoints.sqlite
 enable_write_actions: false  # Compatibility setting; runtime always keeps printer writes disabled.
 
+[security]
+security_allowed_hosts: *  # Optional printer/proxy Host allowlist; see docs/security.md.
+security_allowed_origins:  # Usually empty; trusted proxy origins when required.
+
+[moonraker]
+moonraker_agent_enabled: true  # Local Unix socket registration and printer events.
+moonraker_socket_path:  # Empty uses <printer_data_root>/comms/moonraker.sock.
+
 [chat]
 conversation_history_pairs: 10  # Previous user/assistant pairs sent with each request. Use 0 to disable. Examples: 0, 5, 10
 memory_cross_chat: true  # Reuse dated evidence from other chats about this printer.
 memory_retention_days: 90  # Retain application-owned investigation records for this many days.
 
 [llm]
+# These are defaults before the first Provider settings UI save. Saved provider
+# policy/credentials take precedence; see docs/providers.md. Never put keys here.
+# provider_storage_dir defaults to ~/.config/klipperai for the service user.
 llm_provider: stub  # Chat backend provider. Examples: stub, openai
 openai_model: gpt-5.4-mini  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
 
@@ -63,8 +74,8 @@ agent_max_output_tokens: 6000
 
 [logs]
 collect_host_logs: true  # Whether to collect host logs. Examples: true, false
-logs_dir_path: /home/pi/printer_data/logs  # Directory that contains Klipper, Moonraker, and KlipperAI logs. Examples: /home/pi/printer_data/logs, /srv/printer_data/logs
-agent_log_file_name: klipperai.log  # KlipperAI runtime log filename. Examples: klipperai.log, ai-agent.log
+logs_dir_path: /home/pi/printer_data/logs  # Directory that contains printer-host logs. Examples: /home/pi/printer_data/logs, /srv/printer_data/logs
+agent_log_file_name: klipperai.log  # Private runtime log filename under data_dir/logs. Examples: klipperai.log, ai-agent.log
 agent_log_level: INFO  # Runtime log verbosity. Examples: INFO, DEBUG, WARNING
 log_tail_lines_default: 100  # Default tail length when no override exists. Examples: 100, 200
 excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: klipperai.log, crowsnest, *_debug.log
@@ -72,7 +83,7 @@ excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: kli
 [log_tail_lines]
 klippy: 100  # Tail lines for klippy.log
 moonraker: 200  # Tail lines for moonraker.log
-klipperai: 100  # Tail lines for klipperai.log
+klipperai: 100  # Tail lines for a legacy shared klipperai.log, if present.
 
 [system]
 collect_systemd_diagnostics: true  # Whether to collect systemctl and journal diagnostics. Examples: true, false

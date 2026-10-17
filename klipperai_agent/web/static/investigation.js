@@ -1,38 +1,41 @@
-/* Persistent conversation transport and manual proposal review presentation. */
-class InvestigationClient {
-  constructor(apiBase, sessionProvider) {
-    this.base = `${apiBase}/investigations`;
-    this.sessionProvider = sessionProvider;
-  }
+/* Saved turn conversion and manual proposal review presentation. */
+function investigationMessages(record) {
+  return record.turns.flatMap(turn => [
+    ...(turn.imported_history || []).map(item => ({ role: item.role, text: item.text })),
+    { role: "user", text: turn.question },
+    investigationAnswer(turn.result),
+  ]);
+}
 
-  async request(path = "", method = "GET") {
-    let session = await this.sessionProvider();
-    const send = () => fetch(`${this.base}${path}?session_id=${encodeURIComponent(session)}`, { method });
-    let response = await send();
-    if (response.status === 403) {
-      session = await this.sessionProvider(true);
-      response = await send();
+function investigationAnswer(result) {
+  return {
+    role: "assistant", text: result.response_text,
+    configProposals: result.config_proposals || [],
+    sourceCitations: result.source_citations || [],
+    agentEvents: result.agent_events || [], nextActions: result.next_actions || [],
+    memorySources: result.memory_sources || [],
+    mode: result.mode || "chat", contextIncluded: result.context_included || [],
+  };
+}
+
+class ContextReceipt {
+  static append(article, entries, mode) {
+    if (!Array.isArray(entries) || !entries.length) return;
+    const details = document.createElement("details");
+    details.className = "source-citation context-receipt";
+    const summary = document.createElement("summary");
+    summary.textContent = `Context included · ${mode === "debug" ? "Debug" : "Chat"}`;
+    details.appendChild(summary);
+    const list = document.createElement("ul");
+    for (const entry of entries) {
+      if (!entry || typeof entry !== "object") continue;
+      const row = document.createElement("li");
+      const delivery = entry.sent_to_model ? "included in model request" : "not sent to model";
+      row.textContent = `${entry.source}: ${entry.status} (${entry.phase === "tool" ? "follow-up tool" : "starting context"}; ${delivery}). ${entry.detail || ""} Collected ${entry.observed_at || "unknown"}.`;
+      list.appendChild(row);
     }
-    if (!response.ok) throw new Error(`Investigation request failed (${response.status}). Please reload and retry.`);
-    return response.status === 204 ? null : response.json();
-  }
-
-  static messages(record) {
-    return record.turns.flatMap(turn => [
-      ...(turn.imported_history || []).map(item => ({ role: item.role, text: item.text })),
-      { role: "user", text: turn.question },
-      InvestigationClient.answer(turn.result),
-    ]);
-  }
-
-  static answer(result) {
-    return {
-      role: "assistant", text: result.response_text,
-      configProposals: result.config_proposals || [],
-      sourceCitations: result.source_citations || [],
-      agentEvents: result.agent_events || [], nextActions: result.next_actions || [],
-      memorySources: result.memory_sources || [],
-    };
+    details.appendChild(list);
+    article.appendChild(details);
   }
 }
 

@@ -6,8 +6,10 @@ from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
 from klipperai_agent.agent.ports import PrinterReader, ToolServices
-from klipperai_agent.config.models import ConfigSnapshot
+from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
+from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.domain.base import BaseModel
+from klipperai_agent.domain.context import ContextItem
 from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding, SourceCitation
 from klipperai_agent.domain.investigation import Evidence
 
@@ -32,6 +34,33 @@ class ToolContext:
     moonraker_reachable: bool | None = None
     evidence: list[Evidence] = field(default_factory=list)
     snapshots: dict[bool, ConfigSnapshot] = field(default_factory=dict)
+    context_included: list[ContextItem] = field(default_factory=list)
+    diagnostic_snapshots: dict[tuple[bool, bool], DiagnosticsSnapshot] = field(default_factory=dict)
+    diagnostic_artifacts: dict[str, ArtifactInput] = field(default_factory=dict)
+    expanded_documents: dict[tuple[bool, str], ConfigDocument] = field(default_factory=dict)
+
+    async def document(self, path: str, include_unincluded: bool = False) -> ConfigDocument | None:
+        snapshot = await self.config(include_unincluded)
+        document = next((doc for doc in snapshot.documents if doc.path == path), None)
+        if document is None or not document.truncated:
+            return document
+        key = (include_unincluded, path)
+        if key not in self.expanded_documents:
+            self.expanded_documents[key] = await asyncio.to_thread(
+                self.services.config_collector.read_collected_document, document
+            )
+        return self.expanded_documents[key]
+
+    async def diagnostics(self, logs: bool, system: bool) -> DiagnosticsSnapshot:
+        key = (logs, system)
+        if key not in self.diagnostic_snapshots:
+            snapshot = await self.services.collector.collect(
+                self.artifacts, include_host_logs=logs, include_host_system=system
+            )
+            if not snapshot.artifacts:
+                return snapshot  # Missing evidence can be retried during this request.
+            self.diagnostic_snapshots[key] = snapshot
+        return self.diagnostic_snapshots[key]
 
     async def config(self, include_unincluded: bool = False) -> ConfigSnapshot:
         if include_unincluded and False not in self.snapshots:

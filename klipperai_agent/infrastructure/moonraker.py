@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlencode
 
 import httpx
+
+from klipperai_agent.domain.moonraker import gcode_filename, public_scalar
 
 
 class MoonrakerError(RuntimeError):
@@ -55,6 +58,12 @@ class MoonrakerClient:
             return payload
         raise MoonrakerError("Moonraker returned an unexpected /printer/objects/query payload.")
 
+    async def get_process_stats(self) -> dict[str, Any]:
+        payload = await self._request("GET", "/machine/proc_stats")
+        if isinstance(payload, dict):
+            return payload
+        raise MoonrakerError("Moonraker returned an unexpected /machine/proc_stats payload.")
+
     async def get_system_info(self) -> dict[str, Any]:
         payload = await self._request("GET", "/machine/system_info")
         if isinstance(payload, dict):
@@ -83,6 +92,33 @@ class MoonrakerClient:
         if isinstance(payload, dict) and isinstance(payload.get("usb_devices"), list):
             return [item for item in payload["usb_devices"] if isinstance(item, dict)]
         raise MoonrakerError("Moonraker returned an unexpected /machine/peripherals/usb payload.")
+
+    async def get_file_metadata(self, filename: str) -> dict[str, Any]:
+        filename = gcode_filename(filename)
+        payload = await self._request(
+            "GET", "/server/files/metadata?" + urlencode({"filename": filename})
+        )
+        if not isinstance(payload, dict) or "error" in payload:
+            raise MoonrakerError("Moonraker G-code metadata is unavailable.")
+        fields = (
+            "size",
+            "modified",
+            "slicer",
+            "slicer_version",
+            "layer_height",
+            "first_layer_height",
+            "object_height",
+            "layer_count",
+            "estimated_time",
+            "filament_total",
+            "filament_weight_total",
+            "filament_type",
+            "filament_name",
+            "nozzle_diameter",
+            "first_layer_extr_temp",
+            "first_layer_bed_temp",
+        )
+        return {name: public_scalar(payload[name]) for name in fields if name in payload}
 
     async def _request(
         self,

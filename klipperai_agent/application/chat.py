@@ -14,6 +14,7 @@ from klipperai_agent.application.intent import (
     route_for_intent,
 )
 from klipperai_agent.application.investigations import InvestigationMemory
+from klipperai_agent.application.knowledge import PrinterKnowledge
 from klipperai_agent.application.proposal_review import ProposalReviewService
 from klipperai_agent.application.request_context import (
     _build_chat_artifacts,
@@ -29,7 +30,9 @@ from klipperai_agent.contracts.api import (
     PrinterProfileSummary,
     UiSessionResponse,
 )
+from klipperai_agent.domain.context import ModeUnavailableError
 from klipperai_agent.domain.investigation import Evidence, InvestigationResult
+from klipperai_agent.domain.redaction import redact_data, redact_text
 from klipperai_agent.workflows.context import Workflow, WorkflowContext
 
 logger = logging.getLogger("klipperai_agent.chat")
@@ -48,12 +51,12 @@ class ChatService:
     agent_workflow: AgentWorkflow | None = None
     investigations: InvestigationMemory | None = None
     proposal_review: ProposalReviewService | None = None
+    knowledge: PrinterKnowledge | None = None
 
     async def create_ui_session(self) -> UiSessionResponse:
         session = self.sessions.create()
         logger.info(
-            "Created UI session session_id=%s expires_at=%s",
-            session.session_id,
+            "Created UI session expires_at=%s",
             session.expires_at.isoformat(),
         )
         return UiSessionResponse(
@@ -67,9 +70,7 @@ class ChatService:
     async def bootstrap(self, session_id: str) -> BootstrapResponse:
         session = self.sessions.get(session_id)
         if not session:
-            logger.warning(
-                "Rejected bootstrap for invalid or expired session session_id=%s", session_id
-            )
+            logger.warning("Rejected bootstrap for invalid or expired session")
             raise ValueError("Invalid or expired session.")
 
         moonraker_reachable = await self.workflow_context.collector.ping()
@@ -77,8 +78,7 @@ class ChatService:
             await self.workflow_context.collector.ping_printer() if moonraker_reachable else False
         )
         logger.info(
-            "Bootstrap session_id=%s provider=%s provider_model=%s moonraker_reachable=%s klipper_reachable=%s profile=%s",
-            session_id,
+            "Bootstrap provider=%s provider_model=%s moonraker_reachable=%s klipper_reachable=%s profile=%s",
             self.provider_name,
             self.provider_model or "unavailable",
             moonraker_reachable,
@@ -87,6 +87,7 @@ class ChatService:
         )
         return BootstrapResponse(
             session_id=session_id,
+            agent_modes=["chat", "debug"] if self.agent_workflow else [],
             provider=self.provider_name,
             provider_model=self.provider_model,
             conversation_history_pairs=self.conversation_history_pairs,
@@ -102,6 +103,7 @@ class ChatService:
                 "host-log-collection",
                 "systemd-diagnostics",
                 "printer-profile",
+                *(["printer-knowledge"] if self.knowledge else []),
                 "addon-detection",
                 "typed-findings",
                 "local-workflows",
@@ -119,7 +121,7 @@ class ChatService:
                 ),
             ],
             printer_profile=PrinterProfileSummary.model_validate(
-                self.workflow_context.profile.to_summary()
+                redact_data(self.workflow_context.profile.to_summary())
             ),
         )
 
@@ -128,10 +130,31 @@ class ChatService:
     ) -> ChatResponse:
         session = self.sessions.get(payload.session_id)
         if not session:
-            logger.warning(
-                "Rejected chat for invalid or expired session session_id=%s", payload.session_id
-            )
+            logger.warning("Rejected chat for invalid or expired session")
             raise ValueError("Invalid or expired session.")
+
+        payload = payload.copy(
+            update={
+                "message": redact_text(payload.message),
+                "artifacts": [
+                    item.copy(
+                        update={
+                            "label": redact_text(item.label),
+                            "content": redact_text(item.content),
+                        }
+                    )
+                    for item in payload.artifacts
+                ],
+                "history": [
+                    item.copy(update={"text": redact_text(item.text)}) for item in payload.history
+                ],
+            }
+        )
+
+        if payload.mode == "debug" and not self.agent_workflow:
+            raise ModeUnavailableError(
+                "Debug mode requires the tool-using agent. Enable it with a configured model provider."
+            )
 
         investigation = (
             await self.investigations.open(payload.thread_id, payload.message)
@@ -164,6 +187,7 @@ class ChatService:
         route: str = route_for_intent(chat_intent)
         request_artifacts = _build_chat_artifacts(payload.message, route, payload.artifacts)
         state: dict[str, Any] = {
+            "mode": payload.mode,
             "session_id": payload.session_id,
             "thread_id": thread_id,
             "user_message": payload.message,
@@ -184,8 +208,7 @@ class ChatService:
             route = "agent"
         config = {"configurable": {"thread_id": f"{route}:{thread_id}"}}
         logger.info(
-            "Chat request session_id=%s thread_id=%s route=%s message_chars=%s artifacts=%s",
-            payload.session_id,
+            "Chat request thread_id=%s route=%s message_chars=%s artifacts=%s",
             thread_id,
             route,
             len(payload.message),
@@ -199,8 +222,7 @@ class ChatService:
             )
         except Exception:
             logger.exception(
-                "Chat workflow failed session_id=%s thread_id=%s route=%s",
-                payload.session_id,
+                "Chat workflow failed thread_id=%s route=%s",
                 thread_id,
                 route,
             )
@@ -210,6 +232,11 @@ class ChatService:
         outcome.memory_sources = [
             MemorySource(evidence_id=item.id, source=item.source, observed_at=item.observed_at)
             for item in memory
+            if not self.agent_workflow
+            or any(
+                entry.source == f"memory:{item.id}" and entry.sent_to_model
+                for entry in outcome.context_included
+            )
         ]
         outcome.evidence.extend(
             Evidence(source=f"user:{item.label}", content=item.content[:16000])
@@ -228,13 +255,13 @@ class ChatService:
             )
         if self.proposal_review:
             await self.proposal_review.review(outcome)
+        outcome = InvestigationResult.parse_obj(redact_data(outcome.model_dump()))
         if self.investigations and investigation:
             await self.investigations.remember(
                 investigation, payload.message, outcome, payload.history
             )
         logger.info(
-            "Chat response session_id=%s thread_id=%s route=%s findings=%s config_proposals=%s patch_proposals=%s source_citations=%s moonraker_reachable=%s",
-            payload.session_id,
+            "Chat response thread_id=%s route=%s findings=%s config_proposals=%s patch_proposals=%s source_citations=%s moonraker_reachable=%s",
             thread_id,
             route,
             len(outcome.findings),
@@ -245,6 +272,8 @@ class ChatService:
         )
         return ChatResponse(
             session_id=payload.session_id,
+            mode=outcome.mode,
+            context_included=outcome.context_included,
             thread_id=thread_id,
             response=outcome.response_text,
             findings=outcome.findings,

@@ -3,6 +3,7 @@ from __future__ import annotations
 from klipperai_agent.application.intent import ChatIntentOutput
 from klipperai_agent.config.requests import ConfigPromptPayload
 from klipperai_agent.diagnostics.requests import DiagnosisPromptPayload
+from klipperai_agent.domain.provider_settings import ModelProfile
 from klipperai_agent.providers.json_client import OpenAIJsonClient
 from klipperai_agent.providers.models import ConfigAssistantOutput, DiagnosisLLMOutput
 from klipperai_agent.providers.normalization import (
@@ -10,13 +11,21 @@ from klipperai_agent.providers.normalization import (
     _normalize_config_assistant_data,
     _with_required_summary,
 )
+from klipperai_agent.providers.usage import UsageGuard
 
 
 class OpenAIDiagnosisProvider:
     name = "openai"
 
-    def __init__(self, model: str, api_key: str | None) -> None:
-        self._client = OpenAIJsonClient(model=model, api_key=api_key)
+    def __init__(
+        self,
+        model: str,
+        api_key: str | None,
+        *,
+        guard: UsageGuard | None = None,
+        profile: ModelProfile | None = None,
+    ) -> None:
+        self._client = OpenAIJsonClient(model=model, api_key=api_key, guard=guard, profile=profile)
 
     async def analyze(self, payload: DiagnosisPromptPayload) -> DiagnosisLLMOutput:
         findings_block = "\n".join(
@@ -58,8 +67,15 @@ class OpenAIDiagnosisProvider:
 class OpenAIIntentRouterProvider:
     name = "openai"
 
-    def __init__(self, model: str, api_key: str | None) -> None:
-        self._client = OpenAIJsonClient(model=model, api_key=api_key)
+    def __init__(
+        self,
+        model: str,
+        api_key: str | None,
+        *,
+        guard: UsageGuard | None = None,
+        profile: ModelProfile | None = None,
+    ) -> None:
+        self._client = OpenAIJsonClient(model=model, api_key=api_key, guard=guard, profile=profile)
 
     async def classify(self, message: str) -> ChatIntentOutput:
         data = await self._client.complete_json(
@@ -84,8 +100,15 @@ class OpenAIIntentRouterProvider:
 class OpenAIConfigAssistantProvider:
     name = "openai"
 
-    def __init__(self, model: str, api_key: str | None) -> None:
-        self._client = OpenAIJsonClient(model=model, api_key=api_key)
+    def __init__(
+        self,
+        model: str,
+        api_key: str | None,
+        *,
+        guard: UsageGuard | None = None,
+        profile: ModelProfile | None = None,
+    ) -> None:
+        self._client = OpenAIJsonClient(model=model, api_key=api_key, guard=guard, profile=profile)
 
     async def propose(self, payload: ConfigPromptPayload) -> ConfigAssistantOutput:
         data = await self._client.complete_json(

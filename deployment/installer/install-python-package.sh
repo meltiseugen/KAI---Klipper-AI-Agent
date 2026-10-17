@@ -8,7 +8,7 @@ install_python_package() {
   log "Using Python interpreter: $PYTHON_BIN ($(python_version_string "$PYTHON_BIN"))"
 
   log "Creating service data directory."
-  run_root install -d -m 755 "$KLIPPERAI_DATA_DIR"
+  run_root install -d -m 700 "$KLIPPERAI_DATA_DIR"
   run_root chown "$INSTALL_USER:$INSTALL_GROUP" "$KLIPPERAI_DATA_DIR"
 
   log "Creating Python virtual environment."

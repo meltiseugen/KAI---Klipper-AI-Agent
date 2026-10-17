@@ -7,6 +7,17 @@ from pydantic import StrictBool
 from klipperai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
 
 
+def diagnostic_preview(content: str, limit: int = 1000) -> str:
+    if len(content) <= limit:
+        return content
+    # Preserve selection metadata and the newest log evidence, not just the opening lines.
+    return (
+        content[:200]
+        + "\n...[middle omitted; read artifact for more]...\n"
+        + content[-(limit - 250) :]
+    )
+
+
 class PrinterProfileTool(Tool[ToolArguments]):
     name = "get_printer_profile"
     label = "Read saved printer profile"
@@ -47,26 +58,49 @@ class DiagnosticsTool(Tool[DiagnosticsArguments]):
     async def execute(
         self, arguments: DiagnosticsArguments, context: ToolContext
     ) -> dict[str, Any]:
-        snapshot = await context.services.collector.collect(
-            context.artifacts,
-            include_host_logs=arguments.include_logs,
-            include_host_system=arguments.include_system,
-        )
-        config = await context.config()
+        snapshot = await context.diagnostics(arguments.include_logs, arguments.include_system)
+        config = context.snapshots.get(False)
         context.moonraker_reachable = snapshot.moonraker_reachable
         context.findings = context.services.rules.analyze(
             snapshot.artifacts, config_snapshot=config
         )
-        return {
-            "moonraker_reachable": snapshot.moonraker_reachable,
-            "notes": snapshot.notes,
-            "findings": [finding.model_dump() for finding in context.findings],
-            "artifacts": [
+        if not snapshot.artifacts:
+            return {"error": "No diagnostic artifacts were available.", "notes": snapshot.notes}
+        artifacts = []
+        for artifact in snapshot.artifacts[:12]:
+            identifier = f"diagnostic-{len(context.diagnostic_artifacts) + 1}"
+            context.diagnostic_artifacts[identifier] = artifact
+            artifacts.append(
                 {
+                    "id": identifier,
                     "label": artifact.label,
                     "kind": artifact.kind,
-                    "content": artifact.prompt_excerpt(5000),
+                    "content": diagnostic_preview(artifact.content),
+                    "total_lines": len(artifact.content.splitlines()),
                 }
-                for artifact in snapshot.artifacts
-            ],
+            )
+        return {
+            "truncated": len(snapshot.artifacts) > 12
+            or any(len(artifact.content) > 1000 for artifact in snapshot.artifacts),
+            "moonraker_reachable": snapshot.moonraker_reachable,
+            "notes": snapshot.notes[:20],
+            "findings": [finding.model_dump() for finding in context.findings],
+            "artifacts": artifacts,
+            "omitted_artifacts": max(0, len(snapshot.artifacts) - len(artifacts)),
+            "context_notes": "Bounded current log tails/service observations (not a guaranteed time window): "
+            + "; ".join(
+                artifact.label
+                + " — "
+                + next(
+                    (
+                        line
+                        for line in artifact.content.splitlines()
+                        if line.startswith("Selection:")
+                    ),
+                    "collected excerpt",
+                )
+                for artifact in snapshot.artifacts[:12]
+            )
+            + ". Use read_diagnostic_artifact to expand an excerpt. "
+            + "; ".join(snapshot.notes[:10]),
         }

@@ -9,9 +9,13 @@ from typing import Any
 
 from pydantic import ValidationError
 
+from klipperai_agent.agent.deadline import within
 from klipperai_agent.agent.models import AgentLimits, ToolCall
 from klipperai_agent.agent.tools.base import Tool, ToolContext
-from klipperai_agent.domain.investigation import Evidence
+from klipperai_agent.config.models import ConfigReadError
+from klipperai_agent.domain.context import ContextItem
+from klipperai_agent.domain.investigation import Evidence, utc_now
+from klipperai_agent.domain.redaction import redact_data
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +35,30 @@ class ToolRegistry:
         tool = self._tools.get(name)
         return tool.label if tool else "Unknown tool"
 
-    async def execute(self, call: ToolCall, context: ToolContext) -> dict[str, Any]:
+    async def execute(
+        self, call: ToolCall, context: ToolContext, *, initial: bool = False
+    ) -> dict[str, Any]:
+        result = await self._execute(call, context)
+        detail = str(result.get("error") or result.get("context_notes") or self.label(call.name))
+        if "error" in result and result.get("notes"):
+            detail += " " + "; ".join(str(note) for note in result["notes"][:5])
+        context.context_included.append(
+            ContextItem(
+                source=call.name,
+                status="unavailable"
+                if "error" in result
+                else "partial"
+                if result.get("truncated")
+                else "included",
+                detail=detail[:2000],
+                characters=len(json.dumps(result, ensure_ascii=False)),
+                observed_at=utc_now(),
+                phase="initial" if initial else "tool",
+            )
+        )
+        return result
+
+    async def _execute(self, call: ToolCall, context: ToolContext) -> dict[str, Any]:
         tool = self._tools.get(call.name)
         if tool is None:
             return {"error": "Unknown or disabled tool."}
@@ -48,15 +75,18 @@ class ToolRegistry:
         if key in self._cache:
             return self._cache[key]
         try:
-            result = await asyncio.wait_for(
+            result = await within(
                 tool.execute(arguments, context),
-                timeout=self._limits.tool_timeout_seconds,
+                self._limits.tool_timeout_seconds,
             )
         except asyncio.TimeoutError:
             return {"error": "Tool timed out. Continue with other evidence or ask a follow-up."}
+        except ConfigReadError as exc:
+            return {"error": str(exc)}
         except Exception:
             logger.warning("Tool execution failed: %s", tool.name, exc_info=True)
             return {"error": "Tool unavailable. Do not assume that evidence was collected."}
+        result = redact_data(result)
         serialized = json.dumps(result, ensure_ascii=False)
         if len(serialized) > self._limits.max_result_chars:
             result = {"truncated": True, "excerpt": serialized[: self._limits.max_result_chars]}

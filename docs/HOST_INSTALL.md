@@ -184,9 +184,9 @@ The installer will:
 - generate `/etc/klipperai/nginx-location.conf`
 - optionally patch the selected Mainsail nginx server block to include that snippet
 - optionally add a Mainsail nav link in `.theme/navi.json`
-- if `gcode_shell_command` is available, optionally create an `UPDATE_KLIPPERAI` macro plus helper script and sudoers entry
+- keep Klipper macros, shell-command extensions and printer configuration outside the installation flow
 - if OctoEverywhere is installed, optionally apply the local OE `/klipperai/` route patch automatically
-- write the KlipperAI runtime log to `printer_data/logs/klipperai.log`
+- write the KlipperAI runtime log to `<data_dir>/logs/klipperai.log`
 
 ## 5. Edit nginx
 
@@ -307,7 +307,7 @@ Editable runtime config:
 
 - `/home/<service-user>/printer_data/config/klipperai/klipperai.cfg`
 
-Optional Klipper update macro files:
+Legacy Klipper update macro files (only from earlier or separate manual installs):
 
 - `/home/<service-user>/printer_data/config/klipperai/klipperai-macros.cfg`
 - `/usr/local/bin/klipperai-self-update`
@@ -327,7 +327,7 @@ Generated nginx snippet:
 
 KlipperAI runtime log:
 
-- `/home/<service-user>/printer_data/logs/klipperai.log`
+- `/var/lib/klipperai/logs/klipperai.log`
 
 ## 9. Change The Model Later
 
@@ -380,65 +380,16 @@ default is `10`; set it to `0` to disable conversation context.
 
 If this host still has an older `[printer_geometry]` section in `klipperai.cfg`, remove that section before restarting `klipperai-agent`.
 
-## 11. Optional UPDATE_KLIPPERAI Macro
+## 11. Legacy Update Macro
 
-The installer offers this macro when it detects Klipper/Kalico
-`gcode_shell_command` support. If it finds a Klipper/Kalico checkout but the
-extension is missing, it can offer to install `gcode_shell_command.py` from the
-KIAUH extension asset first, then install the macro. This is opt-in because it
-allows Klipper macros to run host shell commands.
+The guided installer no longer offers `UPDATE_KLIPPERAI`, installs
+`gcode_shell_command`, or edits `printer.cfg`. Use the Moonraker update-manager
+integration to update the assistant. Existing macros are not removed by this
+refactor; the separate `integrations/klipper/install-update-macro.sh` helper is
+retained for legacy installations outside the supported guided flow.
 
-On rooted Creality images, that support may live outside the service user's
-home, so check it directly:
-
-```bash
-find /usr/data /root /opt /usr/local /usr/share -maxdepth 6 \
-  -type f -path '*/klippy/extras/gcode_shell_command.py' 2>/dev/null
-```
-
-On a normal CB1 image, the checkout is usually `/home/biqu/kalico` or
-`/home/biqu/klipper`, and the config directory is
-`/home/biqu/printer_data/config`.
-
-If the macro is installed, it writes:
-
-- `/usr/local/bin/klipperai-self-update`
-- `/usr/data/printer_data/config/klipperai/klipperai-macros.cfg`
-- an include in `/usr/data/printer_data/config/printer.cfg`
-- `/etc/sudoers.d/klipperai-self-update` only when Klipper does not run as root
-
-When Klipper runs as root, the macro calls `/usr/local/bin/klipperai-self-update`
-directly and does not require `sudo`.
-
-Manual install on a rooted Nebula Pad:
-
-```bash
-cd /root/KlipperAI
-sh integrations/klipper/install-update-macro.sh \
-  --install-dir /root/KlipperAI \
-  --install-user root \
-  --config-dir /usr/data/printer_data/config \
-  --root-config /usr/data/printer_data/config/printer.cfg \
-  --install-gcode-shell-command \
-  --restart-klipper
-```
-
-Manual install on a CB1:
-
-```bash
-cd /home/biqu/KlipperAI
-sh integrations/klipper/install-update-macro.sh \
-  --install-dir /home/biqu/KlipperAI \
-  --install-user biqu \
-  --config-dir /home/biqu/printer_data/config \
-  --root-config /home/biqu/printer_data/config/printer.cfg \
-  --klipper-checkout /home/biqu/kalico \
-  --restart-klipper
-```
-
-The generated updater stashes a dirty KlipperAI checkout before a fast-forward
-pull, restores the local changes afterward, refreshes the editable Python
-install, and restarts the configured agent service.
+For installer modules, access routes and offline verification commands, see
+[frontend and installation ownership](frontend-and-installation.md).
 
 ## 12. Runtime Behavior
 
@@ -446,7 +397,7 @@ KlipperAI currently:
 
 - reads current `.log` files under `printer_data/logs`
 - sends only the configured last lines from each collected log file
-- writes its own runtime log to `printer_data/logs/klipperai.log`
+- writes its own runtime log to `<data_dir>/logs/klipperai.log`
 - reads current config files
 - reads Moonraker state
 - reads `systemctl` and `journalctl` data for Klipper and Moonraker
@@ -465,7 +416,7 @@ If the service does not start:
 ```bash
 systemctl status klipperai-agent --no-pager
 journalctl -u klipperai-agent -n 200 --no-pager
-tail -n 200 /home/<service-user>/printer_data/logs/klipperai.log
+tail -n 200 /var/lib/klipperai/logs/klipperai.log
 ```
 
 If Moonraker integration does not show up:
@@ -518,3 +469,17 @@ Then reload nginx if needed and restart Moonraker:
 sudo nginx -t && sudo systemctl reload nginx
 sudo systemctl restart moonraker
 ```
+
+## Security and upgrades
+
+Read [Security and local deployment](security.md) before exposing the UI remotely.
+Sessions are not user authentication. Protect every `/klipperai/` route at the
+proxy and keep the daemon on loopback.
+
+The installer writes the provider environment file with mode `0600` and the
+application data directory with mode `0700`. Keep keys out of the Mainsail-editable
+`klipperai.cfg`; a key in that file now causes a startup validation error.
+Runtime logs now live in `<data_dir>/logs/` (normally `/var/lib/klipperai/logs/`),
+not the shared printer logs. Old shared logs and backups are not removed.
+Review permissions and retained copies when upgrading. Diagnostic access and
+existing collection limits remain unchanged.

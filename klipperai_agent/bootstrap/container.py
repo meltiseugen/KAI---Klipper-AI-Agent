@@ -2,29 +2,41 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
+from typing import Any
+from urllib.parse import urlsplit
 
 from klipperai_agent.agent.models import AgentLimits
 from klipperai_agent.agent.workflow import AgentWorkflow
 from klipperai_agent.application.chat import ChatService
 from klipperai_agent.application.investigations import InvestigationMemory
+from klipperai_agent.application.knowledge import PrinterKnowledge
+from klipperai_agent.application.moonraker import MoonrakerMethods
 from klipperai_agent.application.proposal_review import ProposalReviewService
+from klipperai_agent.application.providers import ProviderManagement
 from klipperai_agent.application.sessions import InMemorySessionStore
+from klipperai_agent.bootstrap.providers import effective_settings, provider_management
 from klipperai_agent.config.collector import ConfigCollector
 from klipperai_agent.diagnostics.collector import DiagnosticsCollector
 from klipperai_agent.diagnostics.rules import RuleEngine
+from klipperai_agent.domain.moonraker import MoonrakerObservation
+from klipperai_agent.infrastructure.documentation import PublicDocumentationFetcher
 from klipperai_agent.infrastructure.host.logs import HostLogCollector
+from klipperai_agent.infrastructure.host.shutdown import ShutdownCollector
 from klipperai_agent.infrastructure.host.system import (
     HostSystemCollector,
     SystemCommandRunner,
 )
 from klipperai_agent.infrastructure.investigations import SqliteInvestigationRepository
+from klipperai_agent.infrastructure.knowledge import SqliteKnowledgeRepository
 from klipperai_agent.infrastructure.moonraker import MoonrakerClient
+from klipperai_agent.infrastructure.moonraker_agent import MoonrakerAgent
 from klipperai_agent.profile.saved import build_profile_from_settings
 from klipperai_agent.providers.factory import (
     build_config_provider,
     build_diagnosis_provider,
     build_intent_router,
 )
+from klipperai_agent.providers.knowledge import OpenAIKnowledgeResearcher
 from klipperai_agent.providers.responses import OpenAIAgentModel, ResponsesClient
 from klipperai_agent.providers.web_search import OpenAIWebSearch
 from klipperai_agent.runtime.settings import Settings
@@ -39,8 +51,15 @@ class AppContainer:
     sessions: InMemorySessionStore
     chat_service: ChatService
     responses: ResponsesClient | None = None
+    knowledge: PrinterKnowledge | None = None
+    providers: ProviderManagement | None = None
+    moonraker_agent: MoonrakerAgent | None = None
 
     async def aclose(self) -> None:
+        if self.moonraker_agent is not None:
+            await self.moonraker_agent.aclose()
+        if self.knowledge is not None:
+            await self.knowledge.aclose()
         try:
             await self.moonraker.aclose()
         finally:
@@ -49,6 +68,9 @@ class AppContainer:
 
 
 def build_container(settings: Settings) -> AppContainer:
+    providers, guard = provider_management(settings)
+    original_settings = settings
+    settings = effective_settings(settings, providers)
     moonraker = MoonrakerClient(settings.moonraker_url)
     host_logs = None
     if settings.collect_host_logs:
@@ -76,9 +98,14 @@ def build_container(settings: Settings) -> AppContainer:
         host_system=host_system,
     )
     rules = RuleEngine()
-    diagnosis_provider = build_diagnosis_provider(settings)
-    config_provider = build_config_provider(settings)
-    intent_router = build_intent_router(settings)
+    provider_options: dict[str, Any] = (
+        {"guard": guard, "profile": providers.active_policy.legacy}
+        if settings.llm_provider == "openai"
+        else {}
+    )
+    diagnosis_provider = build_diagnosis_provider(settings, **provider_options)
+    config_provider = build_config_provider(settings, **provider_options)
+    intent_router = build_intent_router(settings, **provider_options)
     config_collector = ConfigCollector(
         settings.printer_data_root,
         root_config_name=settings.config_root_file,
@@ -116,6 +143,20 @@ def build_container(settings: Settings) -> AppContainer:
     investigations = InvestigationMemory(
         repository, printer_id, cross_chat=settings.memory_cross_chat
     )
+    knowledge = PrinterKnowledge(
+        SqliteKnowledgeRepository(
+            settings.data_dir,
+            printer_id,
+            (
+                settings.printer_data_root / "config",
+                settings.mainsail_config_dir,
+                settings.printer_data_root / "gcodes",
+                settings.host_logs_dir(),
+            ),
+        ),
+        PublicDocumentationFetcher(),
+        profile.to_summary(),
+    )
     responses = None
     agent = None
     if settings.llm_provider == "openai" and settings.agent_enabled:
@@ -123,6 +164,8 @@ def build_container(settings: Settings) -> AppContainer:
             settings.openai_model,
             settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
             max_output_tokens=settings.agent_max_output_tokens,
+            guard=guard,
+            policy=providers.active_policy,
         )
         limits = AgentLimits(
             max_steps=settings.agent_max_steps,
@@ -137,7 +180,23 @@ def build_container(settings: Settings) -> AppContainer:
             if settings.web_search_enabled
             else None
         )
-        agent = AgentWorkflow(OpenAIAgentModel(responses), moonraker, limits, search)
+        knowledge.researcher = OpenAIKnowledgeResearcher(responses, search) if search else None
+        agent = AgentWorkflow(
+            OpenAIAgentModel(responses),
+            moonraker,
+            limits,
+            search,
+            knowledge=knowledge,
+            file_metadata=moonraker,
+            shutdown_reader=ShutdownCollector(
+                moonraker,
+                settings.host_logs_dir(),
+                logs_enabled=settings.collect_host_logs,
+                journal_enabled=settings.collect_systemd_diagnostics,
+                excluded_logs=tuple(settings.excluded_logs),
+                runner=SystemCommandRunner(timeout_seconds=settings.system_command_timeout_seconds),
+            ),
+        )
     chat_service = ChatService(
         provider_name=diagnosis_provider.name,
         root_path=settings.root_path.rstrip("/"),
@@ -145,16 +204,36 @@ def build_container(settings: Settings) -> AppContainer:
         config_graph=config_graph,
         workflow_context=workflow_context,
         sessions=sessions,
-        provider_model=settings.openai_model if diagnosis_provider.name == "openai" else None,
+        provider_model=(
+            providers.active_policy.agent.model
+            if settings.agent_enabled
+            else providers.active_policy.legacy.model
+        )
+        if diagnosis_provider.name == "openai"
+        else None,
         conversation_history_pairs=settings.conversation_history_pairs,
         agent_workflow=agent,
         investigations=investigations,
-        proposal_review=ProposalReviewService(config_collector),
+        proposal_review=ProposalReviewService(config_collector, knowledge),
+        knowledge=knowledge,
     )
     return AppContainer(
-        settings=settings,
+        settings=original_settings,
         moonraker=moonraker,
         sessions=sessions,
         chat_service=chat_service,
         responses=responses,
+        knowledge=knowledge,
+        providers=providers,
+        moonraker_agent=MoonrakerAgent(
+            settings.moonraker_socket_path
+            or settings.printer_data_root / "comms" / "moonraker.sock",
+            MoonrakerMethods(sessions, settings.root_path, MoonrakerObservation()),
+        )
+        if settings.moonraker_agent_enabled
+        and (
+            settings.moonraker_socket_path is not None
+            or urlsplit(settings.moonraker_url).hostname in {"localhost", "127.0.0.1", "::1"}
+        )
+        else None,
     )

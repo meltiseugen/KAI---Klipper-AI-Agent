@@ -7,12 +7,17 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from klipperai_agent.agent.deadline import within
 from klipperai_agent.agent.models import AgentAnswer, AgentLimits, AgentModel, EventSink
 from klipperai_agent.agent.prompts import SYSTEM_PROMPT
 from klipperai_agent.agent.registry import ToolRegistry
+from klipperai_agent.agent.starting_context import prepare_context
 from klipperai_agent.agent.tools.base import ToolContext
+from klipperai_agent.domain.context import AgentMode
 from klipperai_agent.domain.evidence import AgentEvent
 from klipperai_agent.domain.investigation import InvestigationRequest, InvestigationResult
+from klipperai_agent.domain.provider_settings import ProviderLimitError
+from klipperai_agent.domain.redaction import redact_data
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +25,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AgentRun:
     context: ToolContext
+    mode: AgentMode = "chat"
     events: list[AgentEvent] = field(default_factory=list)
     answer: AgentAnswer | None = None
     status: str = "completed"
@@ -31,6 +37,8 @@ class AgentRun:
         }
         return InvestigationResult.parse_obj(
             {
+                "mode": self.mode,
+                "context_included": self.context.context_included,
                 "response_text": self.answer.response,
                 "next_actions": self.answer.next_actions,
                 "config_proposals": [item.model_dump() for item in self.answer.config_proposals],
@@ -56,7 +64,7 @@ class AgentRunner:
         registry: ToolRegistry,
         on_event: EventSink | None = None,
     ) -> InvestigationResult:
-        run = AgentRun(context)
+        run = AgentRun(context, mode=request.mode)
 
         async def emit(event: AgentEvent) -> None:
             run.events.append(event)
@@ -64,9 +72,7 @@ class AgentRunner:
                 await on_event(event)
 
         try:
-            await asyncio.wait_for(
-                self._loop(request, run, registry, emit), self._limits.run_timeout_seconds
-            )
+            await within(self._loop(request, run, registry, emit), self._limits.run_timeout_seconds)
         except asyncio.TimeoutError:
             await self._stop(
                 run,
@@ -74,6 +80,8 @@ class AgentRunner:
                 "The investigation reached its time limit. Ask a narrower follow-up.",
                 "limited",
             )
+        except ProviderLimitError as exc:
+            await self._stop(run, emit, str(exc), "limited")
         except Exception:
             logger.warning("Agent run failed", exc_info=True)
             await self._stop(
@@ -82,25 +90,17 @@ class AgentRunner:
                 "The model could not complete this investigation. Check provider settings and try again.",
                 "error",
             )
-        return run.result()
+        return InvestigationResult.parse_obj(redact_data(run.result().model_dump()))
 
     async def _loop(
         self, request: InvestigationRequest, run: AgentRun, registry: ToolRegistry, emit: EventSink
     ) -> None:
+        payload = await prepare_context(request, run.context, registry, self._limits, emit)
         conversation = [
             {"role": "system", "content": SYSTEM_PROMPT},
             {
                 "role": "user",
-                "content": json.dumps(
-                    {
-                        "request": request.user_message,
-                        "recent_conversation": request.conversation_context,
-                        "historical_evidence": [
-                            item.historical_context() for item in request.memory
-                        ],
-                        "artifacts": [item.model_dump() for item in run.context.artifacts],
-                    }
-                ),
+                "content": json.dumps(redact_data(payload)),
             },
         ]
         used_calls = 0
@@ -123,6 +123,9 @@ class AgentRunner:
                         "content": "The tool budget is exhausted. Return your final JSON answer using the evidence already collected and explain any remaining gaps.",
                     }
                 )
+            for item in run.context.context_included:
+                if item.status != "omitted":
+                    item.sent_to_model = True
             turn = await self._model.respond(conversation, definitions)
             conversation.extend(turn.output)
             if not turn.calls:

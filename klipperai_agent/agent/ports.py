@@ -4,15 +4,28 @@ from __future__ import annotations
 
 from typing import Any, Protocol
 
-from klipperai_agent.config.models import ConfigSnapshot
+from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding
+from klipperai_agent.domain.knowledge import CachedDocument, KnowledgeSetup
+from klipperai_agent.domain.shutdown import HostObservation, ShutdownLogs
+
+
+class KnowledgeReader(Protocol):
+    async def read(self) -> tuple[KnowledgeSetup, list[CachedDocument], bool]: ...
+
+
+class ShutdownReader(Protocol):
+    async def read_logs(self) -> ShutdownLogs: ...
+    async def read_host(self, estimated_unix_time: float | None) -> HostObservation: ...
 
 
 class ConfigReader(Protocol):
     def collect_with_options(
         self, *, include_unincluded_configs: bool = False
     ) -> ConfigSnapshot: ...
+
+    def read_collected_document(self, document: ConfigDocument) -> ConfigDocument: ...
 
 
 class DiagnosticReader(Protocol):
@@ -41,6 +54,10 @@ class PrinterReader(Protocol):
     async def query_printer_objects(
         self, objects: dict[str, list[str] | None]
     ) -> dict[str, Any]: ...
+
+
+class FileMetadataReader(Protocol):
+    async def get_file_metadata(self, filename: str) -> dict[str, Any]: ...
 
 
 class ToolServices(Protocol):

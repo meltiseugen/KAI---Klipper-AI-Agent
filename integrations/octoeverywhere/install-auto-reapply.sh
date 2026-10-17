@@ -164,6 +164,9 @@ ensure_no_spaces "--interval" "$CHECK_INTERVAL"
   die "Patch helper not found under $INSTALL_DIR"
 [ -d "$OE_ROOT" ] || die "OctoEverywhere checkout not found: $OE_ROOT"
 command -v systemctl >/dev/null 2>&1 || die "systemctl is required."
+sh "$INSTALL_DIR/integrations/octoeverywhere/run-maintenance.sh" --validate \
+  --klipperai-prefix "$KLIPPERAI_PREFIX" --klipperai-port "$KLIPPERAI_PORT" \
+  --nav-target "$NAV_TARGET" --service "$OE_SERVICE" --moonraker-url "$MOONRAKER_URL"
 
 LEGACY_BACKUP_DIR="$STATE_DIR/octoeverywhere-backups/legacy"
 LEGACY_BACKUP_COUNT=0
@@ -219,24 +222,26 @@ EOF
 
 cat >"$SERVICE_TMP" <<EOF
 [Unit]
-Description=Reapply KlipperAI OctoEverywhere local route patch when missing
+Description=Maintain the configured KlipperAI OctoEverywhere patch
 After=network-online.target $OE_SERVICE_UNIT
 Wants=network-online.target
+StartLimitIntervalSec=60
+StartLimitBurst=5
 
 [Service]
 Type=oneshot
 ExecStart=$RUNNER_PATH
+TimeoutStartSec=180
 EOF
 
 cat >"$TIMER_TMP" <<EOF
 [Unit]
-Description=Check whether the KlipperAI OctoEverywhere patch still exists
+Description=Check KlipperAI OctoEverywhere patch contents and pending recovery
 
 [Timer]
-OnBootSec=2min
-OnUnitActiveSec=$CHECK_INTERVAL
-AccuracySec=5min
-Persistent=true
+OnBootSec=30s
+OnUnitInactiveSec=$CHECK_INTERVAL
+AccuracySec=15s
 
 [Install]
 WantedBy=timers.target
@@ -249,6 +254,8 @@ Description=Watch OctoEverywhere files for KlipperAI patch replacement
 [Path]
 PathChanged=$OE_ROOT/moonraker_octoeverywhere/moonrakerapirouter.py
 PathChanged=$OE_ROOT/moonraker_octoeverywhere/static/oe-ui.js
+PathChanged=$INSTALL_DIR/integrations/octoeverywhere/router.template
+PathChanged=$INSTALL_DIR/integrations/octoeverywhere/navigation.js
 Unit=$REAPPLY_SERVICE_NAME
 
 [Install]
@@ -261,9 +268,14 @@ run_root install -m 644 "$SERVICE_TMP" "$SYSTEMD_DIR/$REAPPLY_SERVICE_NAME"
 run_root install -m 644 "$TIMER_TMP" "$SYSTEMD_DIR/$REAPPLY_TIMER_NAME"
 run_root install -m 644 "$PATH_TMP" "$SYSTEMD_DIR/$REAPPLY_PATH_NAME"
 run_root systemctl daemon-reload
-run_root "$RUNNER_PATH"
 run_root systemctl enable --now "$REAPPLY_TIMER_NAME"
 run_root systemctl enable --now "$REAPPLY_PATH_NAME"
+# Reload watches and timer settings when upgrading an already active hook.
+run_root systemctl restart "$REAPPLY_TIMER_NAME" "$REAPPLY_PATH_NAME"
+# Install future retries before the first query: Moonraker may still be starting.
+if ! run_root "$RUNNER_PATH"; then
+  printf '[KlipperAI OE auto-reapply] Initial check failed; path/timer retries remain enabled.\n' >&2
+fi
 
 printf '[KlipperAI OE auto-reapply] Installed %s\n' "$RUNNER_PATH"
 printf '[KlipperAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_SERVICE_NAME"

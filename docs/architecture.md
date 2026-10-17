@@ -4,6 +4,12 @@ KlipperAI is a standalone async Python daemon on the printer host. Mainsail link
 to its same-origin `/klipperai/` UI; Moonraker remains the printer API. The runtime
 reads evidence and drafts config proposals. It cannot apply them.
 
+The browser is composed from storage, transport, rendering and application
+modules, bundled inline so OctoEverywhere can recover the page into a new tab.
+The guided installer composes sourced shell modules. See the
+[frontend and installation map](frontend-and-installation.md) for both access
+paths and their ownership boundaries.
+
 ## Runtime and ownership
 
 ```mermaid
@@ -63,6 +69,7 @@ sequenceDiagram
     UI->>API: POST /api/chat/stream
     API->>API: Validate session, load saved investigation and dated memory
     API->>Loop: Request and user-provided artifacts
+    Loop->>Tool: Prepare mode-specific starting context
     loop Until answer or configured budget
         Loop->>Model: Conversation + tool definitions
         Model-->>Loop: Tool calls or final JSON answer
@@ -80,11 +87,19 @@ sequenceDiagram
     UI-->>User: Answer + sources + expandable activity
 ```
 
-OpenAI requests default to `AgentWorkflow`. The model chooses what to inspect and
+OpenAI requests default to `AgentWorkflow`. Chat preloads the saved profile and
+active config; Debug also preloads live status and bounded log/service evidence.
+Both include relevant dated memory. The model then chooses further tools and
 can revise its next action after observing evidence. There is no preflight LLM
 intent classification in this path. The user sees action summaries, never hidden
 reasoning. Responses output items, including encrypted reasoning, are passed
 unchanged between model turns within one investigation; `store=false` is used.
+
+Debug also prepares a shutdown report for communication/timing failures through
+the optional `ShutdownReader` port. Filesystem, kernel-journal and Moonraker reads
+live in infrastructure; pure run/statistics parsing and cause assessments live in
+diagnostics. Current host readings stay separate from historical incident evidence.
+See [shutdown investigations](shutdown-investigations.md) for bounds and limitations.
 
 `stub` uses deterministic workflows without credentials or network LLM calls.
 Setting `agent_enabled=false` retains the older single-pass OpenAI path for
@@ -95,17 +110,30 @@ troubleshooting. Neither setting enables writes.
 | Tool | Boundary and evidence |
 | --- | --- |
 | `get_printer_profile` | Saved firmware/hardware/addon summary, explicitly not live state |
+| `get_printer_knowledge` | Saved component identities, source readiness and dated confirmed facts |
+| `search_printer_knowledge` | Bounded cached source passages with hashes, dates and citations |
+| `inspect_fan_ports` | Reviewed board/revision mappings and current config pin owners; physical occupancy remains unconfirmed |
+| `inspect_eddy_calibration` | Probe/mesh/temperature/start sections and sourced calibration guidance, with firmware compatibility gaps |
+| `investigate_shutdown` | Bounded current/recent rotated Klippy reads, pre-stop statistics and optional kernel correlation; confidence-qualified manual checks |
 | `get_printer_status` | Fixed read-only Moonraker methods and known status objects |
 | `inspect_config` | File/section index or exact excerpts; optional inactive-file lookup |
 | `read_config_file` | Bounded lines from an exact path in the collected tree |
 | `collect_diagnostics` | Log tails, optional service/journal reads, deterministic findings |
+| `search_config` | Literal pin/option/macro-reference search, active/inactive labels and source lines |
+| `read_diagnostic_artifact` | Bounded lines from collected artifact IDs, not arbitrary host files |
+| `get_printer_objects` | Fixed sensor/fan/motion/bed-mesh/MCU groups, capped at 24 available objects |
 | `search_web` | Public technical query via hosted search, with source URLs |
+| `get_gcode_metadata` | Allowlisted parsed metadata for a relative G-code filename or the current job |
 
 Tool caches and fresh config snapshots belong to one request. Successful identical
 calls reuse observations within that request; failures can be retried. Public
 observations are saved with timestamps and revisions for historical retrieval.
 Fresh source cards come from tools and provider annotations, not model-supplied
 source objects. Historical context is labeled separately and must be rechecked.
+
+Public context receipts distinguish full, partial, unavailable and omitted sources
+and record which were included in a model request. See [agent-modes.md](agent-modes.md)
+for preparation, mode switching, large-file expansion and compatibility behavior.
 
 The registry rejects unknown tools and invalid/extra arguments. Per-tool timeouts,
 run deadlines, model-step limits, call limits, output-token bounds and context
@@ -127,6 +155,25 @@ history for existing investigations. Relevant historical evidence can be supplie
 to a new chat; current config/status still require fresh reads. Provider HTTP
 clients are pooled and closed with the application lifespan.
 
+The application lifespan also owns one Moonraker Unix-socket agent connection.
+Infrastructure identifies it, subscribes to fixed printer fields, reconnects and
+merges bounded observations in `domain/moonraker.py`. Application-owned extension
+methods expose public capabilities/status and ephemeral session bootstrap. A
+session-protected SSE endpoint sends the latest observation to UI badges at most
+once per second. The model's status tools still make fresh reads. Moonraker's
+`klipperai.integration` database item stores only fixed public capabilities; it
+is separate from investigations, credentials and sessions. See
+[Moonraker integration](moonraker-integration.md) for protocol and ownership details.
+
+Component knowledge lives separately in `data_dir/knowledge.sqlite3`. The user
+builds/refreshes documentation for their saved components through the UI. Public
+product details drive hosted search; downloaded text supplies quoted connector
+candidates for source/revision review. There is no built-in board catalog. Changed
+documents, mappings or wiring invalidate connector review. Model tools receive
+only a read-only port. Fan proposals receive additional hardware checks. See
+[printer knowledge](printer-knowledge.md) for identity confirmation, source
+versions, local manuals, download limits and firmware compatibility boundaries.
+
 Proposals undergo static review and section comparison. Users edit config files
 manually; there are no apply/approval endpoints or write tools. Revalidation reads
 the active config and marks changed revisions stale. See
@@ -134,8 +181,14 @@ the active config and marks changed revisions stale. See
 
 The supported host is Python 3.10+, FastAPI, Pydantic v1 and httpx. The new loop
 does not require LangGraph, an agents framework, a search SDK or Rust extensions.
-API keys stay in the server environment. The app assumes the existing trusted
-local deployment/proxy boundary; account authentication remains backlog work. Hosted search requires a compatible OpenAI model and uses provider credits.
+API keys stay in private server storage, with environment defaults before the first
+provider-settings save. Provider policies activate on manual service restart; one
+persistent usage ledger guards all model paths. See [providers.md](providers.md).
+The app assumes the existing trusted
+local deployment/proxy boundary; UI sessions are not account authentication.
+Credential redaction protects collected text, model inputs, public outcomes and
+saved history. See [security.md](security.md) for its limits and storage/proxy
+assumptions. Hosted search requires a compatible OpenAI model and uses provider credits.
 
 Protocol references: [function calling](https://developers.openai.com/api/docs/guides/function-calling),
 [web search](https://developers.openai.com/api/docs/guides/tools-web-search), and

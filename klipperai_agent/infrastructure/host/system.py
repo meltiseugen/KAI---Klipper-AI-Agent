@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import os
 import shlex
 import subprocess
+import tempfile
 from dataclasses import dataclass
 
 from klipperai_agent.domain.evidence import ArtifactInput
+from klipperai_agent.domain.redaction import redact_text
 
 
 @dataclass(frozen=True, slots=True)
@@ -13,28 +16,61 @@ class CommandResult:
     returncode: int
     stdout: str
     stderr: str
+    truncated: bool = False
 
 
 class SystemCommandRunner:
     def __init__(self, timeout_seconds: float = 6.0) -> None:
         self._timeout_seconds = timeout_seconds
 
-    def run(self, command: tuple[str, ...]) -> CommandResult:
-        completed = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=self._timeout_seconds,
-            check=False,
-        )
-        return CommandResult(
-            command=command,
-            returncode=completed.returncode,
-            stdout=completed.stdout.strip(),
-            stderr=completed.stderr.strip(),
-        )
+    def run(
+        self, command: tuple[str, ...], *, max_output_bytes: int | None = None
+    ) -> CommandResult:
+        # Diagnostic commands retain their environment but do not need the provider key.
+        environment = {
+            key: value
+            for key, value in os.environ.items()
+            if key.upper() not in {"KLIPPERAI_OPENAI_API_KEY", "OPENAI_API_KEY"}
+        }
+        if max_output_bytes is None:
+            completed = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=self._timeout_seconds,
+                check=False,
+                env=environment,
+            )
+            return CommandResult(
+                command,
+                completed.returncode,
+                redact_text(completed.stdout).strip(),
+                redact_text(completed.stderr).strip(),
+            )
+        limit = max_output_bytes
+        with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
+            bounded = subprocess.run(
+                command,
+                stdout=stdout,
+                stderr=stderr,
+                stdin=subprocess.DEVNULL,
+                timeout=self._timeout_seconds,
+                check=False,
+                env=environment,
+                shell=False,
+            )
+            stdout.seek(0)
+            stderr.seek(0)
+            output, error = stdout.read(limit + 1), stderr.read(limit + 1)
+            return CommandResult(
+                command,
+                bounded.returncode,
+                redact_text(output[:limit].decode("utf-8", errors="replace")).strip(),
+                redact_text(error[:limit].decode("utf-8", errors="replace")).strip(),
+                len(output) > limit or len(error) > limit,
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,6 +224,7 @@ class HostSystemCollector:
 
     @staticmethod
     def _clip_text(text: str, absolute_limit: int, target_limit: int) -> str:
+        text = redact_text(text)
         limit = min(absolute_limit, target_limit)
         if len(text) <= limit:
             return text

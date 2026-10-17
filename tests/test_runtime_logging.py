@@ -23,9 +23,7 @@ def test_configure_runtime_logging_with_file_sink(tmp_path) -> None:
     original_handlers = list(root.handlers)
     try:
         log_path = runtime_logging.configure_runtime_logging(_settings(tmp_path))
-        assert (
-            log_path.resolve() == (tmp_path / "printer_data" / "logs" / "klipperai.log").resolve()
-        )
+        assert log_path.resolve() == (tmp_path / "data" / "logs" / "klipperai.log").resolve()
         assert root.level == logging.DEBUG
         assert len(root.handlers) == 2
         logging.getLogger("klipperai_agent.test").info("hello")
@@ -45,7 +43,7 @@ def test_configure_runtime_logging_falls_back_to_console(monkeypatch, tmp_path) 
     original_handlers = list(root.handlers)
     monkeypatch.setattr(
         runtime_logging,
-        "RotatingFileHandler",
+        "PrivateRotatingFileHandler",
         lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("read only")),
     )
     try:

@@ -64,7 +64,7 @@ def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) ->
     assert settings.enable_write_actions is False
     assert settings.conversation_history_pairs == 7
     assert settings.agent_log_level == "DEBUG"
-    assert settings.agent_log_path() == Path("/home/pi/printer_data/logs/klipperai.log")
+    assert settings.agent_log_path() == Path("/var/lib/klipperai/logs/klipperai.log")
     assert settings.printer_data_root == Path("/home/pi/printer_data")
     assert settings.mainsail_config_dir == Path("/home/pi/printer_data/config")
     assert settings.mainboard == "BTT Octopus Pro"
@@ -145,8 +145,8 @@ def test_settings_validators_and_directory_creation(tmp_path: Path) -> None:
     assert settings.excluded_logs == ["klippyai.log", "crowsnest"]
     settings.ensure_directories()
     assert settings.data_dir.is_dir()
-    assert settings.checkpoint_db.parent.is_dir()
-    assert settings.host_logs_dir().is_dir()
+    assert settings.agent_log_path().parent.is_dir()
+    assert not settings.host_logs_dir().exists()
     absolute_logs = tmp_path / "absolute-logs"
     assert Settings(logs_dir_path=absolute_logs).host_logs_dir() == absolute_logs
 

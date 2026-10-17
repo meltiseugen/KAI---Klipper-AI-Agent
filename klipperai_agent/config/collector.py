@@ -9,10 +9,12 @@ from pathlib import Path
 from klipperai_agent.config.models import (
     ConfigDocument,
     ConfigPlaceholder,
+    ConfigReadError,
     ConfigSectionLocation,
     ConfigSnapshot,
 )
 from klipperai_agent.config.parser import ConfigParser
+from klipperai_agent.domain.redaction import redact_text
 
 
 class ConfigCollector:
@@ -35,6 +37,27 @@ class ConfigCollector:
 
     def collect(self) -> ConfigSnapshot:
         return self.collect_with_options()
+
+    def read_collected_document(self, document: ConfigDocument) -> ConfigDocument:
+        """Expand a collector-issued reference; tools cannot supply this reference directly."""
+        path = self._config_dir / document.path
+        # Bound expansion independently of model context, and reject mid-run edits.
+        try:
+            content = path.read_text(encoding="utf-8", errors="replace")
+        except OSError as exc:
+            raise ConfigReadError(
+                "Configuration could not be read. Refresh the evidence and retry."
+            ) from exc
+        if len(content) > 1_000_000:
+            raise ConfigReadError("Configuration exceeds the full-read limit.")
+        digest = hashlib.sha256(content.encode()).hexdigest()
+        if digest != document.content_digest:
+            raise ConfigReadError(
+                "Configuration changed during this investigation. Start a new question to refresh the evidence."
+            )
+        return ConfigDocument(
+            document.path, redact_text(content).rstrip(), document.sections, digest
+        )
 
     def collect_with_options(self, *, include_unincluded_configs: bool = False) -> ConfigSnapshot:
         notes: list[str] = []
@@ -181,7 +204,7 @@ class ConfigCollector:
         section_locations.extend(self.parser.extract_section_locations(display_path, raw_content))
         placeholders.extend(self.parser.detect_placeholders(display_path, raw_content))
         # Keep leading blank lines and indentation: citations use original file line numbers.
-        content = raw_content.rstrip()
+        content = redact_text(raw_content).rstrip()
         clipped_content = self._clip_text(content, self._max_chars_per_document)
         if clipped_content != content:
             notes.append(f"Config content truncated after the opening excerpt: {display_path}")

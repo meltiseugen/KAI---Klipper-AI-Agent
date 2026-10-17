@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import os
 
 import uvicorn
 
@@ -11,6 +12,7 @@ logger = logging.getLogger("klipperai_agent.bootstrap")
 
 
 def main() -> None:
+    os.umask(0o077)
     settings = get_settings()
     settings.ensure_directories()
     log_path = configure_runtime_logging(settings)
@@ -27,9 +29,13 @@ def main() -> None:
         "klipperai_agent.web.app:create_app",
         host=settings.host,
         port=settings.port,
+        root_path=settings.root_path.rstrip("/"),
         factory=True,
         log_config=None,
-        access_log=True,
+        access_log=False,
+        server_header=False,
+        proxy_headers=True,
+        forwarded_allow_ips="127.0.0.1,::1",
     )
 
 

@@ -49,6 +49,7 @@ class ConversationStore {
       sessionId: typeof seed.sessionId === "string" && seed.sessionId.trim() ? seed.sessionId : null,
       threadId: typeof seed.threadId === "string" && seed.threadId.trim() ? seed.threadId : null,
       draft: typeof seed.draft === "string" ? seed.draft : "",
+      mode: normalizeAgentMode(seed.mode),
       updatedAt: normalizeTimestamp(seed.updatedAt),
       messages: normalizedMessages,
     };

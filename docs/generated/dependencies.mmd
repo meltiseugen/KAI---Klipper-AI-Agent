@@ -4,15 +4,18 @@ flowchart LR
     agent --> config
     agent --> diagnostics
     agent --> domain
+    agent --> knowledge
     application --> agent
     application --> config
     application --> contracts
     application --> domain
+    application --> knowledge
     application --> workflows
     bootstrap --> agent
     bootstrap --> application
     bootstrap --> config
     bootstrap --> diagnostics
+    bootstrap --> domain
     bootstrap --> infrastructure
     bootstrap --> profile
     bootstrap --> providers
@@ -31,6 +34,8 @@ flowchart LR
     diagnostics --> infrastructure
     diagnostics --> profile
     infrastructure --> domain
+    knowledge --> config
+    knowledge --> domain
     profile --> config
     profile --> infrastructure
     profile --> runtime
@@ -39,7 +44,10 @@ flowchart LR
     providers --> config
     providers --> diagnostics
     providers --> domain
+    providers --> knowledge
     providers --> runtime
+    runtime --> domain
+    runtime --> infrastructure
     web --> application
     web --> bootstrap
     web --> contracts

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from klipperai_agent.domain.investigation import Investigation, InvestigationTurn
+from klipperai_agent.domain.redaction import redact_data, redact_text
 from klipperai_agent.domain.repositories import InvestigationConflict
+from klipperai_agent.infrastructure.private_files import open_private_file
 
 
 class SqliteInvestigationRepository:
@@ -19,7 +22,8 @@ class SqliteInvestigationRepository:
         self._protected_dirs = tuple(path.resolve() for path in protected_dirs)
         self._retention_days = retention_days
         self._check_path()
-        self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        open_private_file(self._path).close()
         with closing(self._connect()) as db, db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS investigations (
@@ -85,11 +89,15 @@ class SqliteInvestigationRepository:
             (row["id"], turn_limit),
         ).fetchall()
         return Investigation(
-            **dict(row),
-            turns=[InvestigationTurn.parse_raw(item["content"]) for item in reversed(turns)],
+            **{**dict(row), "title": redact_text(row["title"])},
+            turns=[
+                InvestigationTurn.parse_obj(redact_data(json.loads(item["content"])))
+                for item in reversed(turns)
+            ],
         )
 
     def save_turn(self, investigation: Investigation, turn: InvestigationTurn) -> None:
+        turn = InvestigationTurn.parse_obj(redact_data(turn.model_dump()))
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
             if investigation.revision == 0:
@@ -98,7 +106,7 @@ class SqliteInvestigationRepository:
                     (
                         investigation.id,
                         investigation.printer_id,
-                        investigation.title,
+                        redact_text(investigation.title),
                         investigation.created_at,
                         investigation.updated_at,
                     ),

@@ -24,7 +24,11 @@ write_env_file() {
   } >"$temp_file"
 
   run_root install -d -m 755 /etc/klipperai
-  backup_file /etc/klipperai/klipperai.env
+  if [[ -e /etc/klipperai/klipperai.env ]]; then
+    run_root chmod 600 /etc/klipperai/klipperai.env
+    run_root install -m 600 /etc/klipperai/klipperai.env "/etc/klipperai/klipperai.env.bak.${TIMESTAMP}"
+    log "Backed up /etc/klipperai/klipperai.env with owner-only permissions."
+  fi
   run_root install -m 600 "$temp_file" /etc/klipperai/klipperai.env
   rm -f "$temp_file"
 }
@@ -75,6 +79,10 @@ data_dir: $KLIPPERAI_DATA_DIR  # Local runtime data directory. Examples: /var/li
 checkpoint_db: $KLIPPERAI_CHECKPOINT_DB  # Legacy reserved path; investigation storage uses data_dir/investigations.sqlite3. Examples: /var/lib/klipperai/checkpoints.sqlite, /srv/klipperai/checkpoints.sqlite
 enable_write_actions: $KLIPPERAI_ENABLE_WRITE_ACTIONS  # Compatibility setting; runtime always keeps printer writes disabled.
 
+[security]
+security_allowed_hosts: *  # Optional printer/proxy Host allowlist; see docs/security.md.
+security_allowed_origins:  # Usually empty; trusted proxy origins when required.
+
 [chat]
 conversation_history_pairs: 10  # Previous user/assistant pairs sent with each request. Use 0 to disable. Examples: 0, 5, 10
 memory_cross_chat: true  # Reuse dated evidence from other chats about this printer.
@@ -98,8 +106,8 @@ agent_max_output_tokens: 6000
 
 [logs]
 collect_host_logs: $KLIPPERAI_COLLECT_HOST_LOGS  # Whether to collect host logs. Examples: true, false
-logs_dir_path: $KLIPPERAI_LOGS_DIR_PATH  # Directory that contains Klipper, Moonraker, and KlipperAI logs. Examples: /home/biqu/printer_data/logs, /srv/printer_data/logs
-agent_log_file_name: $KLIPPERAI_AGENT_LOG_FILE_NAME  # KlipperAI runtime log filename. Examples: klipperai.log, ai-agent.log
+logs_dir_path: $KLIPPERAI_LOGS_DIR_PATH  # Directory that contains printer-host logs. Examples: /home/biqu/printer_data/logs, /srv/printer_data/logs
+agent_log_file_name: $KLIPPERAI_AGENT_LOG_FILE_NAME  # Runtime log in data_dir/logs, separate from collected printer logs.
 agent_log_level: $KLIPPERAI_AGENT_LOG_LEVEL  # Runtime log verbosity. Examples: INFO, DEBUG, WARNING
 log_tail_lines_default: $KLIPPERAI_LOG_TAIL_LINES_DEFAULT  # Default tail length when no override exists. Examples: 100, 200
 excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: klipperai.log, crowsnest, *_debug.log
@@ -107,7 +115,7 @@ excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: kli
 [log_tail_lines]
 klippy: 100  # Tail lines for klippy.log
 moonraker: 200  # Tail lines for moonraker.log
-klipperai: 100  # Tail lines for klipperai.log
+klipperai: 100  # Tail lines for a legacy shared klipperai.log, if present.
 
 [system]
 collect_systemd_diagnostics: $KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS  # Whether to collect systemctl and journal diagnostics. Examples: true, false

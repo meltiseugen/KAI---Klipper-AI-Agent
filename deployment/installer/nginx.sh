@@ -6,11 +6,18 @@ write_nginx_snippet() {
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
+location = ${KLIPPERAI_ROOT_PATH} {
+    return 308 ${KLIPPERAI_ROOT_PATH}/\$is_args\$args;
+}
+
 location ${KLIPPERAI_ROOT_PATH}/ {
+    access_log off;
     proxy_http_version 1.1;
     proxy_buffering off;
     proxy_read_timeout 300s;
-    proxy_set_header Host \$host;
+    proxy_set_header Host \$http_host;
+    proxy_set_header X-Forwarded-Host "";
+    proxy_set_header Forwarded "";
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
     proxy_pass http://127.0.0.1:${KLIPPERAI_PORT}/;
@@ -138,12 +145,12 @@ reload_nginx() {
   [[ -n "$nginx_bin" ]] || die "nginx executable not found."
 
   if [[ -n "$nginx_config" ]] && [[ -f "$nginx_config" ]]; then
-    run_root "$nginx_bin" -t -c "$nginx_config"
+    run_root "$nginx_bin" -t -c "$nginx_config" || return 1
     run_root "$nginx_bin" -s reload -c "$nginx_config"
     return
   fi
 
-  run_root "$nginx_bin" -t
+  run_root "$nginx_bin" -t || return 1
   if ! run_root "$nginx_bin" -s reload; then
     run_root systemctl reload nginx
   fi

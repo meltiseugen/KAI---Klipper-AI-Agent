@@ -24,8 +24,12 @@ configure_options() {
 
   KLIPPERAI_ENABLE_WRITE_ACTIONS="false"
 
+  INSTALL_MAINSAIL_AUTO_REAPPLY="no"
   if confirm "Install a Mainsail custom-navigation link to KlipperAI?" "Y"; then
     INSTALL_MAINSAIL_NAV="yes"
+    if confirm "Keep the Mainsail link restored at startup and after navigation changes?" "Y"; then
+      INSTALL_MAINSAIL_AUTO_REAPPLY="yes"
+    fi
   else
     INSTALL_MAINSAIL_NAV="no"
   fi

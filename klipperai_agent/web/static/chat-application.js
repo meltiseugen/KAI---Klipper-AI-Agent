@@ -7,6 +7,7 @@ class ChatApplication {
     this.busy = true;
     this.pending = "";
     this.persistent = false;
+    this.modesEnabled = false;
   }
 
   render() {
@@ -14,6 +15,7 @@ class ChatApplication {
     const conversation = this.store.getCurrentConversation();
     this.view.render(this.store, {
       busy: this.busy, pending: this.pending,
+      modesEnabled: this.modesEnabled,
       revalidate: this.persistent && conversation?.threadId ? id => this.revalidate(id) : null,
     });
   }
@@ -24,13 +26,36 @@ class ChatApplication {
       send: () => this.send(), newChat: () => this.newChat(),
       select: id => this.select(id), remove: id => this.remove(id),
       draft: value => { this.store.getCurrentConversation().draft = value; this.store.save(); },
+      mode: value => this.setMode(value),
     });
     this.render();
     try {
       const payload = await this.transport.bootstrap();
       this.store.historyPairs = normalizeHistoryPairLimit(payload.conversation_history_pairs);
       this.persistent = payload.features?.includes("persistent-investigations") || false;
+      this.modesEnabled = payload.agent_modes?.includes("debug") || false;
       this.view.bootstrap(payload);
+      if (payload.features?.includes("moonraker-events")) {
+        this.moonrakerFeed = new MoonrakerStatusFeed(this.transport, this.view);
+        void this.moonrakerFeed.start();
+        window.addEventListener("pagehide", () => this.moonrakerFeed.stop());
+        window.addEventListener("pageshow", event => {
+          if (event.persisted) {
+            this.moonrakerFeed = new MoonrakerStatusFeed(this.transport, this.view);
+            void this.moonrakerFeed.start(true);
+          }
+        });
+      }
+      if (payload.features?.includes("provider-management")) {
+        this.providers = new ProviderPanel(this.transport);
+        this.providers.beforeOpen = () => this.knowledge?.close();
+        this.providers.bind();
+      }
+      if (payload.features?.includes("printer-knowledge")) {
+        this.knowledge = new PrinterKnowledgePanel(this.transport);
+        this.knowledge.beforeOpen = () => this.providers?.close();
+        this.knowledge.bind();
+      }
       if (this.persistent) await this.restoreInvestigations();
     } catch (error) { this.view.setStatus(String(error)); }
     finally { this.busy = false; this.store.save(); this.render(); }
@@ -45,7 +70,8 @@ class ChatApplication {
       const conversation = this.store.createConversation({
         id: existing?.id || record.id, threadId: record.id, title: record.title,
         updatedAt: record.updated_at, draft: existing?.draft || "",
-        messages: InvestigationClient.messages(record),
+        mode: existing?.mode || record.turns.at(-1)?.result.mode,
+        messages: investigationMessages(record),
       });
       if (existing) Object.assign(existing, conversation);
       else this.store.state.conversations.push(conversation);
@@ -58,6 +84,13 @@ class ChatApplication {
     this.store.state.currentConversationId = id;
     this.store.save();
     this.view.navigation(false);
+    this.render();
+  }
+
+  setMode(value) {
+    if (this.busy || !this.modesEnabled) return;
+    this.store.getCurrentConversation().mode = normalizeAgentMode(value);
+    this.store.save();
     this.render();
   }
 
@@ -96,7 +129,7 @@ class ChatApplication {
     // Lock before session creation/network I/O to prevent duplicate submissions.
     this.busy = true;
     this.pending = "Investigating";
-    const request = { message, artifacts: [], history: this.store.buildRequestHistory(conversation.messages) };
+    const request = { message, mode: this.modesEnabled ? conversation.mode : "chat", artifacts: [], history: this.store.buildRequestHistory(conversation.messages) };
     if (conversation.threadId) request.thread_id = conversation.threadId;
     conversation.messages.push({ role: "user", text: message });
     this.store.updateConversationTitle(conversation, message);
@@ -108,7 +141,7 @@ class ChatApplication {
     try {
       const payload = await this.transport.chat(request, event => { this.pending = event.message; this.render(); });
       conversation.threadId = payload.thread_id;
-      conversation.messages.push(InvestigationClient.answer({ ...payload, response_text: payload.response }));
+      conversation.messages.push(investigationAnswer({ ...payload, response_text: payload.response }));
     } catch (error) {
       conversation.messages.push({ role: "assistant", text: String(error) });
     } finally { this.finish(conversation); }
@@ -122,7 +155,7 @@ class ChatApplication {
     this.render();
     try {
       const turn = await this.transport.investigation(`/${encodeURIComponent(conversation.threadId)}/proposals/${encodeURIComponent(proposalId)}/revalidate`, "POST");
-      conversation.messages.push({ role: "user", text: turn.question }, InvestigationClient.answer(turn.result));
+      conversation.messages.push({ role: "user", text: turn.question }, investigationAnswer(turn.result));
     } catch (error) { this.view.setStatus(String(error)); }
     finally { this.finish(conversation); }
   }

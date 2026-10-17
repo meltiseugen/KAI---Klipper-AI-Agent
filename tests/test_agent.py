@@ -130,7 +130,7 @@ async def test_agent_observes_tools_and_follows_up_with_config_and_web_sources(t
     assert result["findings"] and result["moonraker_reachable"]
     assert any(source["line_number"] == 3 for source in result["source_citations"])
     assert any(source["url"] for source in result["source_citations"])
-    assert len(events) == 14
+    assert len(events) == 18  # Starting profile/config, then seven model-selected reads.
     assert "PA1" in json.dumps(model.conversations[-1])
     assert "Official troubleshooting guidance" in json.dumps(model.conversations[-1])
     assert events[0].kind == "tool_started" and events[-1].kind == "tool_completed"
@@ -151,7 +151,7 @@ async def test_tools_do_not_read_unknown_paths_and_recover_from_missing_evidence
     result = await workflow.ainvoke({"user_message": "Find OLD"}, context=tool_context.services)
     assert not workflow.web_search_enabled
     assert result["agent_status"] == "completed"
-    assert result["source_citations"][0]["path"] == "inactive.cfg"
+    assert any(source["path"] == "inactive.cfg" for source in result["source_citations"])
     assert sum(event["kind"] == "tool_error" for event in result["agent_events"]) == 2
     assert "not in the collected" in json.dumps(model.conversations[1])
     assert "may not be active" in json.dumps(model.conversations[-1])
@@ -271,7 +271,11 @@ async def test_runs_have_isolated_evidence_and_empty_object_status_is_valid(tool
     first = await workflow.ainvoke({"user_message": "status"}, context=tool_context.services)
     second = await workflow.ainvoke({"user_message": "general"}, context=tool_context.services)
     assert first["moonraker_reachable"] and not second["moonraker_reachable"]
-    assert not second["agent_events"] and not second["source_citations"]
+    assert {event["tool"] for event in second["agent_events"]} == {
+        "get_printer_profile",
+        "inspect_config",
+    }
+    assert {source["path"] for source in second["source_citations"]} == {"printer.cfg"}
     tool_context.moonraker.query_printer_objects.assert_not_called()
 
 
@@ -295,7 +299,7 @@ async def test_final_answer_after_call_budget_and_out_of_range_config(tool_conte
         context=tool_context.services,
     )
     assert result["agent_status"] == "completed"
-    assert not result["source_citations"]
-    assert result["agent_events"][1]["kind"] == "tool_error"
+    assert all(source["line_number"] == 1 for source in result["source_citations"])
+    assert result["agent_events"][-1]["kind"] == "tool_error"
     assert "outside the collected excerpt" in json.dumps(model.conversations[-1])
     assert "tool budget is exhausted" in json.dumps(model.conversations[-1])

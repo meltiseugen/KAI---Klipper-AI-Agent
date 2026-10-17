@@ -1,0 +1,3 @@
+# Keep Linux entry points and sourced manifests executable after Windows checkouts.
+*.sh text eol=lf
+deployment/installer/modules.txt text eol=lf

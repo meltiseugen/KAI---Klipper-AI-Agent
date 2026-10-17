@@ -63,6 +63,7 @@ def investigation_routes(get_service: Callable[[Request], ChatService]) -> APIRo
         if proposal is None or reviewer is None:
             raise HTTPException(404, "Reviewed proposal not found.")
         result = InvestigationResult(
+            mode=record.turns[-1].result.mode,
             response_text="Rechecked the proposal against current configuration. All edits remain manual.",
             config_proposals=[proposal],
         )

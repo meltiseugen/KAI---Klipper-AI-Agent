@@ -1,4 +1,5 @@
 // Conversation value normalization; no DOM or storage access.
+function normalizeAgentMode(value) { return value === "debug" ? "debug" : "chat"; }
 
 function generateId() {
   if (globalThis.crypto?.randomUUID) {
@@ -48,7 +49,7 @@ function normalizeConversationEntries(entries) {
       if (!text.trim()) {
         return null;
       }
-      return { role, text, configProposals, sourceCitations, agentEvents: AgentActivity.normalize(entry.agentEvents), nextActions: Array.isArray(entry.nextActions) ? entry.nextActions : [], memorySources: Array.isArray(entry.memorySources) ? entry.memorySources : [] };
+      return { role, text, configProposals, sourceCitations, mode: normalizeAgentMode(entry.mode), contextIncluded: Array.isArray(entry.contextIncluded) ? entry.contextIncluded : [], agentEvents: AgentActivity.normalize(entry.agentEvents), nextActions: Array.isArray(entry.nextActions) ? entry.nextActions : [], memorySources: Array.isArray(entry.memorySources) ? entry.memorySources : [] };
     })
     .filter(Boolean);
 }

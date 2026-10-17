@@ -20,6 +20,23 @@ The runner owns time/call/step budgets. The registry owns validation, timeout,
 deduplication and result-size bounds. A tool should not start its own autonomous
 loop. The hosted search adapter makes one bounded search request as a capability.
 
+Starting context is built by `agent/starting_context.py` before the first model
+call, under the same run deadline. Mode policy belongs there, not in individual
+tools. New tools automatically receive public receipts through the registry;
+return `truncated` and a concise `context_notes` when evidence is partial. See
+[agent-modes.md](agent-modes.md) for the Chat/Debug policies and expansion limits.
+
+The `investigate_shutdown` tool demonstrates a composed `ShutdownReader` port,
+pure incident/statistics analysis, bounded host reads and confidence-qualified
+manual troubleshooting. See [shutdown investigations](shutdown-investigations.md)
+for its evidence semantics, limitations and regression tests.
+
+`get_gcode_metadata` uses the narrow `FileMetadataReader` port. Filenames must be
+relative to Moonraker's G-code root; omitted filenames query the current job.
+The HTTP adapter filters metadata to bounded scalars, excluding thumbnails and
+raw G-code. Slicer estimates are evidence about a file, not the current machine
+configuration or measured print time. See [Moonraker integration](moonraker-integration.md).
+
 ## Add a model or search provider
 
 Implement `AgentModel.respond(conversation, tools) -> ModelTurn` or
@@ -61,6 +78,8 @@ API key in `KLIPPERAI_OPENAI_API_KEY`, outside this file.
 
 `POST /api/chat` still returns a `ChatResponse` JSON object. The additive fields
 `agent_events` and `agent_status` expose activity and completed/limited/error state.
+Requests also accept `mode` (`chat` by default or `debug`). Responses include
+`mode` and `context_included`; bootstrap advertises supported `agent_modes`.
 
 `POST /api/chat/stream` accepts the same body, validates the session before opening
 the stream, and emits SSE `agent`, `result`, or `error` events. Heartbeat comments
@@ -73,11 +92,18 @@ action descriptions, not model reasoning. Source cards use textContent and HTTP(
 links. Config proposals pass through `ProposalReviewService` and remain manual-only.
 The UI restores durable investigation history and offers read-only proposal rechecks.
 See [investigations.md](investigations.md) for memory settings and ownership.
+See [printer-knowledge.md](printer-knowledge.md) for dynamic component research,
+bounded public-document downloads, local retrieval and fan proposal hardware checks.
+Knowledge refresh is a session-protected UI operation; the agent receives only
+the `KnowledgeReader` port and cannot trigger downloads or save identities.
 
 ## Remaining boundaries
 
 No general URL fetcher, filesystem path reader, shell tool or printer control tool
 is registered. Prompt instructions treat logs/config/web text as untrusted data.
-They do not constitute complete secret redaction; broader redaction and deployment
-authentication remain separate backlog items. The API assumes the existing
-trusted local printer UI boundary. Hosted search uses provider credits.
+Credential redaction runs at collection, tool, prompt, result and persistence
+boundaries. New tools must preserve that behavior and redact before clipping
+evidence. Keep transport session IDs and provider protocol envelopes intact.
+Redaction is best effort, not complete sanitization. The API assumes the existing
+trusted local printer UI or authenticated proxy boundary; sessions are not user
+authentication. See [security.md](security.md). Hosted search uses provider credits.

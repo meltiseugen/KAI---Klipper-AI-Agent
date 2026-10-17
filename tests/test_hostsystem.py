@@ -79,10 +79,13 @@ def test_host_system_collector_reports_missing_commands_and_timeouts() -> None:
 
 
 def test_system_command_runner_captures_and_strips_output(monkeypatch) -> None:
+    def run(*args, **kwargs):
+        return SimpleNamespace(returncode=7, stdout=" out \n", stderr=" err \n")
+
     monkeypatch.setattr(
         subprocess,
         "run",
-        lambda *args, **kwargs: SimpleNamespace(returncode=7, stdout=" out \n", stderr=" err \n"),
+        run,
     )
     runner = __import__(
         "klipperai_agent.infrastructure.host.system", fromlist=["SystemCommandRunner"]

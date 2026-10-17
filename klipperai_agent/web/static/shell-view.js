@@ -11,6 +11,7 @@ class ShellView {
     this.send = doc.getElementById("send-button");
     this.newChat = doc.getElementById("new-chat-button");
     this.status = doc.getElementById("composer-status");
+    this.mode = doc.getElementById("agent-mode");
     this.formatter = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     this.messageView = new MessageView(doc.getElementById("message-template"), null);
   }
@@ -20,6 +21,7 @@ class ShellView {
     this.send?.addEventListener("click", () => void actions.send());
     this.newChat?.addEventListener("click", () => actions.newChat());
     this.input?.addEventListener("input", () => actions.draft(this.input.value));
+    this.mode?.addEventListener("change", () => actions.mode(this.mode.value));
     const toggle = this.doc.getElementById("shell-menu-toggle");
     toggle?.addEventListener("click", () => this.navigation(!this.body.classList.contains("nav-open")));
     this.doc.getElementById("shell-scrim")?.addEventListener("click", () => this.navigation(false));
@@ -31,6 +33,25 @@ class ShellView {
   }
 
   setStatus(text) { setText(this.status, text); }
+
+  moonraker(state) {
+    const badge = this.doc.getElementById("moonraker-events-badge");
+    if (badge) {
+      badge.hidden = false;
+      badge.textContent = state.connected ? (state.subscribed ? "Events: live" : "Events: waiting for Klipper") : "Events: reconnecting";
+      badge.classList.toggle("ok", Boolean(state.connected && state.subscribed));
+      badge.classList.toggle("warn", !state.connected || !state.subscribed);
+      badge.title = state.error || "Moonraker agent subscription";
+    }
+    const printer = this.doc.getElementById("klipper-badge");
+    if (printer) {
+      const live = state.connected && !state.stale;
+      const job = live && state.status?.print_stats?.state;
+      printer.textContent = `Klipper: ${state.connected ? state.klippy_state : "unknown"}${job ? ` · ${job}` : ""}`;
+      printer.classList.toggle("ok", Boolean(live && state.klippy_state === "ready"));
+      printer.classList.toggle("warn", !live || state.klippy_state !== "ready");
+    }
+  }
 
   bootstrap(payload) {
     setText(this.doc.getElementById("provider-badge"), `Provider: ${payload.provider || "unavailable"}`);
@@ -45,7 +66,7 @@ class ShellView {
     }
   }
 
-  render(store, { busy, pending, revalidate }) {
+  render(store, { busy, pending, revalidate, modesEnabled }) {
     const conversation = store.getCurrentConversation();
     this.messageView.revalidate = revalidate;
     this.renderHistory(store, busy);
@@ -56,6 +77,15 @@ class ShellView {
       this.messages.scrollTop = this.messages.scrollHeight;
     }
     if (this.input) this.input.value = conversation?.draft || "";
+    if (this.mode) {
+      this.mode.value = modesEnabled ? normalizeAgentMode(conversation?.mode) : "chat";
+      this.mode.disabled = busy || !modesEnabled;
+    }
+    setText(this.doc.getElementById("mode-description"), !modesEnabled
+      ? "Modes require the tool-using agent. This workflow selects context from your question."
+      : conversation?.mode === "debug"
+        ? "Debug adds live status and recent logs/service diagnostics. Earlier conversation stays available."
+        : "Chat starts with your printer profile, active config and relevant saved evidence. Logs are read only when needed; earlier conversation stays available.");
     for (const element of [this.input, this.send, this.newChat]) if (element) element.disabled = busy;
     setText(this.send, pending ? "Analyzing..." : "Analyze");
   }

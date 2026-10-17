@@ -155,6 +155,7 @@ class MessageView {
       AgentActivity.appendActions(article, entry.nextActions);
       AgentActivity.append(article, entry.agentEvents);
       InvestigationEvidence.append(article, entry.memorySources);
+      ContextReceipt.append(article, entry.contextIncluded, entry.mode);
     }
 
     if (entry.role === "assistant" && entry.sourceCitations?.length) {

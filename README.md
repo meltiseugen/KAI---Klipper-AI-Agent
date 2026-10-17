@@ -45,16 +45,22 @@ This repository is an early implementation. What exists today:
 - FastAPI-based async agent service
 - full-page and embedded chat UI served by the agent
 - Moonraker client abstraction
+- reconnecting Moonraker agent registration, live printer-state badges and G-code metadata inspection
 - bounded tool-using agent loop for OpenAI, with deterministic offline workflows
 - read-only config, profile, printer-status and diagnostics tools
+- Chat/Debug starting context, a mode selector and saved **Context included** receipts
+- literal config search, targeted diagnostic reads and fixed component-status groups
+- shutdown investigations for USB/CAN communication and timing failures, with pre-stop statistics and optional kernel-event correlation
 - configurable public web search with cited sources
 - streamed tool activity and typed completion status
 - persistent investigations and dated evidence memory across chats
+- printer knowledge built dynamically from each user's hardware details, with public documentation research, cached manuals, reviewed fan-port mappings and Eddy calibration evidence
 - static proposal review, section comparisons and read-only revalidation
 - direct OpenAI-compatible provider integration path
+- private server-side credential setup/rotation, per-task model profiles and persistent provider usage limits
 - deterministic rule engine for a small set of common Klipper failures
 - host-side current `*.log` collection with configurable line-tail excerpts
-- runtime file logging to `printer_data/logs/klipperai.log` so host-side debugging is visible from Mainsail
+- private runtime file logging to `<data_dir>/logs/klipperai.log`
 - optional `systemctl` and `journalctl` diagnostics for Moonraker and Klipper services
 - one-time printer-profile detection during install, persisted into `klipperai.cfg`
 - firmware flavor detection for mainline Klipper, Kalico, and custom forks
@@ -65,10 +71,20 @@ This repository is an early implementation. What exists today:
 - guided installer support for a Mainsail custom-navigation link
 - an optional maintained Mainsail source patch bundle for advanced installs
 
+See [Chat and Debug modes](docs/agent-modes.md) for context contents, limits and
+the behavior of the offline/legacy workflows.
+See [provider management](docs/providers.md) for setup, rotation, model routing,
+request/token limits and activation through a manual KlipperAI restart.
+See [Moonraker integration](docs/moonraker-integration.md) for socket setup, live
+state, non-secret database metadata and the session-bootstrap extension methods.
+See [shutdown investigations](docs/shutdown-investigations.md) for supported failure
+families, confidence-qualified checks, retained-log limits and missing evidence.
+See [printer knowledge](docs/printer-knowledge.md) to confirm hardware details,
+build its local documentation library and understand the initial supported boards.
+
 What does not exist yet:
 
-- real Moonraker agent registration flow
-- broader host diagnostics beyond the current Moonraker/Klipper service scope
+- continuous host process/CPU, swap and I/O-pressure history for intermittent failures
 - complete firmware/hardware validation of proposed configuration
 - automatic recovery of interrupted in-flight investigations
 - deeper config specialization beyond the current broad scaffold generation path
@@ -81,8 +97,9 @@ What does not exist yet:
 - analyze `klippy.log`, `moonraker.log`, and host/system log excerpts
 - auto-collect current `.log` files from `printer_data/logs`
 - send only the configured last lines from each collected log file
+- use a separate bounded current/rotated Klippy log search for shutdown investigations
 - collect `systemctl show` snapshots and recent `journalctl` lines for `moonraker.service` and `klipper.service`
-- write KlipperAI runtime logs into the same `printer_data/logs` directory used by Klipper-side services
+- write private KlipperAI runtime logs under `<data_dir>/logs/`
 - include the active Klipper config tree as LLM context during diagnostics, not only during config-generation requests
 - detect common faults deterministically before involving an LLM
 - explain likely causes in plain language
@@ -204,9 +221,8 @@ The installer currently guides the user through:
 - generating and enabling a `systemd` service
 - generating an nginx location snippet for `/klipperai/`
 - optionally patching the selected Mainsail nginx server block to include that snippet
-- writing KlipperAI runtime logs to `printer_data/logs/klipperai.log`
+- writing private KlipperAI runtime logs to `<data_dir>/logs/klipperai.log`
 - optionally installing a Mainsail navigation link in `.theme/navi.json`
-- when `gcode_shell_command` is detected, optionally generating an `UPDATE_KLIPPERAI` macro that pulls the repo and restarts `klipperai-agent`
 - when OctoEverywhere is detected, optionally applying the local OE `/klipperai/` route patch automatically
 
 KlipperAI requires Python `3.10+`. The installer now checks that explicitly and recreates an older `.venv` if a previous attempt bootstrapped one with Python `3.9` or older. For Bullseye-era printer images such as BIGTREETECH CB1, use [deployment/python/install-python310.sh](deployment/python/install-python310.sh) or follow [docs/python310-install.md](docs/python310-install.md) before rerunning `./install.sh`. On embedded images where `python3 -m venv` is unavailable, the installer can use `virtualenv` from pip instead.
@@ -222,13 +238,17 @@ After installation, the recommended `v1` flow is:
 Important limitations:
 
 - the optional native Mainsail shell exists as a source patch bundle, but the installer does not apply or build Mainsail automatically
-- the optional `UPDATE_KLIPPERAI` macro depends on `gcode_shell_command` support; it runs directly when Klipper runs as root, otherwise it writes a narrow sudoers rule for its helper script
+- the installer does not install Klipper macros, shell-command extensions, or edit `printer.cfg`
 - Moonraker update-manager controls work best after the repo has semantic-version tags such as `v0.1.0`
 
-The update macro can also be installed after the main install with
-`integrations/klipper/install-update-macro.sh`. If `gcode_shell_command.py` is
-missing but a Klipper/Kalico checkout is present, the installer can offer to
-download the KIAUH extension asset and install it first.
+The older `integrations/klipper/install-update-macro.sh` helper remains for
+legacy installations; it is outside the supported installation flow. Use the
+Moonraker update-manager integration to update the assistant.
+
+`sh install.sh --check` validates the installer modules without changing the
+host. The entry point delegates to focused scripts in `deployment/installer/`.
+See [frontend and installation ownership](docs/frontend-and-installation.md)
+for the module map, access routes, and verification commands.
 
 ### Recommended Mainsail Integration
 
@@ -238,6 +258,13 @@ The repository includes:
 
 - `integrations/mainsail/install-custom-nav.sh`
 - `integrations/mainsail/navi.json.example`
+
+The installer also offers automatic sidebar-link repair at startup, on theme
+changes and every five minutes. Existing installations can add it with
+`sh integrations/mainsail/install-auto-reapply.sh --config-dir /path/to/printer_data/config`.
+See the [Mainsail maintenance guide](integrations/mainsail/README.md) for custom
+URLs, checks and removal. The OctoEverywhere auto-reapply hook likewise checks at
+startup; rerun its hook installer after upgrading to refresh existing units.
 
 Example navigation entry:
 
@@ -410,7 +437,11 @@ klipperai-detect-profile \
 
 ## Security Model
 
-The intended security stance is:
+See [Security and local deployment](docs/security.md) for secret storage, redaction,
+proxy configuration and upgrade notes. UI sessions are not authentication; the
+API assumes a trusted LAN or an authenticated remote proxy.
+
+The security stance is:
 
 - provider API keys stay server-side only
 - the browser never gets raw provider credentials
@@ -441,7 +472,7 @@ The intended security stance is:
 - The default provider is `stub`, so the app can boot without any external API key.
 - OpenAI requests use an iterative agent that selects tools and follows up on their results. `stub` retains deterministic local workflows. Conversations and dated evidence persist in application-owned SQLite storage; interrupted in-flight calls are not resumed.
 - Host log collection currently targets current `.log` files directly under `printer_data/logs` and sends the configured last lines from each file.
-- KlipperAI itself also writes a rotating runtime log at `printer_data/logs/klipperai.log`, intended to be visible from Mainsail alongside the other printer-host logs.
+- KlipperAI writes a private rotating runtime log at `<data_dir>/logs/klipperai.log` (normally `/var/lib/klipperai/logs/klipperai.log`). This file is no longer automatically exposed through Mainsail.
 - Systemd diagnostics currently target `systemctl show` plus the last `journalctl` lines for the configured Moonraker and Klipper units.
 - Config assistant currently inspects `printer_data/config`, follows the active root config include tree, and can return typed config proposals in chat across the main supported feature categories.
 - The runtime does not apply or write those proposals back to printer files.

@@ -44,13 +44,16 @@ ruff format --check klipperai_agent tests tools
 mypy klipperai_agent --ignore-missing-imports
 python tools/project_map.py --check
 uv build
-node tests/agent-ui.test.mjs  # optional JS runtime checks, no npm dependencies
+node --test tests/*.test.mjs  # JS runtime checks, no npm dependencies
+sh install.sh --check
 ```
 
 The `uv` equivalent is `uv sync --extra dev`. On Windows, if a shared pytest temp
 directory is inaccessible, use `-p no:cacheprovider --basetemp=.local/test-run-N`
-with a fresh N. Shell integration tests require a POSIX shell and are skipped
-when none is on PATH.
+with a fresh N (create `.local` first on a new checkout). Shell integration
+tests require Bash and standard POSIX utilities. They also detect Git for
+Windows when it is not on PATH; all host writes and service commands use fixtures.
+See [frontend and installer ownership](frontend-and-installation.md).
 
 Install the built wheel in a clean environment outside the repository and verify
 `python -m klipperai_agent`, both profile CLI names, root/embed HTML and bundled

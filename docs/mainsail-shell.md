@@ -40,7 +40,12 @@ The route at `/klipperai/` is a full-page KlipperAI shell served by the agent. I
 
 - `<printer-config>/.theme/navi.json`
 
-The main installer can call that helper automatically.
+The main installer calls that helper and offers automatic repair, enabled by
+default. The watcher/timer checks at system startup (about 30 seconds after boot),
+on theme/navigation changes and every five minutes. It preserves unrelated
+entries and uses backups and atomic replacement. See the
+[maintenance guide](../integrations/mainsail/README.md) for existing-installation
+setup, saved options and removal behavior.
 
 ## Optional Native Shell Patch
 

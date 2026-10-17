@@ -23,8 +23,9 @@ Patch nginx include:  $PATCH_NGINX_INCLUDE
 Local bind port:      $KLIPPERAI_PORT
 Data dir:             $KLIPPERAI_DATA_DIR
 Runtime mode:         read-only
-KlipperAI log file:        $KLIPPERAI_LOGS_DIR_PATH/$KLIPPERAI_AGENT_LOG_FILE_NAME
+KlipperAI log file:        $KLIPPERAI_DATA_DIR/logs/$KLIPPERAI_AGENT_LOG_FILE_NAME
 Mainsail nav link:        $INSTALL_MAINSAIL_NAV
+Mainsail auto-reapply:    $INSTALL_MAINSAIL_AUTO_REAPPLY
 OctoEverywhere patch:     $INSTALL_OCTOEVERYWHERE_PATCH
 OE patch auto-reapply:    $INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY
 

@@ -78,6 +78,7 @@ async def test_moonraker_client_alternate_valid_payloads() -> None:
         "list_printer_objects",
         "query_printer_objects",
         "get_system_info",
+        "get_process_stats",
         "get_update_status",
         "list_serial_devices",
         "list_usb_devices",

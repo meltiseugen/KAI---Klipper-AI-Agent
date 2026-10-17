@@ -19,6 +19,7 @@ class OpenAIWebSearch:
         if self._domains:
             tool["filters"] = {"allowed_domains": self._domains}
         output = await self._client.create(
+            purpose="search",
             input=query,
             instructions=(
                 "Search public Klipper, Kalico, Moonraker or related hardware documentation. "

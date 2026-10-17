@@ -5,6 +5,10 @@ install_access_integrations() {
   if [[ "$INSTALL_MAINSAIL_NAV" == "yes" ]]; then
     log "Installing Mainsail custom navigation entry."
     install_mainsail_custom_nav
+    if [[ "${INSTALL_MAINSAIL_AUTO_REAPPLY:-no}" == "yes" ]]; then
+      log "Installing Mainsail navigation startup check and auto-reapply timer."
+      install_mainsail_auto_reapply
+    fi
   fi
 
   log "Reloading systemd and enabling the service."

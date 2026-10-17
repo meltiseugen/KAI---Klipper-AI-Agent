@@ -23,6 +23,8 @@ Restart=on-failure
 RestartSec=3
 NoNewPrivileges=yes
 PrivateTmp=yes
+UMask=0077
+Environment=PYTHONDONTWRITEBYTECODE=1
 
 [Install]
 WantedBy=multi-user.target

@@ -6,6 +6,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 
 from klipperai_agent.domain.evidence import ArtifactInput, ArtifactKind
+from klipperai_agent.domain.redaction import redact_text
 
 
 @dataclass(frozen=True, slots=True)
@@ -92,7 +93,9 @@ class HostLogCollector:
         kind = known_kind.kind if known_kind else "system_log"
         display_name = known_kind.display_name if known_kind else path.name
         metadata = self._render_metadata(path, display_name, tail_lines, truncated)
-        content = self._clip_text(f"{metadata}\n\n{excerpt}".strip(), self._artifact_char_limit)
+        content = self._clip_text(
+            redact_text(f"{metadata}\n\n{excerpt}".strip()), self._artifact_char_limit
+        )
 
         return ArtifactInput(
             kind=kind,

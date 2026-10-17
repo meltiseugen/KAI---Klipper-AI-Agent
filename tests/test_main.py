@@ -23,10 +23,16 @@ def test_main_configures_and_runs_uvicorn(monkeypatch) -> None:
         main_module.uvicorn, "run", lambda *args, **kwargs: calls.update(args=args, kwargs=kwargs)
     )
 
+    monkeypatch.setattr(main_module.os, "umask", lambda value: calls.update(umask=value))
     main_module.main()
+    assert calls["umask"] == 0o077
+    assert calls["kwargs"]["access_log"] is False
+    assert calls["kwargs"]["server_header"] is False
+    assert calls["kwargs"]["forwarded_allow_ips"] == "127.0.0.1,::1"
     assert calls["ensured"] is True
     assert calls["args"] == ("klipperai_agent.web.app:create_app",)
     assert calls["kwargs"]["factory"] is True
+    assert calls["kwargs"]["root_path"] == "/klippyai"
     assert calls["kwargs"]["log_config"] is None
 
 

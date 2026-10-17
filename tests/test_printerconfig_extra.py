@@ -100,7 +100,9 @@ def test_config_collector_read_and_resolution_error_paths(monkeypatch, tmp_path:
 
     original_read = Path.read_text
     monkeypatch.setattr(
-        Path, "read_text", lambda self, *args, **kwargs: (_ for _ in ()).throw(OSError("bad"))
+        Path,
+        "read_text",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("bad")),
     )
     snapshot = collector.collect()
     assert any("Could not read" in note for note in snapshot.notes)
@@ -126,7 +128,9 @@ def test_auto_detection_skips_unreadable_candidates(monkeypatch, tmp_path: Path)
     candidate = config / "candidate.cfg"
     candidate.write_text("[printer]\n", encoding="utf-8")
     monkeypatch.setattr(
-        Path, "read_text", lambda self, *args, **kwargs: (_ for _ in ()).throw(OSError("bad"))
+        Path,
+        "read_text",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OSError("bad")),
     )
     snapshot = ConfigCollector(tmp_path).collect()
     assert snapshot.root_file is None

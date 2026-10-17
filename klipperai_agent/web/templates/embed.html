@@ -33,6 +33,8 @@
 
       <section class="workspace">
         <header class="topbar">
+          <button id="providers-toggle" type="button" class="secondary-button" aria-controls="providers-panel" aria-expanded="false" hidden>Provider settings</button>
+          <button id="knowledge-toggle" type="button" class="secondary-button" aria-controls="knowledge-panel" aria-expanded="false" hidden>Printer knowledge</button>
           <div class="topbar-leading">
             <button id="shell-menu-toggle" class="menu-toggle" type="button" aria-label="Toggle chat history">
               <span></span>
@@ -44,23 +46,64 @@
               <span id="model-badge" class="badge">Model: loading</span>
               <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
               <span id="klipper-badge" class="badge muted">Klipper: checking</span>
+              <span id="moonraker-events-badge" class="badge muted" hidden>Events: connecting</span>
             </div>
           </div>
         </header>
 
         <main class="workspace-main">
-          <div class="conversation-panel">
+          <section id="providers-panel" class="knowledge-panel" aria-label="Provider settings" hidden>
+            <div class="actions"><h2>Provider settings</h2><button id="providers-close" type="button" class="secondary-button">Close</button></div>
+            <p>Set up or rotate your OpenAI key. Keys are kept in private server storage and are never returned to this page. Leave the key empty to keep the saved key.</p>
+            <p>Saving checks access to the configured model IDs without generating a response. Model access does not guarantee billing, reasoning-option or tool compatibility. Use model IDs and reasoning options supported by your account.</p>
+            <div id="providers-form" class="providers-form"></div>
+            <label class="field"><span>New or replacement API key</span><input id="providers-key" type="password" autocomplete="new-password" spellcheck="false" maxlength="512" /></label>
+            <label><input id="providers-remove" type="checkbox" /> Remove stored key (select Offline first)</label>
+            <p>Limits apply to all OpenAI requests, including background research. Token accounting includes conservative reservations for failed or interrupted calls; it is not a dollar billing cap. Hosted search may add charges. Keep account spending controls enabled at your provider.</p>
+            <p>Saved changes take effect after you manually restart KlipperAI. Rotation does not revoke the previous key at OpenAI. After restarting and checking the new key, revoke the old key in your provider account.</p>
+            <div class="actions">
+              <button id="providers-validate" type="button" disabled>Check access</button>
+              <button id="providers-save" type="button" disabled>Validate and save</button>
+              <button id="providers-reload" type="button" class="secondary-button">Reload settings</button>
+            </div>
+            <p id="providers-status" role="status" aria-live="polite"></p>
+          </section>
+          <section id="knowledge-panel" class="knowledge-panel" aria-label="Printer knowledge" hidden>
+            <div class="actions"><h2>Printer knowledge</h2><button id="knowledge-close" type="button" class="secondary-button">Close</button></div>
+            <p>Review the components from your printer profile, then build a local reference library for your hardware. Any manufacturer or model can be researched. Add more components as needed; unclear board identities remain questions to resolve.</p>
+            <p>Build/Refresh uses your configured search provider and may use provider credits. Research sends public product names, hardware revisions and firmware versions; it does not send printer configs, logs, MCU identifiers or wiring notes. Use only public product details in those fields.</p>
+            <p>Discovered sources and extracted connector mappings need checking against the exact hardware. PDFs and diagrams are saved for download; readable companion text is searchable.</p>
+            <div id="knowledge-form" class="knowledge-form"></div>
+            <div class="actions">
+              <button id="knowledge-add" type="button" class="secondary-button" disabled>Add component</button>
+              <button id="knowledge-save" type="button" disabled>Save details</button>
+              <button id="knowledge-refresh" type="button" disabled>Build printer knowledge</button>
+              <button id="knowledge-reload" type="button" class="secondary-button">Reload details</button>
+            </div>
+            <p>Saving changes only KlipperAI knowledge. Fan suggestions still require checking the physical connector, voltage and current. Firmware procedures need documentation matching the installed fork and version.</p>
+            <p id="knowledge-status" role="status" aria-live="polite"></p>
+            <div id="knowledge-records"></div>
+          </section>
+          <div id="conversation-panel" class="conversation-panel">
             <section id="messages" class="messages">
               <article class="message assistant">
                 <div class="message-meta">KlipperAI</div>
                 <div class="message-body">
-                  Ask what failed or ask for config help like "where is my extruder defined?". Current host logs are collected automatically, and you can paste extra config or log text directly into the question field.
+                  Ask about your printer or its configuration. Chat starts with printer context; Debug also collects current status and recent diagnostic excerpts. You can paste extra config or logs into the question.
                 </div>
               </article>
             </section>
 
             <section class="composer-shell">
               <div class="composer-column">
+                <div class="mode-controls">
+                  <label for="agent-mode">Mode</label>
+                  <select id="agent-mode" aria-describedby="mode-description" disabled>
+                    <option value="chat">Chat</option>
+                    <option value="debug">Debug</option>
+                  </select>
+                  <p id="mode-description" class="mode-description">Loading agent modes…</p>
+                </div>
                 <label class="field">
                   <span>Question</span>
                   <textarea id="message-input" rows="5" maxlength="40000" placeholder="Why is the printer shutting down during homing? You can paste relevant config or log text here too."></textarea>

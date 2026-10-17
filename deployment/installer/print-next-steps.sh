@@ -19,7 +19,7 @@ Generated nginx snippet:
   /etc/klipperai/nginx-location.conf
 
 KlipperAI runtime log:
-  $KLIPPERAI_LOGS_DIR_PATH/$KLIPPERAI_AGENT_LOG_FILE_NAME
+  $KLIPPERAI_DATA_DIR/logs/$KLIPPERAI_AGENT_LOG_FILE_NAME
 
 Next steps:
 1. Restart Moonraker so it reloads the KlipperAI include and allowed-services file:
@@ -27,13 +27,23 @@ Next steps:
 2. Check the services:
    systemctl status $SERVICE_NAME --no-pager
    systemctl status moonraker --no-pager
-   tail -n 100 $KLIPPERAI_LOGS_DIR_PATH/$KLIPPERAI_AGENT_LOG_FILE_NAME
+   tail -n 100 $KLIPPERAI_DATA_DIR/logs/$KLIPPERAI_AGENT_LOG_FILE_NAME
 3. Open KlipperAI:
    http://<printer-host>${KLIPPERAI_ROOT_PATH}/
 4. After editing ${KLIPPERAI_CFG_PATH}, restart the service:
    sudo systemctl restart $SERVICE_NAME
 
 EOF
+
+  if [[ "${INSTALL_MAINSAIL_AUTO_REAPPLY:-no}" == "yes" ]]; then
+    cat <<EOF
+Mainsail navigation auto-reapply:
+- Checks at startup (after about 30 seconds), on file changes and every 5 minutes.
+- Status: systemctl status klipperai-mainsail-reapply.timer klipperai-mainsail-reapply.path
+- Logs: journalctl -u klipperai-mainsail-reapply.service -n 50 --no-pager
+
+EOF
+  fi
 
   if [[ "$INSTALL_OCTOEVERYWHERE_PATCH" == "yes" ]]; then
     cat <<EOF
@@ -44,6 +54,7 @@ OctoEverywhere integration:
 - Navigation target: new tab
 - Route: ${KLIPPERAI_ROOT_PATH%/}/
 - Auto-reapply timer: $INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY
+- When enabled, checks at startup (after about 30 seconds), on file changes and every 5 minutes.
 
 EOF
   fi

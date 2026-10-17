@@ -6,6 +6,7 @@ from pydantic import Field, StrictStr
 
 from klipperai_agent.agent.models import WebSearch
 from klipperai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
+from klipperai_agent.domain.redaction import redact_text
 
 
 class SearchArguments(ToolArguments):
@@ -25,6 +26,10 @@ class WebSearchTool(Tool[SearchArguments]):
         self._search = search
 
     async def execute(self, arguments: SearchArguments, context: ToolContext) -> dict[str, Any]:
+        if redact_text(arguments.query) != arguments.query:
+            return {
+                "error": "Search query contains a credential or session value. Use public technical terms."
+            }
         result = await self._search.search(arguments.query)
         context.citations.extend(result.citations)
         return {

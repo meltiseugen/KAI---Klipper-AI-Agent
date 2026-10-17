@@ -6,6 +6,7 @@ from typing import Literal
 from pydantic import Field, validator
 
 from klipperai_agent.contracts.base import BaseModel
+from klipperai_agent.domain.context import AgentMode, ContextItem
 from klipperai_agent.domain.evidence import (
     AgentEvent as AgentEvent,
 )
@@ -69,6 +70,7 @@ class PrinterProfileSummary(BaseModel):
 
 class ChatRequest(BaseModel):
     session_id: str
+    mode: AgentMode = "chat"
     thread_id: str | None = Field(default=None, min_length=1, max_length=128)
     message: str = Field(min_length=1, max_length=40000)
     artifacts: list[ArtifactInput] = Field(default_factory=list)
@@ -83,6 +85,8 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     session_id: str
+    mode: AgentMode = "chat"
+    context_included: list[ContextItem] = Field(default_factory=list)
     thread_id: str
     response: str
     findings: list[IssueFinding]
@@ -99,6 +103,7 @@ class ChatResponse(BaseModel):
 
 class BootstrapResponse(BaseModel):
     session_id: str
+    agent_modes: list[AgentMode] = Field(default_factory=list)
     provider: str
     provider_model: str | None = None
     conversation_history_pairs: int = 10

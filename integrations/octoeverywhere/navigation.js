@@ -47,7 +47,9 @@
                 }
                 catch(_historyError)
                 {
-                    // Keep about:blank if the browser refuses a synthetic URL.
+                    // A real navigation keeps relative API URLs usable if URL replacement fails.
+                    popup.location.replace(visibleUrl.toString());
+                    return;
                 }
                 popup.document.open();
                 popup.document.write(html);
@@ -180,6 +182,7 @@
             if(popup == null)
             {
                 oe_log("Browser blocked the KlipperAI popup.");
+                window.location.assign(resolvedUrl.toString());
             }
             else
             {

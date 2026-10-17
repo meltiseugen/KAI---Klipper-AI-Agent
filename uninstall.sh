@@ -15,6 +15,8 @@ OE_REAPPLY_PATH_NAME="klipperai-octoeverywhere-reapply.path"
 OE_REAPPLY_SERVICE_PATH="/etc/systemd/system/${OE_REAPPLY_SERVICE_NAME}"
 OE_REAPPLY_TIMER_PATH="/etc/systemd/system/${OE_REAPPLY_TIMER_NAME}"
 OE_REAPPLY_PATH_PATH="/etc/systemd/system/${OE_REAPPLY_PATH_NAME}"
+MAINSAIL_REAPPLY_NAME="klipperai-mainsail-reapply"
+MAINSAIL_REAPPLY_UNIT_DIR="${KLIPPERAI_SYSTEMD_DIR:-/etc/systemd/system}"
 
 log() {
   printf '[%s] %s\n' "$PROJECT_NAME" "$*"
@@ -327,6 +329,21 @@ reload_nginx() {
   run_root systemctl reload nginx
 }
 
+remove_mainsail_auto_reapply() {
+  local suffix
+  local installed=no
+  for suffix in timer path service; do
+    [[ ! -f "$MAINSAIL_REAPPLY_UNIT_DIR/${MAINSAIL_REAPPLY_NAME}.${suffix}" ]] || installed=yes
+  done
+  [[ "$installed" == yes ]] || return 0
+  run_root systemctl disable --now "${MAINSAIL_REAPPLY_NAME}.timer" "${MAINSAIL_REAPPLY_NAME}.path"
+  run_root systemctl stop "${MAINSAIL_REAPPLY_NAME}.service"
+  for suffix in timer path service; do
+    remove_file_if_present "$MAINSAIL_REAPPLY_UNIT_DIR/${MAINSAIL_REAPPLY_NAME}.${suffix}"
+  done
+  run_root systemctl daemon-reload
+}
+
 print_summary() {
   cat <<EOF
 
@@ -344,6 +361,7 @@ Data dir:              ${KLIPPERAI_DATA_DIR:-<not found>}
 Project checkout:      ${KLIPPERAI_PROJECT_CHECKOUT_PATH:-<not found>}
 nginx server block:    ${KLIPPERAI_NGINX_SERVER_BLOCK_PATH:-<not found>}
 Remove nav entry:      $REMOVE_MAINSAIL_NAV
+Mainsail repair units: removed automatically when installed
 Remove nginx include:  $REMOVE_NGINX_INCLUDE
 Remove data dir:       $REMOVE_DATA_DIR
 Remove nginx snippet:  $REMOVE_NGINX_SNIPPET
@@ -428,7 +446,9 @@ main() {
   KLIPPERAI_MOONRAKER_CONFIG_DIR="${KLIPPERAI_MOONRAKER_CONFIG_PATH%/*}"
   KLIPPERAI_MOONRAKER_EXTENSION_CFG_PATH="${KLIPPERAI_MANAGED_CONFIG_DIR_PATH}/klipperai-moonraker.cfg"
   KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH="${KLIPPERAI_PRINTER_DATA_ROOT%/}/moonraker.asvc"
-  KLIPPERAI_MAINSAIL_NAV_HREF="/klipperai/"
+  KLIPPERAI_MAINSAIL_NAV_HREF="$(get_cfg_value "$KLIPPERAI_CFG_PATH" "server" "root_path" || true)"
+  KLIPPERAI_MAINSAIL_NAV_HREF="${KLIPPERAI_MAINSAIL_NAV_HREF:-/klipperai}"
+  KLIPPERAI_MAINSAIL_NAV_HREF="${KLIPPERAI_MAINSAIL_NAV_HREF%/}/"
   KLIPPERAI_UPDATE_RUNNER_PATH="/usr/local/bin/klipperai-self-update"
   KLIPPERAI_UPDATE_SUDOERS_PATH="/etc/sudoers.d/klipperai-self-update"
   KLIPPERAI_UPDATE_MACRO_CFG_PATH="${KLIPPERAI_MANAGED_CONFIG_DIR_PATH}/klipperai-macros.cfg"
@@ -512,6 +532,9 @@ main() {
 
   remove_file_if_present "$SYSTEMD_UNIT_PATH"
   run_root systemctl daemon-reload
+
+  # Stop navigation repair before removing its link or the checkout it executes.
+  remove_mainsail_auto_reapply
 
   if [[ "$REMOVE_OE_REAPPLY_INTEGRATION" == "yes" ]]; then
     log "Stopping and disabling ${OE_REAPPLY_TIMER_NAME}."
@@ -597,6 +620,7 @@ Removed:
 - KlipperAI environment file
 - optional UPDATE_KLIPPERAI macro artifacts when selected
 - optional OctoEverywhere auto-reapply artifacts when selected
+- Mainsail navigation auto-reapply units, if installed
 
 Manual follow-up:
 1. Restart Moonraker:
@@ -608,4 +632,6 @@ Manual follow-up:
 EOF
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

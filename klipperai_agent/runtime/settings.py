@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import configparser
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -38,11 +39,15 @@ class Settings(BaseSettings):
     root_path: str = ""
     public_base_url: str = ""
     moonraker_url: str = "http://127.0.0.1:7125"
+    moonraker_agent_enabled: bool = True
+    moonraker_socket_path: Path | None = None
     data_dir: Path = Path(".local/klipperai")
     checkpoint_db: Path = Path(".local/klipperai/checkpoints.sqlite")
     printer_data_root: Path = Path("/home/pi/printer_data")
     managed_config_dir_name: str = "klipperai"
     session_ttl_seconds: int = 3600
+    security_allowed_origins: str = ""
+    security_allowed_hosts: str = "*"
     conversation_history_pairs: int = Field(default=10, ge=0, le=50)
     memory_cross_chat: bool = True
     memory_retention_days: int = Field(default=90, ge=1, le=3650)
@@ -66,6 +71,9 @@ class Settings(BaseSettings):
     llm_provider: str = "stub"
     openai_model: str = "gpt-5.4-mini"
     openai_api_key: SecretStr | None = None
+    provider_storage_dir: Path = Field(
+        default_factory=lambda: Path.home() / ".config" / "klipperai"
+    )
     agent_enabled: bool = True
     web_search_enabled: bool = True
     web_search_domains: str = ""
@@ -83,6 +91,10 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore"
+
+    @validator("moonraker_socket_path", pre=True)
+    def _normalize_moonraker_socket(cls, value: Any) -> Any:
+        return None if isinstance(value, str) and not value.strip() else value
 
     @validator(
         "firmware_flavor",
@@ -114,6 +126,12 @@ class Settings(BaseSettings):
         if not normalized:
             raise ValueError("Logging settings must not be blank.")
         return normalized
+
+    @validator("agent_log_file_name")
+    def _log_basename(cls, value: str) -> str:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,100}\.log", value):
+            raise ValueError("Agent log name must be a plain .log filename.")
+        return value
 
     @validator("log_tail_lines_overrides", pre=True)
     def _normalize_log_tail_lines_overrides(cls, value: Any) -> dict[str, int]:
@@ -175,12 +193,11 @@ class Settings(BaseSettings):
         return self.printer_data_root / self.logs_dir_path
 
     def agent_log_path(self) -> Path:
-        return self.host_logs_dir() / self.agent_log_file_name
+        return self.data_dir / "logs" / self.agent_log_file_name
 
     def ensure_directories(self) -> None:
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        self.checkpoint_db.parent.mkdir(parents=True, exist_ok=True)
-        self.host_logs_dir().mkdir(parents=True, exist_ok=True)
+        self.data_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        self.agent_log_path().parent.mkdir(parents=True, exist_ok=True, mode=0o700)
 
 
 def _load_klipperai_cfg_values(config_file: Path) -> dict[str, Any]:
@@ -224,6 +241,10 @@ def _load_klipperai_cfg_values(config_file: Path) -> dict[str, Any]:
                 normalized_key, normalized_key
             )
             if normalized_key in field_names:
+                if normalized_key == "openai_api_key":
+                    raise ValueError(
+                        "Keep API keys in the protected environment file, not klipperai.cfg."
+                    )
                 values[normalized_key] = value.strip()
     return values
 

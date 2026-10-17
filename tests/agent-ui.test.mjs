@@ -4,16 +4,17 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 const source = await readFile(new URL("../klipperai_agent/web/static/agent.js", import.meta.url), "utf8");
-const embed = await readFile(new URL("../klipperai_agent/web/static/embed.js", import.meta.url), "utf8");
 const investigation = await readFile(new URL("../klipperai_agent/web/static/investigation.js", import.meta.url), "utf8");
-new vm.Script(`${source}\n${investigation}\n${embed}`);
+const manifest = JSON.parse(await readFile(new URL("../klipperai_agent/web/static/scripts.json", import.meta.url), "utf8"));
+const bundle = await Promise.all(manifest.map(name => readFile(new URL(`../klipperai_agent/web/static/${name}`, import.meta.url), "utf8")));
+new vm.Script(bundle.join("\n"));
 
 function element(tag) {
   return { tag, children: [], listeners: {}, appendChild(child) { this.children.push(child); }, setAttribute() {}, addEventListener(name, fn) { this.listeners[name] = fn; } };
 }
 const context = vm.createContext({ TextDecoder, document: { createElement: element } });
 vm.runInContext(`${source}\nglobalThis.Reader = ChatStreamReader; globalThis.Activity = AgentActivity;`, context);
-vm.runInContext(`${investigation}\nglobalThis.Client = InvestigationClient; globalThis.Review = ProposalReviewCard; globalThis.Evidence = InvestigationEvidence;`, context);
+vm.runInContext(`${investigation}\nglobalThis.messages = investigationMessages; globalThis.Review = ProposalReviewCard; globalThis.Evidence = InvestigationEvidence;`, context);
 
 function responseFor(chunks) {
   let index = 0;
@@ -50,20 +51,7 @@ assert.equal(article.children[1].children[1].children[0].textContent, "Review th
 context.Activity.append(element("article"), null);
 context.Activity.appendActions(element("article"), []);
 
-const urls = [];
-let attempts = 0;
-context.fetch = async (url, options) => {
-  urls.push({ url, method: options.method });
-  return ++attempts === 1 ? { status: 403, ok: false } : { status: 200, ok: true, json: async () => ({ restored: true }) };
-};
-const client = new context.Client("/klipperai/api", async refresh => refresh ? "new session" : "expired");
-assert.ok((await client.request("/chat")).restored);
-assert.ok(urls[1].url.endsWith("session_id=new%20session"));
-context.fetch = async () => ({ status: 204, ok: true });
-assert.equal(await client.request("/chat", "DELETE"), null);
-context.fetch = async () => ({ status: 409, ok: false });
-await assert.rejects(() => client.request("/chat"), /409/);
-const entries = context.Client.messages({ turns: [{ question: "Fan?", imported_history: [{ role: "user", text: "Earlier question" }], result: { response_text: "Evidence", config_proposals: [{ title: "Draft" }] } }] });
+const entries = context.messages({ turns: [{ question: "Fan?", imported_history: [{ role: "user", text: "Earlier question" }], result: { response_text: "Evidence", config_proposals: [{ title: "Draft" }] } }] });
 assert.equal(entries[0].text, "Earlier question");
 assert.equal(entries[2].configProposals[0].title, "Draft");
 
@@ -85,5 +73,5 @@ const memory = element("article");
 context.Evidence.append(memory, [{ source: "config", observed_at: "yesterday" }]);
 assert.match(memory.children[0].children[1].children[0].textContent, /yesterday/);
 
-export const outcome = "Browser scripts parse; SSE, history restoration, session retry, manual reviews, dated memory and text escaping pass.";
+export const outcome = "Full browser bundle parses; SSE, saved turns, manual reviews, dated memory and text escaping pass.";
 console.log(outcome);

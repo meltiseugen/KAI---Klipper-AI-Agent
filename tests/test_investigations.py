@@ -241,7 +241,7 @@ def test_investigation_api_restores_rechecks_and_forgets_without_config_writes(
             == 422
         )
         answer = client.post(
-            "/api/chat", json={"session_id": session, "message": "fan proposal"}
+            "/api/chat", json={"session_id": session, "message": "fan proposal", "mode": "debug"}
         ).json()
         path = f"/api/investigations/{answer['thread_id']}"
         assert (
@@ -268,6 +268,7 @@ def test_investigation_api_restores_rechecks_and_forgets_without_config_writes(
         response = client.post(recheck, params=query)
         assert response.json()["result"]["config_proposals"][0]["review"]["status"] == "stale"
         assert client.get(path, params=query).json()["turns"][-1]["id"] == response.json()["id"]
+        assert response.json()["result"]["mode"] == "debug"
         assert len(model.requests) == calls  # Review does not call an LLM.
         assert config.read_bytes() == modified
         assert list((tmp_path / "config").iterdir()) == [config]

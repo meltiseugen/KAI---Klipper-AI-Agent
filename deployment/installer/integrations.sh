@@ -14,6 +14,13 @@ install_mainsail_custom_nav() {
     --position 85
 }
 
+install_mainsail_auto_reapply() {
+  bash "$INSTALL_DIR/integrations/mainsail/install-auto-reapply.sh" \
+    --config-dir "$KLIPPERAI_MAINSAIL_CONFIG_DIR" \
+    --href "${KLIPPERAI_ROOT_PATH%/}/" --title "KlipperAI" \
+    --target "_blank" --position 85 --user "$INSTALL_USER"
+}
+
 install_octoeverywhere_integration() {
   [[ -n "${KLIPPERAI_OE_ROOT:-}" ]] || die "OctoEverywhere checkout path is not set."
   local script_path="$INSTALL_DIR/integrations/octoeverywhere/apply-local-klipperai-route-patch.sh"

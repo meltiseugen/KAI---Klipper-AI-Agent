@@ -19,6 +19,10 @@ from klipperai_agent.config.vocabulary import (
 )
 
 
+class ConfigReadError(ValueError):
+    """A public, fixed-message failure while expanding a known config document."""
+
+
 @dataclass(slots=True)
 class ConfigDocument:
     path: str

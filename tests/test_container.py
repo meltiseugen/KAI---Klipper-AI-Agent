@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import klipperai_agent.bootstrap.container as container_module
+from klipperai_agent.profile.models import PrinterProfile
 from klipperai_agent.runtime.settings import Settings
 
 
@@ -50,7 +51,7 @@ def test_build_container_wires_optional_collectors(monkeypatch, tmp_path) -> Non
         container_module, "build_intent_router", lambda _settings: SimpleNamespace(name="intent")
     )
     monkeypatch.setattr(
-        container_module, "build_profile_from_settings", lambda _settings: "profile"
+        container_module, "build_profile_from_settings", lambda _settings: PrinterProfile()
     )
     monkeypatch.setattr(container_module, "build_diagnosis_graph", lambda: "diagnosis")
     monkeypatch.setattr(container_module, "build_config_graph", lambda: "config")
@@ -92,7 +93,9 @@ def test_build_container_disables_optional_collectors(monkeypatch, tmp_path) -> 
     monkeypatch.setattr(container_module, "build_config_provider", lambda _settings: object())
     monkeypatch.setattr(container_module, "build_intent_router", lambda _settings: object())
     monkeypatch.setattr(container_module, "ConfigCollector", lambda *args, **kwargs: object())
-    monkeypatch.setattr(container_module, "build_profile_from_settings", lambda _settings: object())
+    monkeypatch.setattr(
+        container_module, "build_profile_from_settings", lambda _settings: PrinterProfile()
+    )
     monkeypatch.setattr(container_module, "build_diagnosis_graph", lambda: object())
     monkeypatch.setattr(container_module, "build_config_graph", lambda: object())
     monkeypatch.setattr(container_module, "InMemorySessionStore", lambda _ttl: object())

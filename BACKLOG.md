@@ -15,9 +15,12 @@ This backlog is organized around the current chosen architecture:
 - [x] Preserve the existing behavior tests and the 100% coverage gate
 - [x] Add an iterative tool loop with typed tools, bounded calls/time/context and recoverable errors
 - [x] Add read-only printer/config/diagnostics tools and configurable hosted web search
+- [x] Add Chat/Debug starting context, mode selection and saved context receipts
+- [x] Add literal config search, large-file section reads, diagnostic excerpt expansion and component-status groups
+- [ ] Add explicitly confirmed printer facts/preferences and incident resolutions alongside dated evidence
+- [x] Add bounded shutdown-focused reads of current/recent rotated Klippy logs with explicit excerpt provenance
 - [x] Show streamed action progress, evidence sources and completed/limited/error states
 - [x] Add architecture/sequence diagrams and a regenerable module, symbol, test and import index
-- [ ] Validate tool selection and answer quality against a real printer and live provider
 - [x] Persist conversations and dated evidence across chats and service restarts
 - [x] Add manual-only proposal validation, section comparison and stale-revision rechecks
 - [x] Introduce shared domain objects and narrow read-only tool interfaces
@@ -25,8 +28,7 @@ This backlog is organized around the current chosen architecture:
 
 ## Reminders After Investigation And Review Work
 
-- [ ] Finish simplifying the surrounding product (frontend and installer)
-- [ ] Measure whether the agent solves printer problems using realistic investigations
+- [x] Finish simplifying the surrounding product (frontend and installer), including offline Mainsail and OctoEverywhere regression checks
 
 ## Milestone 0: Project Foundation
 
@@ -44,6 +46,12 @@ This backlog is organized around the current chosen architecture:
 - [x] Read recent `moonraker.log` directly from the host
 - [x] Add optional `journalctl` collection for Moonraker and Klipper services
 - [x] Capture Moonraker and Klipper service status
+- [x] Investigate MCU communication/timing/homing shutdowns using pre-stop statistics and confidence-qualified hypotheses
+- [x] Correlate retained kernel OOM, USB/CAN, storage and throttling events when an incident clock anchor exists
+- [x] Add current Moonraker CPU/memory/thermal observations separately from incident evidence
+- [x] Test shutdown rule families, collection limits, missing evidence, agent handoff and persisted reports offline
+- [ ] Add an opt-in bounded host flight recorder for CPU/process, memory/swap and I/O pressure history
+- [ ] Validate shutdown investigations against real USB/CAN incidents and live provider answers
 - [ ] Add optional `journalctl` collection for broader host services
 - [ ] Query core Moonraker state for server info, printer status, and config metadata
 - [ ] Normalize collected context into typed artifacts before LLM calls
@@ -67,7 +75,6 @@ This backlog is organized around the current chosen architecture:
 - [x] Add a low-coupling Mainsail custom-navigation link that opens KlipperAI
 - [x] Add installer support for writing `.theme/navi.json`
 - [ ] Ensure same-origin routing for `/klipperai/` behind nginx
-- [ ] Validate the full-page KlipperAI route on common desktop and tablet layouts
 - [ ] Improve the standalone page so it feels more at home inside the printer UI flow
 - [ ] Decide whether the optional native drawer patch still earns its maintenance cost
 
@@ -101,12 +108,11 @@ This backlog is organized around the current chosen architecture:
 
 ## Milestone 7: Provider And Credential Management
 
-- [ ] Add secure server-side API key storage outside plain repo files
-- [ ] Add UI flow for credential setup and rotation
-- [ ] Add validation checks for provider credentials during setup
-- [ ] Add more providers beyond OpenAI
-- [ ] Add model-specific configuration and routing
-- [ ] Add rate-limit and cost-safety controls
+- [x] Add secure server-side API key storage outside plain repo files
+- [x] Add UI flow for credential setup and rotation
+- [x] Add validation checks for provider credentials during setup
+- [x] Add model-specific configuration and routing
+- [x] Add rate-limit and cost-safety controls
 
 ## Milestone 8: Intelligence Quality
 
@@ -114,17 +120,22 @@ This backlog is organized around the current chosen architecture:
 - [ ] Add prompt and response schemas per workflow instead of one general assistant path
 - [ ] Add structured citations back to log lines and config sections
 - [ ] Add recovery playbooks for recurring failure modes
-- [ ] Add printer-profile awareness for common hardware classes
+- [x] Build component knowledge dynamically from each printer's saved hardware details, without a fixed board catalog
+- [x] Add UI Build/Refresh knowledge, primary-source discovery, versioned documents and local manual downloads
+- [x] Extract source-quoted fan connector candidates and require source/revision review before using their pins
+- [x] Add read-only local documentation retrieval, conservative fan-port checks and Eddy calibration evidence
+- [x] Add fan proposal checks for board revision, MCU identity, alias resolution and pin conflicts
+- [ ] Broaden hardware bus pin resolution and diagnostic tools for more component families
+- [ ] Cache firmware-commit-specific references and index PDF text/diagrams
+- [ ] Add explicit physical connector inventory and live printer/provider validation
 - [ ] Add config generation templates for high-value features such as macros, probes, and shapers
 
 ## Milestone 9: Security And Hardening
 
-- [ ] Review local secret storage and file permissions
-- [ ] Restrict host access tools to the minimum required surface
-- [ ] Add redaction rules for secrets in logs and configs
-- [ ] Add request size limits and artifact truncation rules
-- [ ] Review nginx and service defaults for safer deployment
-- [ ] Add authentication assumptions and trust-boundary docs for local deployments
+- [x] Review local secret storage and file permissions
+- [x] Add redaction rules for secrets in logs and configs
+- [x] Review nginx and service defaults for safer deployment
+- [x] Add authentication assumptions and trust-boundary docs for local deployments
 
 ## Milestone 10: Testing And Release Engineering
 
@@ -141,5 +152,4 @@ This backlog is organized around the current chosen architecture:
 - [ ] How much of the assistant should be accessible without any external LLM provider configured?
 - [ ] Should a future native shell integration target Mainsail only, or keep Fluidd parity close behind?
 - [ ] What is the right long-term secret storage method for a local appliance-style install?
-- [ ] How should multi-printer hosts be modeled in the agent and UI?
 - [ ] Is a true native Mainsail drawer still worth carrying after the low-coupling `/klipperai/` flow is in use?
