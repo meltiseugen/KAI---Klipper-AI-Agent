@@ -1,6 +1,7 @@
 [
   "agent.js",
   "investigation.js",
+  "investigation-sync.js",
   "conversation.js",
   "store.js",
   "transport.js",
@@ -8,6 +9,7 @@
   "message-view.js",
   "shell-view.js",
   "knowledge.js",
+  "memory.js",
   "providers.js",
   "moonraker.js",
   "chat-application.js",

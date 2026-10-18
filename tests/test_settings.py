@@ -12,6 +12,18 @@ from klipperai_agent.runtime.settings import (
 )
 
 
+def test_moonraker_socket_defaults_and_config_override(tmp_path):
+    config = tmp_path / "klipperai.cfg"
+    config.write_text("[moonraker]\nmoonraker_agent_enabled: false\nmoonraker_socket_path:\n")
+    settings = Settings(**_load_klipperai_cfg_values(config))
+    assert not settings.moonraker_agent_enabled and settings.moonraker_socket_path is None
+    assert Settings().moonraker_agent_enabled
+    assert Settings(moonraker_socket_path="  ").moonraker_socket_path is None
+    assert Settings(moonraker_socket_path="custom.sock").moonraker_socket_path == Path(
+        "custom.sock"
+    )
+
+
 def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) -> None:
     cfg_path = tmp_path / "klipperai.cfg"
     cfg_path.write_text(

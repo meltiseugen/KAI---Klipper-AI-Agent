@@ -102,5 +102,6 @@ class AgentWorkflow:
             tool_context,
             ToolRegistry(tools, self._limits),
             state.get("on_event"),
+            state.get("on_checkpoint"),
         )
         return result.model_dump()

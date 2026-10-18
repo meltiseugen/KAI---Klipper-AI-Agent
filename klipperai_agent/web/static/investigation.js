@@ -1,10 +1,15 @@
 /* Saved turn conversion and manual proposal review presentation. */
 function investigationMessages(record) {
-  return record.turns.flatMap(turn => [
+  const messages = record.turns.flatMap(turn => [
     ...(turn.imported_history || []).map(item => ({ role: item.role, text: item.text })),
     { role: "user", text: turn.question },
     investigationAnswer(turn.result),
   ]);
+  if (record.pending) messages.push(
+    { role: "user", text: record.pending.message },
+    { role: "assistant", text: "Investigation in progress or interrupted. After a service restart, KlipperAI resumes it with fresh printer reads. The answer will appear here automatically. Delete this chat to discard it." },
+  );
+  return messages;
 }
 
 function investigationAnswer(result) {

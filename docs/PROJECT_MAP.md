@@ -8,6 +8,8 @@ search, then inspect the implementation and its tests.
 | Agent decisions, stopping, recovery | `agent/runner.py`, `agent/models.py`, `agent/prompts.py` | `test_agent.py` |
 | Chat/Debug modes and context receipts | `domain/context.py`, `agent/starting_context.py`, `agent/context_budget.py`, `agent/deadline.py`, `application/chat.py`, [mode guide](agent-modes.md) | `test_agent_modes.py`, `modes-ui.test.mjs` |
 | Investigation history, cross-chat memory, deletion | `domain/investigation.py`, `application/investigations.py`, `infrastructure/investigations.py` | `test_investigations.py` |
+| Confirmed facts/preferences and incident resolutions | `application/investigations.py`, `infrastructure/confirmed_memory.py`, `web/memory.py`, `web/static/memory.js` | `test_confirmed_memory.py`, `memory-recovery-ui.test.mjs` |
+| Interrupted requests and restart recovery | `application/recovery.py`, `application/chat.py`, `infrastructure/investigation_runs.py`, `web/static/investigation-sync.js` | `test_investigation_recovery.py`, `memory-recovery-ui.test.mjs` |
 | Manual proposal review and stale revisions | `domain/proposals.py`, `config/review.py`, `application/proposal_review.py`, `web/investigations.py` | `test_proposal_review.py`, `test_investigations.py` |
 | Shared domain and read-only boundaries | `domain/`, `agent/ports.py`, `tools/project_map.py` | Full suite and project map checks |
 | Add a capability | `agent/tools/`, `agent/registry.py`, `agent/workflow.py` | `test_agent.py`, `test_agent_integration.py` |

@@ -79,6 +79,8 @@ See [Moonraker integration](docs/moonraker-integration.md) for socket setup, liv
 state, non-secret database metadata and the session-bootstrap extension methods.
 See [shutdown investigations](docs/shutdown-investigations.md) for supported failure
 families, confidence-qualified checks, retained-log limits and missing evidence.
+See [investigations and memory](docs/investigations.md) for explicitly confirmed
+facts/preferences, incident resolutions and automatic recovery after service restarts.
 See [printer knowledge](docs/printer-knowledge.md) to confirm hardware details,
 build its local documentation library and understand the initial supported boards.
 
@@ -86,7 +88,6 @@ What does not exist yet:
 
 - continuous host process/CPU, swap and I/O-pressure history for intermittent failures
 - complete firmware/hardware validation of proposed configuration
-- automatic recovery of interrupted in-flight investigations
 - deeper config specialization beyond the current broad scaffold generation path
 - multi-provider support beyond the current initial OpenAI path and local `stub`
 
@@ -470,7 +471,7 @@ The security stance is:
 
 - The FastAPI app exposes `/`, `/healthz`, `/api/ui-sessions`, `/api/bootstrap`, `/api/chat`, `/api/chat/stream`, and `/embed`.
 - The default provider is `stub`, so the app can boot without any external API key.
-- OpenAI requests use an iterative agent that selects tools and follows up on their results. `stub` retains deterministic local workflows. Conversations and dated evidence persist in application-owned SQLite storage; interrupted in-flight calls are not resumed.
+- OpenAI requests use an iterative agent that selects tools and follows up on their results. `stub` retains deterministic local workflows. Conversations, dated evidence and explicitly confirmed memory persist in application-owned SQLite storage. Interrupted investigations resume after service restart from public checkpoints with fresh reads; provider reasoning and HTTP calls are not replayed.
 - Host log collection currently targets current `.log` files directly under `printer_data/logs` and sends the configured last lines from each file.
 - KlipperAI writes a private rotating runtime log at `<data_dir>/logs/klipperai.log` (normally `/var/lib/klipperai/logs/klipperai.log`). This file is no longer automatically exposed through Mainsail.
 - Systemd diagnostics currently target `systemctl show` plus the last `journalctl` lines for the configured Moonraker and Klipper units.

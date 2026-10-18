@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from klipperai_agent.application.recovery import InvestigationRecovery
 from klipperai_agent.bootstrap.container import AppContainer, build_container
 from klipperai_agent.contracts.api import (
     BootstrapResponse,
@@ -25,6 +26,7 @@ from klipperai_agent.domain.repositories import InvestigationConflict
 from klipperai_agent.runtime.settings import get_settings
 from klipperai_agent.web.investigations import investigation_routes
 from klipperai_agent.web.knowledge import knowledge_routes
+from klipperai_agent.web.memory import memory_routes
 from klipperai_agent.web.moonraker import moonraker_routes
 from klipperai_agent.web.providers import provider_routes
 from klipperai_agent.web.security import RequestSecurity
@@ -55,6 +57,10 @@ def create_app() -> FastAPI:
         )
         container = build_container(settings)
         app.state.container = container
+        memory = getattr(container.chat_service, "investigations", None)
+        recovery = InvestigationRecovery(memory, container.chat_service.resume) if memory else None
+        if recovery:
+            recovery.start()
         integration = getattr(container, "moonraker_agent", None)
         if integration is not None:
             integration.start()
@@ -63,6 +69,8 @@ def create_app() -> FastAPI:
             yield
         finally:
             logger.info("Application shutdown started.")
+            if recovery:
+                await recovery.aclose()
             await container.aclose()
             logger.info("Application shutdown complete.")
 
@@ -98,6 +106,7 @@ def create_app() -> FastAPI:
 
     app.mount("/assets", StaticFiles(directory=str(static_dir)), name="assets")
     app.include_router(investigation_routes(lambda request: _get_container(request).chat_service))
+    app.include_router(memory_routes(lambda request: _get_container(request).chat_service))
     app.include_router(knowledge_routes(lambda request: _get_container(request).chat_service))
     app.include_router(provider_routes(_get_container))
     app.include_router(moonraker_routes(_get_container))

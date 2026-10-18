@@ -8,7 +8,13 @@ import logging
 from dataclasses import dataclass, field
 
 from klipperai_agent.agent.deadline import within
-from klipperai_agent.agent.models import AgentAnswer, AgentLimits, AgentModel, EventSink
+from klipperai_agent.agent.models import (
+    AgentAnswer,
+    AgentLimits,
+    AgentModel,
+    CheckpointSink,
+    EventSink,
+)
 from klipperai_agent.agent.prompts import SYSTEM_PROMPT
 from klipperai_agent.agent.registry import ToolRegistry
 from klipperai_agent.agent.starting_context import prepare_context
@@ -63,11 +69,14 @@ class AgentRunner:
         context: ToolContext,
         registry: ToolRegistry,
         on_event: EventSink | None = None,
+        on_checkpoint: CheckpointSink | None = None,
     ) -> InvestigationResult:
         run = AgentRun(context, mode=request.mode)
 
         async def emit(event: AgentEvent) -> None:
             run.events.append(event)
+            if on_checkpoint and event.kind in {"tool_completed", "tool_error"}:
+                await on_checkpoint(context.evidence)
             if on_event:
                 await on_event(event)
 

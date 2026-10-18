@@ -35,6 +35,7 @@
         <header class="topbar">
           <button id="providers-toggle" type="button" class="secondary-button" aria-controls="providers-panel" aria-expanded="false" hidden>Provider settings</button>
           <button id="knowledge-toggle" type="button" class="secondary-button" aria-controls="knowledge-panel" aria-expanded="false" hidden>Printer knowledge</button>
+          <button id="memory-toggle" type="button" class="secondary-button" aria-controls="memory-panel" aria-expanded="false" hidden>Printer memory</button>
           <div class="topbar-leading">
             <button id="shell-menu-toggle" class="menu-toggle" type="button" aria-label="Toggle chat history">
               <span></span>
@@ -52,6 +53,19 @@
         </header>
 
         <main class="workspace-main">
+          <section id="memory-panel" class="knowledge-panel" aria-label="Printer memory" hidden>
+            <div class="actions"><h2>Printer memory</h2><button id="memory-close" type="button" class="secondary-button">Close</button></div>
+            <p>Save facts you have checked, your preferences, or how an incident was resolved. Only entries you explicitly confirm are saved here. They remain dated user statements; current configuration and status are checked again.</p>
+            <label class="field"><span>Entry type</span><select id="memory-kind"><option value="fact">Printer fact</option><option value="preference">Preference</option><option value="resolution">Incident resolution</option></select></label>
+            <label class="field"><span>Statement to remember</span><textarea id="memory-content" rows="3" maxlength="2000"></textarea></label>
+            <label><input id="memory-link" type="checkbox" /> Link this chat and selected evidence</label>
+            <div id="memory-evidence" class="memory-evidence"></div>
+            <label><input id="memory-confirmed" type="checkbox" /> I confirm this statement is accurate and want it remembered.</label>
+            <div class="actions"><button id="memory-save" type="button" disabled>Confirm and remember</button><button id="memory-reload" type="button" class="secondary-button">Reload entries</button></div>
+            <p>Entries are kept until forgotten. Deleting a linked chat also forgets its entries. With cross-chat memory disabled, only entries linked to the current chat are supplied.</p>
+            <p id="memory-status" role="status" aria-live="polite"></p>
+            <div id="memory-records"></div>
+          </section>
           <section id="providers-panel" class="knowledge-panel" aria-label="Provider settings" hidden>
             <div class="actions"><h2>Provider settings</h2><button id="providers-close" type="button" class="secondary-button">Close</button></div>
             <p>Set up or rotate your OpenAI key. Keys are kept in private server storage and are never returned to this page. Leave the key empty to keep the saved key.</p>

@@ -22,5 +22,10 @@ database service or agent framework is required. The existing trusted local/prox
 boundary remains; this decision does not introduce user accounts or background
 execution recovery.
 
+Updated 2026-10-18: [public checkpoint recovery](../investigations.md) now resumes
+interrupted investigations after startup using leases and fresh read-only context.
+Explicitly confirmed facts/preferences and incident resolutions are stored separately
+from dated observations. Neither addition stores private reasoning or enables printer writes.
+
 Next work, deferred at the user's request: simplify the frontend/installer and
 measure real diagnostic quality with representative printer investigations.

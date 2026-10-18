@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from klipperai_agent.agent.models import EventSink
 from klipperai_agent.agent.workflow import AgentWorkflow
+from klipperai_agent.application.chat_bootstrap import bootstrap_response
 from klipperai_agent.application.intent import (
     ChatIntentOutput,
     classify_deterministic_intent,
@@ -16,6 +17,7 @@ from klipperai_agent.application.intent import (
 from klipperai_agent.application.investigations import InvestigationMemory
 from klipperai_agent.application.knowledge import PrinterKnowledge
 from klipperai_agent.application.proposal_review import ProposalReviewService
+from klipperai_agent.application.recovery import with_lease
 from klipperai_agent.application.request_context import (
     _build_chat_artifacts,
     _build_contextual_classification_message,
@@ -27,11 +29,15 @@ from klipperai_agent.contracts.api import (
     ChatRequest,
     ChatResponse,
     MemorySource,
-    PrinterProfileSummary,
     UiSessionResponse,
 )
 from klipperai_agent.domain.context import ModeUnavailableError
-from klipperai_agent.domain.investigation import Evidence, InvestigationResult
+from klipperai_agent.domain.investigation import (
+    Evidence,
+    Investigation,
+    InvestigationResult,
+    PendingInvestigation,
+)
 from klipperai_agent.domain.redaction import redact_data, redact_text
 from klipperai_agent.workflows.context import Workflow, WorkflowContext
 
@@ -68,61 +74,17 @@ class ChatService:
         )
 
     async def bootstrap(self, session_id: str) -> BootstrapResponse:
-        session = self.sessions.get(session_id)
-        if not session:
-            logger.warning("Rejected bootstrap for invalid or expired session")
-            raise ValueError("Invalid or expired session.")
-
-        moonraker_reachable = await self.workflow_context.collector.ping()
-        klipper_reachable = (
-            await self.workflow_context.collector.ping_printer() if moonraker_reachable else False
-        )
-        logger.info(
-            "Bootstrap provider=%s provider_model=%s moonraker_reachable=%s klipper_reachable=%s profile=%s",
-            self.provider_name,
-            self.provider_model or "unavailable",
-            moonraker_reachable,
-            klipper_reachable,
-            self.workflow_context.profile.summary_label() or "unavailable",
-        )
-        return BootstrapResponse(
-            session_id=session_id,
-            agent_modes=["chat", "debug"] if self.agent_workflow else [],
-            provider=self.provider_name,
+        return await bootstrap_response(
+            session_id,
+            sessions=self.sessions,
+            context=self.workflow_context,
+            provider_name=self.provider_name,
             provider_model=self.provider_model,
             conversation_history_pairs=self.conversation_history_pairs,
-            moonraker_reachable=moonraker_reachable,
-            klipper_reachable=klipper_reachable,
-            expires_at=session.expires_at,
-            features=[
-                "diagnostics",
-                "config-assistant",
-                "current-config-inspection",
-                "single-question-input",
-                "read-only-mode",
-                "host-log-collection",
-                "systemd-diagnostics",
-                "printer-profile",
-                *(["printer-knowledge"] if self.knowledge else []),
-                "addon-detection",
-                "typed-findings",
-                "local-workflows",
-                "conversation-history",
-                *(["persistent-investigations"] if self.investigations else []),
-                *(["manual-proposal-review"] if self.proposal_review else []),
-                "new-chat",
-                "intent-routing",
-                "context-gated-flows",
-                *(["tool-using-agent", "agent-progress"] if self.agent_workflow else []),
-                *(
-                    ["web-search"]
-                    if self.agent_workflow and self.agent_workflow.web_search_enabled
-                    else []
-                ),
-            ],
-            printer_profile=PrinterProfileSummary.model_validate(
-                redact_data(self.workflow_context.profile.to_summary())
-            ),
+            agent_workflow=self.agent_workflow,
+            persistent=self.investigations is not None,
+            manual_review=self.proposal_review is not None,
+            knowledge=self.knowledge is not None,
         )
 
     async def chat(
@@ -161,6 +123,65 @@ class ChatService:
             if self.investigations
             else None
         )
+        if self.investigations and investigation:
+            owner = str(uuid4())
+            await self.investigations.begin(
+                investigation,
+                PendingInvestigation(
+                    message=payload.message,
+                    mode=payload.mode,
+                    artifacts=payload.artifacts,
+                    history=payload.history,
+                ),
+                owner,
+            )
+            return await with_lease(
+                self.investigations,
+                investigation,
+                owner,
+                self._run(payload, investigation, on_event, owner),
+            )
+        return await self._run(payload, investigation, on_event)
+
+    async def resume(self, investigation: Investigation, owner: str) -> None:
+        assert self.investigations is not None and investigation.pending is not None
+        pending = investigation.pending
+        payload = ChatRequest(
+            session_id="",
+            thread_id=investigation.id,
+            message=pending.message,
+            mode=pending.mode,
+            artifacts=pending.artifacts,
+            history=pending.history,
+        )
+        if pending.attempts <= 3 and (pending.mode != "debug" or self.agent_workflow):
+            await with_lease(
+                self.investigations,
+                investigation,
+                owner,
+                self._run(payload, investigation, None, owner),
+            )
+        else:
+            await self.investigations.remember(
+                investigation,
+                pending.message,
+                InvestigationResult(
+                    mode=pending.mode,
+                    agent_status="limited",
+                    evidence=pending.evidence,
+                    response_text="Automatic recovery stopped after repeated interruptions or because Debug is unavailable. Review provider settings and send a follow-up to continue.",
+                ),
+                pending.history,
+                owner,
+            )
+
+    async def _run(
+        self,
+        payload: ChatRequest,
+        investigation: Investigation | None,
+        on_event: EventSink | None,
+        owner: str | None = None,
+    ) -> ChatResponse:
         thread_id = investigation.id if investigation else payload.thread_id or str(uuid4())
         history = (
             investigation.history() if investigation and investigation.turns else payload.history
@@ -170,6 +191,11 @@ class ChatService:
             if self.investigations and investigation
             else []
         )
+        if investigation and investigation.pending:
+            memory += [
+                item.copy(update={"content": item.content[:1200]})
+                for item in investigation.pending.evidence[-6:]
+            ]
         conversation_context = _format_conversation_context(
             history,
             max_pairs=self.conversation_history_pairs,
@@ -205,6 +231,13 @@ class ChatService:
         if self.agent_workflow:
             graph = self.agent_workflow
             state["on_event"] = on_event
+            if self.investigations and investigation and owner:
+
+                async def checkpoint(evidence: list[Evidence]) -> None:
+                    assert self.investigations is not None
+                    await self.investigations.checkpoint(investigation, owner, evidence)
+
+                state["on_checkpoint"] = checkpoint
             route = "agent"
         config = {"configurable": {"thread_id": f"{route}:{thread_id}"}}
         logger.info(
@@ -229,6 +262,11 @@ class ChatService:
             raise
 
         outcome = InvestigationResult.parse_obj(result)
+        if investigation and investigation.pending:
+            fresh_ids = {item.id for item in outcome.evidence}
+            outcome.evidence.extend(
+                item for item in investigation.pending.evidence if item.id not in fresh_ids
+            )
         outcome.memory_sources = [
             MemorySource(evidence_id=item.id, source=item.source, observed_at=item.observed_at)
             for item in memory
@@ -258,7 +296,7 @@ class ChatService:
         outcome = InvestigationResult.parse_obj(redact_data(outcome.model_dump()))
         if self.investigations and investigation:
             await self.investigations.remember(
-                investigation, payload.message, outcome, payload.history
+                investigation, payload.message, outcome, payload.history, owner
             )
         logger.info(
             "Chat response thread_id=%s route=%s findings=%s config_proposals=%s patch_proposals=%s source_citations=%s moonraker_reachable=%s",

@@ -152,8 +152,17 @@ CLI names remain `klipperai-agent` and `klipperai-detect-profile`; older
 Sessions are ephemeral. `thread_id` identifies a durable investigation stored in
 `data_dir/investigations.sqlite3`. Server history takes precedence over browser
 history for existing investigations. Relevant historical evidence can be supplied
-to a new chat; current config/status still require fresh reads. Provider HTTP
+to a new chat alongside explicitly user-confirmed facts, preferences and incident
+resolutions. The Printer memory panel owns confirmation; model tools cannot write
+these records. Current config/status still require fresh reads. Provider HTTP
 clients are pooled and closed with the application lifespan.
+
+The application lifespan owns a recovery worker for interrupted investigations.
+Public requests and dated tool evidence are checkpointed under renewable SQLite
+leases. Recovery reconstructs a new bounded run with fresh reads; hidden reasoning
+and provider conversation state never enter storage. A completed turn and removal
+of its pending checkpoint commit atomically. See [investigations](investigations.md)
+for recovery timing, retry bounds, deletion and browser behavior.
 
 The application lifespan also owns one Moonraker Unix-socket agent connection.
 Infrastructure identifies it, subscribes to fixed printer fields, reconnects and

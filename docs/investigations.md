@@ -24,6 +24,34 @@ conversation state are never stored.
 - Deleting a chat removes its server record and observations from future retrieval.
   Statements already quoted in another conversation remain part of that dialogue.
 
+## Explicitly confirmed memory
+
+The **Printer memory** panel stores printer facts, preferences and incident
+resolutions separately from tool observations. Enter a statement, optionally link
+the current chat and up to six dated observations, then select **I confirm this
+statement is accurate and want it remembered** and **Confirm and remember**.
+Changing the statement, category or evidence clears confirmation. Model answers
+and tool results never create confirmed entries automatically; agent tools cannot
+write this memory.
+
+Each entry records its category, confirmation time, source investigation (if
+selected), and snapshots of the selected observations with their original dates,
+citations and config revisions. A resolution is a user-reported outcome of an
+incident, not proof that the same fix applies to a later failure. Confirmed facts
+are dated user statements, not live hardware discovery. Relevant entries are
+supplied alongside dated evidence; prompts still require fresh reads for current
+state. Preference retrieval does not require word overlap. At most six confirmed
+entries and six historical observations are selected, with recent confirmed
+entries taking precedence when more match.
+
+Up to 100 entries per printer are retained until **Forget entry** is used; they do
+not expire with ordinary evidence. Delete an outdated entry and confirm its
+replacement to correct it. Deleting a linked chat also forgets its confirmed
+entries, even if the chat's ordinary evidence has expired. Entries without a
+linked chat are managed in Printer memory. With `memory_cross_chat: false`, only
+entries explicitly linked to the current investigation are supplied. Forgetting
+does not rewrite previous chat answers or recall context already sent to a model.
+
 Storage is `data_dir/investigations.sqlite3`. The configured data directory must
 stay outside printer config, G-code and log directories. Database/auxiliary-file
 symlinks and hardlinks are rejected; the database receives owner-only permissions
@@ -38,9 +66,37 @@ restores the 30 most recently active investigations. The existing deployment is 
 shared, trusted printer UI, not a multi-user account system. Changing the configured
 Moonraker URL, printer root or root-config setting changes the printer memory scope.
 
-Completed, limited and handled-error results survive service restarts. An interrupted
-in-flight model call is not automatically resumed, and its partial tool outputs are
-not checkpointed. Sessions remain ephemeral and are renewed by the browser.
+## Interrupted investigation recovery
+
+Before routing a request or calling a model, KlipperAI atomically saves its public
+question, mode, user artifacts and imported history. After each initial or follow-up
+tool completes, it checkpoints up to 24 public observations (including their dates
+and revisions). Hidden reasoning, encrypted provider state, API keys and UI session
+IDs are never part of a checkpoint. Application storage retains the same private
+file protections and credential redaction as completed investigations.
+
+At startup, a background worker resumes unfinished requests from prior service
+lifespans, one at a time. It rebuilds the conversation from saved history and the
+public request, supplies up to six checkpoint observations as historical context,
+then collects fresh mode-specific printer evidence. It does not attempt to continue
+an interrupted provider HTTP call or replay a provider conversation. Read-only
+tools and model requests may be repeated and consume additional provider credits;
+normal run budgets and provider policies still apply. After three recovery attempts,
+or if Debug is no longer available, a limited result explains how to continue.
+
+A 30-second database lease, renewed every 10 seconds, prevents competing workers
+from finishing the same request. A hard process stop can delay recovery until that
+lease expires and the next 10-second poll. Completion, the new investigation revision
+and checkpoint deletion commit together. Deleting the investigation invalidates its
+lease and prevents an active response from recreating the chat. Unfinished records
+follow evidence retention and are capped at 100 globally; confirmed memory has its
+own bounds. Finishing another chat does not prune a still-pending investigation.
+
+Browser disconnects still cancel active provider/tool work and leave the public
+checkpoint for the next service restart. The UI shows the pending question, prevents
+another submission to that chat, and polls for its recovered answer while preserving
+drafts. Delete the chat to discard unfinished work. Sessions remain ephemeral and
+are renewed by the browser; recovery does not depend on the old session.
 
 ## Manual proposal lifecycle
 
@@ -79,6 +135,8 @@ No firmware validation commands, restarts or writes are performed.
   no dependency on HTTP, providers or infrastructure.
 - `application/investigations.py`: server history, relevance selection and retention-facing access.
 - `infrastructure/investigations.py`: the SQLite repository; only application storage writes.
+- `infrastructure/confirmed_memory.py`: explicit statements and linked evidence snapshots.
+- `application/recovery.py`, `infrastructure/investigation_runs.py`: startup recovery and leased public checkpoints.
 - `agent/ports.py`: narrow read-only capabilities; tool code does not receive a provider API.
 - `agent/runner.py`: typed `InvestigationRequest` and `InvestigationResult`.
 - `application/proposal_review.py`: shared review after agent or compatibility workflow output.
@@ -95,8 +153,14 @@ All investigation endpoints require a valid UI session:
 | GET | `/api/investigations/{id}?session_id=...` | Saved conversation and public evidence |
 | DELETE | `/api/investigations/{id}?session_id=...` | Forget application-owned records |
 | POST | `/api/investigations/{id}/proposals/{proposal_id}/revalidate?session_id=...` | Read-only review recorded as a new turn |
+| GET | `/api/memory?session_id=...` | Confirmed facts, preferences and incident resolutions |
+| POST | `/api/memory` | Confirm a statement; requires `session_id`, `kind`, `content`, `confirmed: true`, optional `investigation_id` and `evidence_ids` |
+| DELETE | `/api/memory/{id}?session_id=...` | Forget a confirmed entry |
 
-Tests: `test_investigations.py`, `test_proposal_review.py`, `test_agent.py`, and
-`agent-ui.test.mjs`. They cover persistence, historical context, concurrent updates,
-deletion, revision changes, path protection and unchanged printer-config bytes.
+Tests: `test_investigations.py`, `test_confirmed_memory.py`,
+`test_investigation_recovery.py`, `test_proposal_review.py`, `test_agent.py`,
+`agent-ui.test.mjs`, and `memory-recovery-ui.test.mjs`. They cover persistence,
+explicit confirmation, historical context, competing recovery workers, checkpoint
+privacy, restart recovery with changed configuration, deletion, revision changes,
+path protection, UI polling/drafts and unchanged printer-config bytes.
 These tests do not evaluate a live model's diagnostic quality.

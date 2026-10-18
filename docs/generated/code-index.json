@@ -48,62 +48,62 @@
     },
     "klipperai_agent.agent.models": {
       "path": "klipperai_agent/agent/models.py",
-      "lines": 67,
+      "lines": 69,
       "symbols": [
         {
           "name": "AgentAnswer",
-          "line": 17,
+          "line": 19,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "_strip_response",
-              "line": 23
+              "line": 25
             }
           ]
         },
         {
           "name": "ToolCall",
-          "line": 28,
+          "line": 30,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ModelTurn",
-          "line": 35,
+          "line": 37,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "AgentModel",
-          "line": 42,
+          "line": 44,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "respond",
-              "line": 43
+              "line": 45
             }
           ]
         },
         {
           "name": "SearchResult",
-          "line": 51,
+          "line": 53,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "WebSearch",
-          "line": 56,
+          "line": 58,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "search",
-              "line": 57
+              "line": 59
             }
           ]
         },
         {
           "name": "AgentLimits",
-          "line": 61,
+          "line": 63,
           "kind": "ClassDef",
           "methods": []
         }
@@ -111,12 +111,14 @@
       "imports": [
         "klipperai_agent.domain.base",
         "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
         "tests/test_knowledge_research.py",
@@ -269,7 +271,7 @@
     },
     "klipperai_agent.agent.prompts": {
       "path": "klipperai_agent/agent/prompts.py",
-      "lines": 55,
+      "lines": 59,
       "symbols": [],
       "imports": [],
       "tests": []
@@ -323,39 +325,39 @@
     },
     "klipperai_agent.agent.runner": {
       "path": "klipperai_agent/agent/runner.py",
-      "lines": 185,
+      "lines": 194,
       "symbols": [
         {
           "name": "AgentRun",
-          "line": 26,
+          "line": 32,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "result",
-              "line": 33
+              "line": 39
             }
           ]
         },
         {
           "name": "AgentRunner",
-          "line": 55,
+          "line": 61,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 56
+              "line": 62
             },
             {
               "name": "run",
-              "line": 60
+              "line": 66
             },
             {
               "name": "_loop",
-              "line": 95
+              "line": 104
             },
             {
               "name": "_stop",
-              "line": 182
+              "line": 191
             }
           ]
         }
@@ -887,7 +889,7 @@
     },
     "klipperai_agent.agent.workflow": {
       "path": "klipperai_agent/agent/workflow.py",
-      "lines": 106,
+      "lines": 107,
       "symbols": [
         {
           "name": "AgentWorkflow",
@@ -931,6 +933,7 @@
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
         "tests/test_moonraker_metadata.py",
@@ -941,28 +944,36 @@
     },
     "klipperai_agent.application.chat": {
       "path": "klipperai_agent/application/chat.py",
-      "lines": 310,
+      "lines": 348,
       "symbols": [
         {
           "name": "ChatService",
-          "line": 42,
+          "line": 48,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "create_ui_session",
-              "line": 56
+              "line": 62
             },
             {
               "name": "bootstrap",
-              "line": 70
+              "line": 76
             },
             {
               "name": "chat",
-              "line": 128
+              "line": 90
+            },
+            {
+              "name": "resume",
+              "line": 146
+            },
+            {
+              "name": "_run",
+              "line": 178
             },
             {
               "name": "_classify_chat_intent",
-              "line": 291
+              "line": 329
             }
           ]
         }
@@ -970,10 +981,12 @@
       "imports": [
         "klipperai_agent.agent.models",
         "klipperai_agent.agent.workflow",
+        "klipperai_agent.application.chat_bootstrap",
         "klipperai_agent.application.intent",
         "klipperai_agent.application.investigations",
         "klipperai_agent.application.knowledge",
         "klipperai_agent.application.proposal_review",
+        "klipperai_agent.application.recovery",
         "klipperai_agent.application.request_context",
         "klipperai_agent.application.sessions",
         "klipperai_agent.contracts.api",
@@ -988,6 +1001,25 @@
         "tests/test_security_agent.py",
         "tests/test_services.py"
       ]
+    },
+    "klipperai_agent.application.chat_bootstrap": {
+      "path": "klipperai_agent/application/chat_bootstrap.py",
+      "lines": 82,
+      "symbols": [
+        {
+          "name": "bootstrap_response",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.workflow",
+        "klipperai_agent.application.sessions",
+        "klipperai_agent.contracts.api",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.workflows.context"
+      ],
+      "tests": []
     },
     "klipperai_agent.application.intent": {
       "path": "klipperai_agent/application/intent.py",
@@ -1054,40 +1086,68 @@
     },
     "klipperai_agent.application.investigations": {
       "path": "klipperai_agent/application/investigations.py",
-      "lines": 96,
+      "lines": 156,
       "symbols": [
         {
           "name": "InvestigationMemory",
-          "line": 19,
+          "line": 21,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 20
+              "line": 22
+            },
+            {
+              "name": "confirmed",
+              "line": 29
+            },
+            {
+              "name": "confirm",
+              "line": 32
+            },
+            {
+              "name": "forget_confirmed",
+              "line": 45
+            },
+            {
+              "name": "begin",
+              "line": 48
+            },
+            {
+              "name": "claim",
+              "line": 54
+            },
+            {
+              "name": "checkpoint",
+              "line": 60
+            },
+            {
+              "name": "release",
+              "line": 73
             },
             {
               "name": "open",
-              "line": 27
+              "line": 76
             },
             {
               "name": "get",
-              "line": 35
+              "line": 84
             },
             {
               "name": "recent",
-              "line": 38
+              "line": 87
             },
             {
               "name": "delete",
-              "line": 41
+              "line": 90
             },
             {
               "name": "recall",
-              "line": 44
+              "line": 93
             },
             {
               "name": "remember",
-              "line": 83
+              "line": 142
             }
           ]
         }
@@ -1098,6 +1158,8 @@
         "klipperai_agent.domain.repositories"
       ],
       "tests": [
+        "tests/test_confirmed_memory.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py"
       ]
     },
@@ -1271,6 +1333,47 @@
         "tests/test_provider_web.py"
       ]
     },
+    "klipperai_agent.application.recovery": {
+      "path": "klipperai_agent/application/recovery.py",
+      "lines": 76,
+      "symbols": [
+        {
+          "name": "with_lease",
+          "line": 17,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "InvestigationRecovery",
+          "line": 44,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 45
+            },
+            {
+              "name": "start",
+              "line": 58
+            },
+            {
+              "name": "_run",
+              "line": 61
+            },
+            {
+              "name": "aclose",
+              "line": 73
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.application.investigations",
+        "klipperai_agent.domain.investigation"
+      ],
+      "tests": [
+        "tests/test_investigation_recovery.py"
+      ]
+    },
     "klipperai_agent.application.request_context": {
       "path": "klipperai_agent/application/request_context.py",
       "lines": 88,
@@ -1345,6 +1448,7 @@
       "imports": [],
       "tests": [
         "tests/test_agent_integration.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_security_agent.py",
         "tests/test_services.py",
@@ -2331,7 +2435,9 @@
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_confirmed_memory.py",
         "tests/test_diagnostics_extra.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_llm_extra.py",
         "tests/test_provider_agent.py",
@@ -2615,7 +2721,7 @@
     },
     "klipperai_agent.domain.investigation": {
       "path": "klipperai_agent/domain/investigation.py",
-      "lines": 102,
+      "lines": 136,
       "symbols": [
         {
           "name": "utc_now",
@@ -2663,13 +2769,30 @@
           "methods": []
         },
         {
-          "name": "Investigation",
+          "name": "PendingInvestigation",
           "line": 83,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConfirmedMemory",
+          "line": 96,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "as_evidence",
+              "line": 104
+            }
+          ]
+        },
+        {
+          "name": "Investigation",
+          "line": 116,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "history",
-              "line": 92
+              "line": 126
             }
           ]
         }
@@ -2684,6 +2807,8 @@
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_modes.py",
+        "tests/test_confirmed_memory.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
         "tests/test_proposal_review.py",
@@ -3070,34 +3195,76 @@
     },
     "klipperai_agent.domain.repositories": {
       "path": "klipperai_agent/domain/repositories.py",
-      "lines": 19,
+      "lines": 57,
       "symbols": [
         {
           "name": "InvestigationConflict",
-          "line": 8,
+          "line": 14,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "InvestigationRepository",
-          "line": 12,
+          "line": 18,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "get",
-              "line": 13
+              "line": 22
             },
             {
               "name": "recent",
-              "line": 15
+              "line": 24
             },
             {
               "name": "save_turn",
-              "line": 17
+              "line": 26
             },
             {
               "name": "delete",
-              "line": 19
+              "line": 30
+            }
+          ]
+        },
+        {
+          "name": "RunRepository",
+          "line": 33,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "begin",
+              "line": 34
+            },
+            {
+              "name": "claim",
+              "line": 38
+            },
+            {
+              "name": "checkpoint",
+              "line": 40
+            },
+            {
+              "name": "release",
+              "line": 49
+            }
+          ]
+        },
+        {
+          "name": "ConfirmedMemoryRepository",
+          "line": 52,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "list",
+              "line": 53
+            },
+            {
+              "name": "save",
+              "line": 55
+            },
+            {
+              "name": "delete",
+              "line": 57
             }
           ]
         }
@@ -3106,6 +3273,8 @@
         "klipperai_agent.domain.investigation"
       ],
       "tests": [
+        "tests/test_confirmed_memory.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py"
       ]
     },
@@ -3152,6 +3321,41 @@
         "tests/test_shutdown.py",
         "tests/test_shutdown_agent.py"
       ]
+    },
+    "klipperai_agent.infrastructure.confirmed_memory": {
+      "path": "klipperai_agent/infrastructure/confirmed_memory.py",
+      "lines": 64,
+      "symbols": [
+        {
+          "name": "SqliteConfirmedMemoryRepository",
+          "line": 14,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 15
+            },
+            {
+              "name": "list",
+              "line": 23
+            },
+            {
+              "name": "save",
+              "line": 34
+            },
+            {
+              "name": "delete",
+              "line": 60
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.repositories"
+      ],
+      "tests": []
     },
     "klipperai_agent.infrastructure.documentation": {
       "path": "klipperai_agent/infrastructure/documentation.py",
@@ -3427,46 +3631,56 @@
         "tests/test_shutdown_host.py"
       ]
     },
-    "klipperai_agent.infrastructure.investigations": {
-      "path": "klipperai_agent/infrastructure/investigations.py",
-      "lines": 145,
+    "klipperai_agent.infrastructure.investigation_records": {
+      "path": "klipperai_agent/infrastructure/investigation_records.py",
+      "lines": 29,
       "symbols": [
         {
-          "name": "SqliteInvestigationRepository",
-          "line": 17,
+          "name": "ensure_revision",
+          "line": 12,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.repositories"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.infrastructure.investigation_runs": {
+      "path": "klipperai_agent/infrastructure/investigation_runs.py",
+      "lines": 119,
+      "symbols": [
+        {
+          "name": "lease_deadline",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "SqliteRunRepository",
+          "line": 25,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 18
+              "line": 26
             },
             {
-              "name": "_check_path",
-              "line": 43
+              "name": "begin",
+              "line": 36
             },
             {
-              "name": "_connect",
-              "line": 59
+              "name": "claim",
+              "line": 62
             },
             {
-              "name": "get",
-              "line": 67
+              "name": "checkpoint",
+              "line": 82
             },
             {
-              "name": "recent",
-              "line": 76
-            },
-            {
-              "name": "_load",
-              "line": 86
-            },
-            {
-              "name": "save_turn",
-              "line": 99
-            },
-            {
-              "name": "delete",
-              "line": 140
+              "name": "release",
+              "line": 113
             }
           ]
         }
@@ -3475,6 +3689,61 @@
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.redaction",
         "klipperai_agent.domain.repositories",
+        "klipperai_agent.infrastructure.investigation_records"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.infrastructure.investigations": {
+      "path": "klipperai_agent/infrastructure/investigations.py",
+      "lines": 176,
+      "symbols": [
+        {
+          "name": "SqliteInvestigationRepository",
+          "line": 28,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 29
+            },
+            {
+              "name": "_check_path",
+              "line": 56
+            },
+            {
+              "name": "_connect",
+              "line": 72
+            },
+            {
+              "name": "get",
+              "line": 80
+            },
+            {
+              "name": "recent",
+              "line": 89
+            },
+            {
+              "name": "_load",
+              "line": 99
+            },
+            {
+              "name": "save_turn",
+              "line": 118
+            },
+            {
+              "name": "delete",
+              "line": 167
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.repositories",
+        "klipperai_agent.infrastructure.confirmed_memory",
+        "klipperai_agent.infrastructure.investigation_records",
+        "klipperai_agent.infrastructure.investigation_runs",
         "klipperai_agent.infrastructure.private_files"
       ],
       "tests": [
@@ -5037,7 +5306,9 @@
       "tests": [
         "tests/test_agent_integration.py",
         "tests/test_app.py",
+        "tests/test_confirmed_memory.py",
         "tests/test_container.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_web.py",
         "tests/test_llm_extra.py",
@@ -5054,20 +5325,21 @@
     },
     "klipperai_agent.web.app": {
       "path": "klipperai_agent/web/app.py",
-      "lines": 215,
+      "lines": 224,
       "symbols": [
         {
           "name": "create_app",
-          "line": 36,
+          "line": 38,
           "kind": "FunctionDef"
         },
         {
           "name": "_get_container",
-          "line": 211,
+          "line": 220,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
+        "klipperai_agent.application.recovery",
         "klipperai_agent.bootstrap.container",
         "klipperai_agent.contracts.api",
         "klipperai_agent.domain.context",
@@ -5076,6 +5348,7 @@
         "klipperai_agent.runtime.settings",
         "klipperai_agent.web.investigations",
         "klipperai_agent.web.knowledge",
+        "klipperai_agent.web.memory",
         "klipperai_agent.web.moonraker",
         "klipperai_agent.web.providers",
         "klipperai_agent.web.security",
@@ -5084,6 +5357,8 @@
       "tests": [
         "tests/test_agent_integration.py",
         "tests/test_app.py",
+        "tests/test_confirmed_memory.py",
+        "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_web.py",
         "tests/test_moonraker_web.py",
@@ -5094,7 +5369,7 @@
     },
     "klipperai_agent.web.investigations": {
       "path": "klipperai_agent/web/investigations.py",
-      "lines": 76,
+      "lines": 81,
       "symbols": [
         {
           "name": "investigation_routes",
@@ -5148,6 +5423,41 @@
         "klipperai_agent.application.knowledge",
         "klipperai_agent.domain.base",
         "klipperai_agent.domain.knowledge"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.web.memory": {
+      "path": "klipperai_agent/web/memory.py",
+      "lines": 79,
+      "symbols": [
+        {
+          "name": "MemoryConfirmation",
+          "line": 18,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "nonblank",
+              "line": 27
+            },
+            {
+              "name": "explicit_confirmation",
+              "line": 33
+            }
+          ]
+        },
+        {
+          "name": "memory_routes",
+          "line": 42,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.application.chat",
+        "klipperai_agent.application.investigations",
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.repositories"
       ],
       "tests": []
     },

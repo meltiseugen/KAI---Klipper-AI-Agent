@@ -17,14 +17,14 @@ This backlog is organized around the current chosen architecture:
 - [x] Add read-only printer/config/diagnostics tools and configurable hosted web search
 - [x] Add Chat/Debug starting context, mode selection and saved context receipts
 - [x] Add literal config search, large-file section reads, diagnostic excerpt expansion and component-status groups
-- [ ] Add explicitly confirmed printer facts/preferences and incident resolutions alongside dated evidence
+- [x] Add explicitly confirmed printer facts/preferences and incident resolutions alongside dated evidence
 - [x] Add bounded shutdown-focused reads of current/recent rotated Klippy logs with explicit excerpt provenance
 - [x] Show streamed action progress, evidence sources and completed/limited/error states
 - [x] Add architecture/sequence diagrams and a regenerable module, symbol, test and import index
 - [x] Persist conversations and dated evidence across chats and service restarts
 - [x] Add manual-only proposal validation, section comparison and stale-revision rechecks
 - [x] Introduce shared domain objects and narrow read-only tool interfaces
-- [ ] Resume interrupted in-flight investigations after service restart
+- [x] Resume interrupted in-flight investigations after service restart
 
 ## Reminders After Investigation And Review Work
 
@@ -80,11 +80,15 @@ This backlog is organized around the current chosen architecture:
 
 ## Milestone 4: Moonraker Integration Depth
 
-- [ ] Implement a proper Moonraker agent registration flow
-- [ ] Add Moonraker event subscriptions for printer state changes
-- [ ] Add file metadata inspection through Moonraker where useful
-- [ ] Add a database namespace for non-secret assistant metadata
-- [ ] Define Moonraker-facing methods for session bootstrap and future notifications
+- [x] Implement a proper Moonraker agent registration flow
+- [x] Add Moonraker event subscriptions for printer state changes
+- [x] Add file metadata inspection through Moonraker where useful
+- [x] Add a database namespace for non-secret assistant metadata
+- [x] Define Moonraker-facing methods for session bootstrap and future notifications
+
+Implementation and offline verification are documented in
+[Moonraker integration](docs/moonraker-integration.md). Live printer/provider and
+rendered-browser checks remain separate from the automated suite.
 
 ## Milestone 5: Config Assistant
 

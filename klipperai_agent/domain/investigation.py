@@ -80,6 +80,39 @@ class InvestigationTurn(BaseModel):
     imported_history: list[ChatHistoryMessage] = Field(default_factory=list)
 
 
+class PendingInvestigation(BaseModel):
+    """Replayable public input and observations, without provider conversation state."""
+
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    created_at: str = Field(default_factory=utc_now)
+    mode: AgentMode = "chat"
+    message: str
+    artifacts: list[ArtifactInput] = Field(default_factory=list)
+    history: list[ChatHistoryMessage] = Field(default_factory=list)
+    evidence: list[Evidence] = Field(default_factory=list)
+    attempts: int = 0
+
+
+class ConfirmedMemory(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid4()))
+    kind: Literal["fact", "preference", "resolution"]
+    content: str = Field(min_length=1, max_length=2000)
+    confirmed_at: str = Field(default_factory=utc_now)
+    investigation_id: str | None = None
+    evidence: list[Evidence] = Field(default_factory=list, max_items=6)
+
+    def as_evidence(self) -> Evidence:
+        return Evidence(
+            id=self.id,
+            source=f"user-confirmed:{self.kind}",
+            observed_at=self.confirmed_at,
+            content=(
+                f"User-confirmed {self.kind}: {self.content}\n"
+                "This is a dated user statement, not independent verification or live state."
+            ),
+        )
+
+
 class Investigation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     printer_id: str
@@ -88,6 +121,7 @@ class Investigation(BaseModel):
     updated_at: str = Field(default_factory=utc_now)
     revision: int = 0
     turns: list[InvestigationTurn] = Field(default_factory=list)
+    pending: PendingInvestigation | None = None
 
     def history(self) -> list[ChatHistoryMessage]:
         messages = []

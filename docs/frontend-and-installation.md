@@ -20,6 +20,8 @@ write that HTML into a popup without relying on separate asset requests.
 | `transport.js` | Public API prefix, ephemeral sessions, one retry on expired sessions, HTTP operations |
 | `agent.js` | SSE decoding and rendering public tool activity and next actions |
 | `investigation.js` | Saved-turn conversion, dated evidence and manual review cards |
+| `investigation-sync.js` | Refresh pending/recovered investigations while preserving drafts and active responses |
+| `memory.js` | Explicit confirmation, linked dated evidence and forgetting printer facts/preferences/resolutions |
 | `message-view.js`, `markdown.js` | Message cards, source citations and text-only Markdown rendering |
 | `shell-view.js` | Chat history, composer, status badges and mobile navigation |
 

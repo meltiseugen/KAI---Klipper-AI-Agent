@@ -8,9 +8,20 @@ from contextlib import closing
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from klipperai_agent.domain.investigation import Investigation, InvestigationTurn
+from klipperai_agent.domain.investigation import (
+    Investigation,
+    InvestigationTurn,
+    PendingInvestigation,
+)
 from klipperai_agent.domain.redaction import redact_data, redact_text
-from klipperai_agent.domain.repositories import InvestigationConflict
+from klipperai_agent.domain.repositories import (
+    ConfirmedMemoryRepository,
+    InvestigationConflict,
+    RunRepository,
+)
+from klipperai_agent.infrastructure.confirmed_memory import SqliteConfirmedMemoryRepository
+from klipperai_agent.infrastructure.investigation_records import ensure_revision
+from klipperai_agent.infrastructure.investigation_runs import SqliteRunRepository
 from klipperai_agent.infrastructure.private_files import open_private_file
 
 
@@ -39,6 +50,8 @@ class SqliteInvestigationRepository:
                 CREATE INDEX IF NOT EXISTS turn_investigation ON turns(investigation_id, created_at);
             """)
         self._path.chmod(0o600)
+        self.runs: RunRepository = SqliteRunRepository(self._connect, retention_days)
+        self.confirmed: ConfirmedMemoryRepository = SqliteConfirmedMemoryRepository(self._connect)
 
     def _check_path(self) -> None:
         # Reject symlink redirection for the DB and SQLite's auxiliary files.
@@ -88,30 +101,46 @@ class SqliteInvestigationRepository:
             "SELECT content FROM turns WHERE investigation_id = ? ORDER BY rowid DESC LIMIT ?",
             (row["id"], turn_limit),
         ).fetchall()
+        pending = db.execute(
+            "SELECT content FROM pending_runs WHERE investigation_id=?", (row["id"],)
+        ).fetchone()
         return Investigation(
             **{**dict(row), "title": redact_text(row["title"])},
             turns=[
                 InvestigationTurn.parse_obj(redact_data(json.loads(item["content"])))
                 for item in reversed(turns)
             ],
+            pending=PendingInvestigation.parse_obj(redact_data(json.loads(pending[0])))
+            if pending
+            else None,
         )
 
-    def save_turn(self, investigation: Investigation, turn: InvestigationTurn) -> None:
+    def save_turn(
+        self, investigation: Investigation, turn: InvestigationTurn, owner: str | None = None
+    ) -> None:
         turn = InvestigationTurn.parse_obj(redact_data(turn.model_dump()))
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
-            if investigation.revision == 0:
-                db.execute(
-                    "INSERT OR IGNORE INTO investigations VALUES (?, ?, ?, ?, ?, 0)",
-                    (
-                        investigation.id,
-                        investigation.printer_id,
-                        redact_text(investigation.title),
-                        investigation.created_at,
-                        investigation.updated_at,
-                    ),
+            # A deleted in-flight first turn must never recreate the conversation.
+            pending = db.execute(
+                "SELECT run_id, owner FROM pending_runs WHERE investigation_id=?",
+                (investigation.id,),
+            ).fetchone()
+            if owner is not None:
+                if (
+                    not pending
+                    or not investigation.pending
+                    or (pending[0], pending[1]) != (investigation.pending.id, owner)
+                ):
+                    raise InvestigationConflict(
+                        "This investigation was deleted or recovered elsewhere."
+                    )
+            elif pending:
+                raise InvestigationConflict(
+                    "Wait for this investigation to finish before rechecking."
                 )
-            updated = db.execute(
+            ensure_revision(db, investigation)
+            db.execute(
                 "UPDATE investigations SET revision = revision + 1, updated_at = ? WHERE id = ? AND printer_id = ? AND revision = ?",
                 (
                     turn.created_at,
@@ -120,25 +149,27 @@ class SqliteInvestigationRepository:
                     investigation.revision,
                 ),
             )
-            if updated.rowcount != 1:
-                raise InvestigationConflict(
-                    "This conversation received another response. Reload it before retrying."
-                )
             db.execute(
                 "INSERT INTO turns VALUES (?, ?, ?, ?)",
                 (turn.id, investigation.id, turn.created_at, turn.json()),
             )
+            db.execute("DELETE FROM pending_runs WHERE investigation_id=?", (investigation.id,))
             cutoff = (datetime.now(timezone.utc) - timedelta(days=self._retention_days)).isoformat()
             db.execute(
                 "DELETE FROM turns WHERE created_at < ? OR rowid NOT IN (SELECT rowid FROM turns ORDER BY rowid DESC LIMIT 1000)",
                 (cutoff,),
             )
             db.execute(
-                "DELETE FROM investigations WHERE id NOT IN (SELECT investigation_id FROM turns)"
+                "DELETE FROM investigations WHERE id NOT IN (SELECT investigation_id FROM turns) AND id NOT IN (SELECT investigation_id FROM pending_runs)"
             )
+            db.execute("DELETE FROM investigations WHERE updated_at < ?", (cutoff,))
 
     def delete(self, printer_id: str, investigation_id: str) -> None:
         with closing(self._connect()) as db, db:
+            db.execute(
+                "DELETE FROM confirmed_memory WHERE printer_id=? AND investigation_id=?",
+                (printer_id, investigation_id),
+            )
             db.execute(
                 "DELETE FROM investigations WHERE id = ? AND printer_id = ?",
                 (investigation_id, printer_id),

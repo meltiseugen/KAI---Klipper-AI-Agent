@@ -73,8 +73,11 @@ on supported Python 3.10 hosts.
 
 Saved profile data describes configured identity. Recalled observations retain
 their original timestamps and revisions. Prior answers and hypotheses are not
-promoted into confirmed printer facts. A separately curated collection of user
-preferences, hardware changes and confirmed resolutions remains future work.
+promoted into confirmed printer facts. The **Printer memory** panel lets the user
+explicitly confirm facts, preferences and incident resolutions, optionally linking
+dated observations. Both modes receive relevant confirmed entries alongside
+historical evidence. Interrupted requests retain their selected mode and resume
+with fresh starting context after service restart. See [investigations and memory](investigations.md).
 
 All modes remain read-only toward the printer. No tool can run shell commands,
 move the printer, change heaters, restart services or apply a proposal. Configs,

@@ -9,9 +9,11 @@ from pydantic import Field, validator
 
 from klipperai_agent.domain.base import BaseModel
 from klipperai_agent.domain.evidence import AgentEvent, SourceCitation
+from klipperai_agent.domain.investigation import Evidence
 from klipperai_agent.domain.proposals import ConfigProposal
 
 EventSink = Callable[[AgentEvent], Awaitable[None]]
+CheckpointSink = Callable[[list[Evidence]], Awaitable[None]]
 
 
 class AgentAnswer(BaseModel):

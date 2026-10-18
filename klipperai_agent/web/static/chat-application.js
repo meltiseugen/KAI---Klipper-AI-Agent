@@ -8,15 +8,16 @@ class ChatApplication {
     this.pending = "";
     this.persistent = false;
     this.modesEnabled = false;
+    this.revisions = new Map();
   }
 
   render() {
     this.store.sortConversationsInPlace();
     const conversation = this.store.getCurrentConversation();
     this.view.render(this.store, {
-      busy: this.busy, pending: this.pending,
+      busy: this.busy, pending: this.pending, recovering: Boolean(conversation?.pendingRun),
       modesEnabled: this.modesEnabled,
-      revalidate: this.persistent && conversation?.threadId ? id => this.revalidate(id) : null,
+      revalidate: this.persistent && conversation?.threadId && !conversation.pendingRun ? id => this.revalidate(id) : null,
     });
   }
 
@@ -48,35 +49,54 @@ class ChatApplication {
       }
       if (payload.features?.includes("provider-management")) {
         this.providers = new ProviderPanel(this.transport);
-        this.providers.beforeOpen = () => this.knowledge?.close();
+        this.providers.beforeOpen = () => { this.knowledge?.close(); this.memory?.close(); };
         this.providers.bind();
       }
       if (payload.features?.includes("printer-knowledge")) {
         this.knowledge = new PrinterKnowledgePanel(this.transport);
-        this.knowledge.beforeOpen = () => this.providers?.close();
+        this.knowledge.beforeOpen = () => { this.providers?.close(); this.memory?.close(); };
         this.knowledge.bind();
       }
       if (this.persistent) await this.restoreInvestigations();
+      if (payload.features?.includes("confirmed-memory")) {
+        this.memory = new PrinterMemoryPanel(this.transport, () => this.store.getCurrentConversation()?.threadId);
+        this.memory.beforeOpen = () => { this.providers?.close(); this.knowledge?.close(); };
+        this.memory.bind();
+      }
+      if (payload.features?.includes("investigation-recovery")) {
+        this.sync = new InvestigationSync(this);
+        this.sync.start();
+        window.addEventListener("pagehide", () => this.sync.stop());
+        window.addEventListener("pageshow", event => { if (event.persisted) this.sync.start(); });
+      }
     } catch (error) { this.view.setStatus(String(error)); }
     finally { this.busy = false; this.store.save(); this.render(); }
   }
 
-  async restoreInvestigations() {
+  async restoreInvestigations(refresh = false) {
     const summaries = await this.transport.investigation();
+    let changed = false;
     // Bound concurrent work on small hosts; failed reads preserve cached drafts.
     for (const summary of summaries) {
+      const revision = `${summary.revision}:${summary.pending?.id || ""}:${summary.pending?.attempts || 0}`;
+      if (refresh && this.revisions.get(summary.id) === revision) continue;
       const record = await this.transport.investigation(`/${encodeURIComponent(summary.id)}`);
+      if (refresh && this.busy) return false;
       const existing = this.store.state.conversations.find(item => item.threadId === record.id);
       const conversation = this.store.createConversation({
         id: existing?.id || record.id, threadId: record.id, title: record.title,
         updatedAt: record.updated_at, draft: existing?.draft || "",
-        mode: existing?.mode || record.turns.at(-1)?.result.mode,
+        mode: existing?.mode || record.pending?.mode || record.turns.at(-1)?.result.mode,
         messages: investigationMessages(record),
       });
+      conversation.pendingRun = Boolean(record.pending);
       if (existing) Object.assign(existing, conversation);
       else this.store.state.conversations.push(conversation);
+      this.revisions.set(summary.id, revision);
+      changed = true;
     }
     this.store.ensureConversationState();
+    return changed;
   }
 
   select(id) {
@@ -124,12 +144,14 @@ class ChatApplication {
   async send() {
     if (this.busy) return;
     const conversation = this.store.getCurrentConversation();
+    if (conversation?.pendingRun) return;
     const message = this.view.input?.value?.trim() || "";
     if (!conversation || !message) { this.view.setStatus("Enter a question first."); return; }
     // Lock before session creation/network I/O to prevent duplicate submissions.
     this.busy = true;
     this.pending = "Investigating";
     const request = { message, mode: this.modesEnabled ? conversation.mode : "chat", artifacts: [], history: this.store.buildRequestHistory(conversation.messages) };
+    if (this.persistent) conversation.threadId ||= conversation.id;
     if (conversation.threadId) request.thread_id = conversation.threadId;
     conversation.messages.push({ role: "user", text: message });
     this.store.updateConversationTitle(conversation, message);

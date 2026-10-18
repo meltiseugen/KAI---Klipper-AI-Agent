@@ -66,7 +66,7 @@ class ShellView {
     }
   }
 
-  render(store, { busy, pending, revalidate, modesEnabled }) {
+  render(store, { busy, pending, revalidate, modesEnabled, recovering = false }) {
     const conversation = store.getCurrentConversation();
     this.messageView.revalidate = revalidate;
     this.renderHistory(store, busy);
@@ -87,6 +87,7 @@ class ShellView {
         ? "Debug adds live status and recent logs/service diagnostics. Earlier conversation stays available."
         : "Chat starts with your printer profile, active config and relevant saved evidence. Logs are read only when needed; earlier conversation stays available.");
     for (const element of [this.input, this.send, this.newChat]) if (element) element.disabled = busy;
+    if (this.send) this.send.disabled = busy || recovering;
     setText(this.send, pending ? "Analyzing..." : "Analyze");
   }
 

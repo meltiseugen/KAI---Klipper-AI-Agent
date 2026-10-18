@@ -19,7 +19,9 @@ export function element(tag) {
     get className() { return [...classes].join(" "); },
     set textContent(value) { text = String(value); this.children = []; },
     get textContent() { return text + this.children.map(child => child.textContent).join(""); },
-    appendChild(child) { this.children.push(child); return child; },
+    appendChild(child) { this.children.push(child); child.parentElement = this; return child; },
+    replaceChildren(...children) { this.textContent = ""; children.forEach(child => this.appendChild(child)); },
+    remove() { if (this.parentElement) this.parentElement.children = this.parentElement.children.filter(child => child !== this); },
     setAttribute(name, value) { this.attributes[name] = value; },
     addEventListener(name, fn) { this.listeners[name] = fn; },
     querySelector(selector) {
@@ -45,6 +47,8 @@ export async function loadUI(globals = {}) {
     "knowledge-records", "knowledge-save", "knowledge-refresh", "knowledge-reload", "knowledge-close", "knowledge-add",
     "providers-toggle", "providers-panel", "providers-form", "providers-status", "providers-key", "providers-remove",
     "providers-close", "providers-reload", "providers-validate", "providers-save",
+    "memory-toggle", "memory-panel", "memory-close", "memory-status", "memory-records", "memory-evidence",
+    "memory-content", "memory-kind", "memory-confirmed", "memory-link", "memory-save", "memory-reload",
   ].map(id => [id, element("div")]));
   const document = {
     body: element("body"), getElementById: id => ids[id], createElement: element,
@@ -56,7 +60,7 @@ export async function loadUI(globals = {}) {
   for (const name of manifest.filter(name => name !== "embed.js")) {
     vm.runInContext(await readFile(new URL(`../klipperai_agent/web/static/${name}`, import.meta.url), "utf8"), context);
   }
-  vm.runInContext("globalThis.UI = { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, PrinterKnowledgePanel, ProviderPanel, MoonrakerStatusFeed };", context);
+  vm.runInContext("globalThis.UI = { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, PrinterKnowledgePanel, PrinterMemoryPanel, InvestigationSync, ProviderPanel, MoonrakerStatusFeed };", context);
   return { ...context.UI, document, ids };
 }
 

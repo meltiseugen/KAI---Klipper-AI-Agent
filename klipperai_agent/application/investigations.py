@@ -7,10 +7,12 @@ import re
 from uuid import uuid4
 
 from klipperai_agent.domain.investigation import (
+    ConfirmedMemory,
     Evidence,
     Investigation,
     InvestigationResult,
     InvestigationTurn,
+    PendingInvestigation,
 )
 from klipperai_agent.domain.messages import ChatHistoryMessage
 from klipperai_agent.domain.repositories import InvestigationRepository
@@ -23,6 +25,53 @@ class InvestigationMemory:
         self._repository = repository
         self._printer_id = printer_id
         self._cross_chat = cross_chat
+
+    async def confirmed(self) -> list[ConfirmedMemory]:
+        return await asyncio.to_thread(self._repository.confirmed.list, self._printer_id)
+
+    async def confirm(self, item: ConfirmedMemory, evidence_ids: list[str]) -> ConfirmedMemory:
+        record = await self.get(item.investigation_id) if item.investigation_id else None
+        if item.investigation_id and record is None:
+            raise ValueError("Source investigation not found.")
+        available = (
+            {e.id: e for turn in record.turns for e in turn.result.evidence} if record else {}
+        )
+        if any(key not in available for key in evidence_ids):
+            raise ValueError("Select evidence from the source investigation.")
+        item.evidence = [available[key] for key in dict.fromkeys(evidence_ids)]
+        await asyncio.to_thread(self._repository.confirmed.save, self._printer_id, item)
+        return item
+
+    async def forget_confirmed(self, memory_id: str) -> None:
+        await asyncio.to_thread(self._repository.confirmed.delete, self._printer_id, memory_id)
+
+    async def begin(
+        self, investigation: Investigation, run: PendingInvestigation, owner: str
+    ) -> None:
+        await asyncio.to_thread(self._repository.runs.begin, investigation, run, owner)
+        investigation.pending = run
+
+    async def claim(self, owner: str, before: str) -> Investigation | None:
+        thread_id = await asyncio.to_thread(
+            self._repository.runs.claim, self._printer_id, owner, before
+        )
+        return await self.get(thread_id) if thread_id else None
+
+    async def checkpoint(
+        self, investigation: Investigation, owner: str, evidence: list[Evidence] | None = None
+    ) -> None:
+        assert investigation.pending is not None
+        await asyncio.to_thread(
+            self._repository.runs.checkpoint,
+            self._printer_id,
+            investigation.id,
+            investigation.pending.id,
+            owner,
+            evidence,
+        )
+
+    async def release(self, owner: str) -> None:
+        await asyncio.to_thread(self._repository.runs.release, self._printer_id, owner)
 
     async def open(self, thread_id: str | None, message: str) -> Investigation:
         existing = await self.get(thread_id) if thread_id else None
@@ -78,7 +127,17 @@ class InvestigationMemory:
             selected.setdefault(key, evidence.copy(update={"content": evidence.content[:1200]}))
             if len(selected) == 6:
                 break
-        return list(selected.values())
+        statements = [
+            item.as_evidence()
+            for item in await self.confirmed()
+            if (self._cross_chat or item.investigation_id == investigation.id)
+            and (
+                item.kind == "preference"
+                or tokens & set(re.findall(r"[a-z0-9_]{3,}", item.content.lower()))
+                or item.investigation_id == investigation.id
+            )
+        ][:6]
+        return statements + list(selected.values())
 
     async def remember(
         self,
@@ -86,11 +145,12 @@ class InvestigationMemory:
         question: str,
         result: InvestigationResult,
         imported_history: list[ChatHistoryMessage],
+        owner: str | None = None,
     ) -> InvestigationTurn:
         turn = InvestigationTurn(
             question=question,
             result=result,
             imported_history=imported_history if not investigation.turns else [],
         )
-        await asyncio.to_thread(self._repository.save_turn, investigation, turn)
+        await asyncio.to_thread(self._repository.save_turn, investigation, turn, owner)
         return turn

@@ -264,3 +264,18 @@ def test_subscription_update_validation_and_bounded_buffer():
         agent._notify("notify_status_update", [{}, 1])
     with pytest.raises(ValueError, match="overflow"):
         agent._notify("notify_status_update", [{}, 1])
+
+
+@pytest.mark.asyncio
+async def test_idle_socket_failure_exits_session_for_reconnection():
+    agent = MoonrakerAgent(Path("socket"), methods())
+    disconnected = asyncio.get_running_loop().create_future()
+
+    async def respond(method, params=None):
+        if method == "server.info":
+            disconnected.set_exception(RpcError("Moonraker socket disconnected."))
+            return {"klippy_state": "startup"}
+        return {}
+
+    with pytest.raises(RpcError, match="disconnected"):
+        await agent._session(SimpleNamespace(call=respond, task=disconnected))
