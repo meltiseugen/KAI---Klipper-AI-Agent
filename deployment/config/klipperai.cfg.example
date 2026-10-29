@@ -6,7 +6,7 @@
 # Notes:
 # - Restart klipperai-agent after editing this file.
 # - Hidden install metadata is stored in `/etc/klipperai/klipperai.env`.
-# - Keep API keys in /etc/klipperai/klipperai.env, not in this file.
+# - API keys use encrypted private storage; never put keys in this file or the environment file.
 
 [install]
 printer_data_root: /home/pi/printer_data  # Printer data root. Example: /home/pi/printer_data
@@ -56,8 +56,9 @@ memory_retention_days: 90  # Retain application-owned investigation records for 
 [llm]
 # These are defaults before the first Provider settings UI save. Saved provider
 # policy/credentials take precedence; see docs/providers.md. Never put keys here.
-# provider_storage_dir defaults to ~/.config/klipperai for the service user.
-llm_provider: stub  # Chat backend provider. Examples: stub, openai
+# Installer sets private encrypted storage under data_dir/private via environment metadata.
+# Direct development runs default to ~/.config/klipperai and require a master credential.
+llm_provider: openai  # Chat and Debug require a configured API key.
 openai_model: gpt-5.4-mini  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
 
 [agent]
@@ -88,3 +89,9 @@ klipperai: 100  # Tail lines for a legacy shared klipperai.log, if present.
 [system]
 collect_systemd_diagnostics: true  # Whether to collect systemctl and journal diagnostics. Examples: true, false
 journal_lines: 200  # Journal lines to include per service. Examples: 100, 200, 400
+additional_journal_units:  # Opt-in, at most six literal .service names. Example: crowsnest.service, nginx.service
+
+[flight_recorder]
+host_flight_recorder_enabled: false  # Opt-in Linux host history. Restart the agent after changing this setting.
+host_flight_recorder_interval_seconds: 10  # 5-300 seconds; shorter sampling costs more host work and storage writes.
+host_flight_recorder_max_samples: 1440  # 12-8640 samples; default approximately four hours, also limited by the byte budget.

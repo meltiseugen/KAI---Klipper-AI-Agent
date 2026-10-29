@@ -1,15 +1,18 @@
 flowchart LR
     %% Generated import direction: importer --> dependency
+    __main__ --> domain
     __main__ --> runtime
     agent --> config
     agent --> diagnostics
     agent --> domain
     agent --> knowledge
+    agent --> profile
     application --> agent
     application --> config
     application --> contracts
     application --> domain
     application --> knowledge
+    application --> runtime
     application --> workflows
     bootstrap --> agent
     bootstrap --> application
@@ -23,16 +26,19 @@ flowchart LR
     bootstrap --> workflows
     cli --> __main__
     cli --> config
+    cli --> domain
     cli --> infrastructure
     cli --> profile
     config --> diagnostics
     config --> domain
+    config --> knowledge
     config --> profile
     contracts --> domain
     diagnostics --> config
     diagnostics --> domain
     diagnostics --> infrastructure
     diagnostics --> profile
+    infrastructure --> diagnostics
     infrastructure --> domain
     knowledge --> config
     knowledge --> domain
@@ -52,6 +58,7 @@ flowchart LR
     web --> bootstrap
     web --> contracts
     web --> domain
+    web --> providers
     web --> runtime
     workflows --> application
     workflows --> config

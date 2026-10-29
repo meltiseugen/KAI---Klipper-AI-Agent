@@ -182,10 +182,43 @@ get_cfg_value() {
 
 remove_file_if_present() {
   local path="$1"
-  if [[ -e "$path" ]]; then
+  if run_root test -e "$path" || run_root test -L "$path"; then
     run_root rm -f -- "$path"
     log "Removed $path"
   fi
+}
+
+remove_agent_service() {
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    local -a native_args=(--install-dir "$KLIPPERAI_PROJECT_CHECKOUT_PATH")
+    [[ "${PURGE_CREDENTIALS:-no}" != yes ]] || native_args+=(--purge-credentials)
+    (cd "$KLIPPERAI_PROJECT_CHECKOUT_PATH" && run_root "$KLIPPERAI_PROJECT_CHECKOUT_PATH/.venv/bin/python" -m deployment.appliance_uninstall "${native_args[@]}")
+    return
+  fi
+  if systemctl list-unit-files "$SERVICE_NAME" >/dev/null 2>&1; then
+    log "Stopping and disabling ${SERVICE_NAME}."
+    run_root systemctl disable --now "$SERVICE_NAME" || warn "Could not fully disable ${SERVICE_NAME}."
+  fi
+  remove_file_if_present "$SYSTEMD_UNIT_PATH"
+  # Remove only our code selector; preserve all other operator drop-ins.
+  remove_file_if_present "${SYSTEMD_UNIT_PATH}.d/50-klipperai-release.conf"
+  run_root systemctl daemon-reload
+}
+
+purge_provider_credentials() {
+  local credential_path
+  local provider_directory="${KLIPPERAI_PROVIDER_STORAGE_DIR:-$KLIPPERAI_DATA_DIR/private}"
+  [[ "$KLIPPERAI_DATA_DIR" == /* && "$KLIPPERAI_DATA_DIR" != / ]] || die "Unsafe credential data directory."
+  [[ "$KLIPPERAI_SERVICE_HOME" == /* && "$KLIPPERAI_SERVICE_HOME" != / ]] || die "Unsafe service home directory."
+  [[ "$provider_directory" == /* && "$provider_directory" != / ]] || die "Unsafe provider directory."
+  for credential_path in \
+    "$KLIPPERAI_DATA_DIR/private/providers.sqlite3"{,-journal,-wal,-shm} \
+    "$provider_directory/providers.sqlite3"{,-journal,-wal,-shm} \
+    "$KLIPPERAI_SERVICE_HOME/.config/klipperai/providers.sqlite3"{,-journal,-wal,-shm} \
+    /etc/klipperai/credentials/provider-master.cred \
+    /etc/klipperai/klipperai.env.bak.*; do
+    remove_file_if_present "$credential_path"
+  done
 }
 
 remove_dir_if_present() {
@@ -325,8 +358,14 @@ detect_nginx_server_block_path() {
 }
 
 reload_nginx() {
-  run_root nginx -t
-  run_root systemctl reload nginx
+  local module="${KLIPPERAI_PROJECT_CHECKOUT_PATH:-}/deployment/installer/nginx.sh"
+  if [[ -f "$module" ]]; then
+    # Share vendor binary/config detection and validation with the installer.
+    (source "$module"; reload_nginx)
+    return
+  fi
+  run_root nginx -t || return 1
+  run_root nginx -s reload
 }
 
 remove_mainsail_auto_reapply() {
@@ -379,7 +418,14 @@ main() {
   require_cmd install
   require_cmd python3
   require_cmd stat
-  require_cmd systemctl
+  local checkout_dir
+  checkout_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  if [[ -f "$checkout_dir/.klipperai-appliance.json" ]]; then
+    KLIPPERAI_SERVICE_MANAGER=appliance
+  else
+    KLIPPERAI_SERVICE_MANAGER=systemd
+    require_cmd systemctl
+  fi
 
   log "Preparing uninstall."
 
@@ -403,6 +449,10 @@ main() {
     KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$(get_cfg_value "$KLIPPERAI_CFG_PATH" "install" "nginx_server_block_path" || true)"
   fi
   KLIPPERAI_DATA_DIR="$(get_cfg_value "$KLIPPERAI_CFG_PATH" "server" "data_dir" || true)"
+  KLIPPERAI_PROVIDER_STORAGE_DIR="$(extract_env_value "$ENV_FILE" "KLIPPERAI_PROVIDER_STORAGE_DIR" || true)"
+  if [[ -z "$KLIPPERAI_PROVIDER_STORAGE_DIR" ]]; then
+    KLIPPERAI_PROVIDER_STORAGE_DIR="$(get_cfg_value "$KLIPPERAI_CFG_PATH" "llm" "provider_storage_dir" || true)"
+  fi
 
   if [[ -z "${KLIPPERAI_SERVICE_USER:-}" ]] && [[ -n "${SUDO_USER:-}" ]] && [[ "${SUDO_USER}" != "root" ]]; then
     KLIPPERAI_SERVICE_USER="$SUDO_USER"
@@ -486,6 +536,12 @@ main() {
     REMOVE_DATA_DIR="no"
   fi
 
+  if confirm "Purge KlipperAI credentials and legacy key backups? Keys must be entered again after reinstalling." "Y"; then
+    PURGE_CREDENTIALS="yes"
+  else
+    PURGE_CREDENTIALS="no"
+  fi
+
   if confirm "Delete the nginx snippet file (${NGINX_SNIPPET_PATH}) now?" "N"; then
     REMOVE_NGINX_SNIPPET="yes"
   else
@@ -525,16 +581,10 @@ main() {
   print_summary
   confirm "Proceed with uninstall?" "N" || die "Uninstall cancelled."
 
-  if systemctl list-unit-files "$SERVICE_NAME" >/dev/null 2>&1; then
-    log "Stopping and disabling ${SERVICE_NAME}."
-    run_root systemctl disable --now "$SERVICE_NAME" || warn "Could not fully disable ${SERVICE_NAME}."
-  fi
-
-  remove_file_if_present "$SYSTEMD_UNIT_PATH"
-  run_root systemctl daemon-reload
+  remove_agent_service
 
   # Stop navigation repair before removing its link or the checkout it executes.
-  remove_mainsail_auto_reapply
+  if [[ "$KLIPPERAI_SERVICE_MANAGER" == systemd ]]; then remove_mainsail_auto_reapply; fi
 
   if [[ "$REMOVE_OE_REAPPLY_INTEGRATION" == "yes" ]]; then
     log "Stopping and disabling ${OE_REAPPLY_TIMER_NAME}."
@@ -570,6 +620,10 @@ main() {
   remove_line_from_file "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH" "$SERVICE_NAME"
   remove_file_if_present "$KLIPPERAI_CFG_PATH"
   remove_file_if_present "$ENV_FILE"
+
+  if [[ "$PURGE_CREDENTIALS" == yes ]]; then
+    purge_provider_credentials
+  fi
 
   if [[ "$REMOVE_UPDATE_MACRO_INTEGRATION" == "yes" ]]; then
     if [[ -f "$KLIPPERAI_KLIPPER_ROOT_CONFIG_PATH" ]]; then

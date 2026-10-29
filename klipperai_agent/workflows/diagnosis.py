@@ -4,6 +4,7 @@ from klipperai_agent.config.models import ConfigSnapshot
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.diagnostics.requests import DiagnosisPromptPayload
 from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding
+from klipperai_agent.domain.investigation import Evidence
 from klipperai_agent.workflows.context import DiagnosisState, WorkflowRuntime
 from klipperai_agent.workflows.text import _dedupe_items
 
@@ -23,12 +24,7 @@ async def collect_context(
     config_snapshot = runtime.context.config_collector.collect()
     return {
         "artifacts": [artifact.model_dump() for artifact in input_artifacts],
-        "snapshot": {
-            "moonraker_reachable": snapshot.moonraker_reachable,
-            "moonraker_info": snapshot.moonraker_info,
-            "notes": snapshot.notes,
-            "artifacts": [artifact.model_dump() for artifact in snapshot.artifacts],
-        },
+        "snapshot": snapshot.to_state(),
         "config_snapshot": config_snapshot.to_state(),
         "moonraker_reachable": snapshot.moonraker_reachable,
     }
@@ -57,12 +53,7 @@ async def call_llm(
     artifact_items = snapshot_data.get("artifacts", state.get("artifacts", []))
     artifacts = [ArtifactInput.model_validate(item) for item in artifact_items]
     findings = [IssueFinding.model_validate(item) for item in state.get("findings", [])]
-    snapshot = DiagnosticsSnapshot(
-        moonraker_reachable=bool(snapshot_data.get("moonraker_reachable", False)),
-        moonraker_info=snapshot_data.get("moonraker_info"),
-        artifacts=artifacts,
-        notes=list(snapshot_data.get("notes", [])),
-    )
+    snapshot = DiagnosticsSnapshot.from_state({**snapshot_data, "artifacts": artifacts})
     config_snapshot = ConfigSnapshot.from_state(state.get("config_snapshot", {}))
     payload = DiagnosisPromptPayload(
         user_message=state["user_message"],
@@ -73,7 +64,13 @@ async def call_llm(
         profile=runtime.context.profile,
     )
     llm_output = await runtime.context.llm.analyze(payload)
-    return {"llm_output": llm_output.model_dump()}
+    return {
+        "llm_output": llm_output.model_dump(),
+        "findings": [item.model_dump() for item in payload.findings],
+        "evidence": [
+            Evidence.parse_obj(item.model_dump()).model_dump() for item in payload.context_artifacts
+        ],
+    }
 
 
 def compose_response(state: DiagnosisState) -> DiagnosisState:
@@ -111,6 +108,10 @@ def compose_response(state: DiagnosisState) -> DiagnosisState:
     fallback_actions = [finding["proposed_fix"] for finding in findings[:2]]
     next_actions = concise_actions or _dedupe_items(fallback_actions, limit=2)
     return {
+        "workflow": "diagnosis",
         "response_text": "\n".join(lines).strip(),
         "next_actions": next_actions,
+        "source_citations": [
+            citation for finding in findings for citation in finding.get("citations", [])
+        ],
     }

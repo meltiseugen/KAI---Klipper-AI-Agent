@@ -1,0 +1,55 @@
+[
+  {
+    "id": "usb-cold-start",
+    "transport": {
+      "mcu": "serial (USB reported by source)"
+    },
+    "log": "usb-cold-start.log",
+    "source": "https://github.com/Klipper3d/klipper/issues/1083",
+    "attachment": "https://github.com/KevinOConnor/klipper/files/2730974/klippy.log",
+    "attachment_sha256": "c3714ece411d7ffd34007c795e608afcd8ee509a1199f43cbdd49be1b5d6bf4f",
+    "original_lines": [
+      6,
+      192,
+      193,
+      194,
+      195,
+      196
+    ],
+    "expected_family": "communication",
+    "expected_mcu": "mcu",
+    "expected_counter_increases": {
+      "mcu.bytes_retransmit": 0.0
+    },
+    "expected_assessment": "Cause not established",
+    "notes": "Real public incident; sparse unmodified startup/Stats/failure lines. USB reported by incident author; no dated kernel evidence or confirmed physical root cause is supplied.",
+    "excerpt_sha256": "674a10689f2fe7f05daca098a9d40614ffd0418247e74bf70472c971138dc90e"
+  },
+  {
+    "id": "can-timer",
+    "transport": {
+      "mcu": "CAN",
+      "EBB": "CAN",
+      "idm": "CAN"
+    },
+    "log": "can-timer.log",
+    "source": "https://klipper.discourse.group/t/timer-too-close-random/16908",
+    "attachment": "https://klipper.discourse.group/uploads/short-url/6gHlqERtx4gnkG5eRvBpuseHouZ.zip",
+    "attachment_sha256": "29c2d97103ddaf3d0a63bfef1944fc481fcc8b4eae466113ae824d5f1db9bfc5",
+    "original_lines": [
+      69513,
+      69514,
+      69572,
+      69573
+    ],
+    "expected_family": "timing",
+    "expected_mcu": "mcu",
+    "expected_counter_increases": {
+      "mcu.bytes_invalid": 111.0,
+      "EBB.bytes_invalid": 51.0
+    },
+    "expected_assessment": "Invalid protocol bytes on mcu",
+    "notes": "Real public incident; sparse unmodified Stats/failure lines from klippy.log inside the ZIP. No startup clock anchor exists in this window; do not invent incident wall time. Full source log is 97,607,595 bytes and outside the runtime excerpt bound. Reported CAN topology does not establish the underlying hardware/software fault.",
+    "excerpt_sha256": "15dd25c06dd14983eb0916c60a87867f5f8da74f3c19605d090517a811f6320b"
+  }
+]

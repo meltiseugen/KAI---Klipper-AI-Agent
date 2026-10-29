@@ -45,7 +45,7 @@ _FEATURE_SECTION_PREFIXES: dict[ConfigFeature, tuple[str, ...]] = {
 _DIRECT_SECTION_PATTERN = re.compile(r"\[([^\]]+)\]")
 
 
-_SECTION_LINE_PATTERN = re.compile(r"^\s*\[[^\]\n]+\]\s*$")
+_SECTION_LINE_PATTERN = re.compile(r"^[ \t]*\[[^\]\n]+\][ \t]*(?:[#;].*)?$")
 
 
 _MACRO_WORD_PATTERN = re.compile(r"\b(?:gcode[_\s-]*)?macro\b(?!-)", re.IGNORECASE)

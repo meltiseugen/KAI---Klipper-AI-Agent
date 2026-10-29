@@ -2,6 +2,22 @@
 # Sourced by install.sh; no work is performed on import.
 
 print_next_steps() {
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    cat <<EOF
+
+Native KlipperAI installation complete
+- Service: /etc/init.d/S99klipperai {start|stop|restart|status}
+- Config: $KLIPPERAI_CFG_PATH
+- Runtime log: $KLIPPERAI_DATA_DIR/logs/$KLIPPERAI_AGENT_LOG_FILE_NAME
+- UI: http://<printer-host>${KLIPPERAI_ROOT_PATH}/
+- Deploy fixes from your development machine with: python -m tools.deploy <printer-profile>
+- Restart Moonraker manually using the host's own service command to load its new include.
+- Encrypted credentials use a separate root-only host wrapping key and RAM-only delivery.
+- Host-key protection cannot protect a complete disk image or against root access.
+
+EOF
+    return
+  fi
   cat <<EOF
 
 Installation complete

@@ -27,6 +27,7 @@ class HostObservation:
     current: dict[str, Any] = field(default_factory=dict)
     kernel: list[dict[str, Any]] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    history: dict[str, Any] = field(default_factory=dict)
 
 
 class ShutdownIncident(BaseModel):

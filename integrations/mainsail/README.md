@@ -1,6 +1,6 @@
 # Mainsail Integration Assets
 
-This directory contains both the recommended low-coupling Mainsail integration assets and an optional native-shell patch bundle.
+This directory contains the supported Mainsail custom-navigation integration.
 
 ## Recommended `v1` Integration
 
@@ -25,7 +25,8 @@ This writes or updates:
 The example payload lives in `integrations/mainsail/navi.json.example`. This is
 the **KlipperAI button in Mainsail's left navigation menu**, using Mainsail's
 [documented customization format](https://github.com/mainsail-crew/docs/blob/zensical/docs/features/custom-themes/custom-navigation.md).
-The optional top-bar/drawer patch below is a separate integration.
+The former topbar/drawer source patch has been retired. The sidebar link remains
+the supported integration and opens the full assistant in a new tab.
 
 The helper validates JSON, preserves unrelated entries and their order, removes
 duplicate matching KlipperAI entries, and replaces the navigation file atomically.
@@ -128,92 +129,17 @@ navigation loss, malformed JSON, concurrent edits, interrupted writes, saved
 options, startup units and uninstall behavior. They do not constitute a live
 Linux boot or rendered Mainsail browser test.
 
-## Optional Native Shell Patch
+## Retired Source Patch
 
-### Intent
+The optional topbar button and iframe drawer required a custom Mainsail build
+and updates to version-specific Vue source patches. They duplicated the standalone
+page, so the patch and its apply helper have been removed. The left-menu link,
+automatic navigation repair, `/embed` compatibility route and OctoEverywhere
+integration remain available.
 
-The native patch keeps Mainsail changes deliberately small:
+If you previously built Mainsail with the drawer patch, removing it from this
+repository does not modify that deployed build. Restore an official Mainsail
+release using your normal Mainsail updater, preserving `.theme/navi.json`.
+Users of the left-menu link need no navigation migration.
 
-- add a KlipperAI launcher button to the top bar
-- mount a native Mainsail shell component
-- open a right-side drawer
-- bootstrap a KlipperAI UI session from `/klipperai/api/ui-sessions`
-- render the embedded assistant in an iframe
-
-The actual assistant UI and workflow logic remain in the KlipperAI service.
-
-## Target Upstream
-
-- Repository: `https://github.com/mainsail-crew/mainsail`
-- Branch inspected: `develop`
-- Commit used for this patch bundle: `6130a0aa1776a138feaab691b9e4b1334b676b79`
-- Upstream package version at that commit: `2.17.0`
-
-## Files Touched In Upstream Mainsail
-
-- `src/App.vue`
-- `src/components/TheTopbar.vue`
-- `src/components/integrations/KlipperAiShell.vue`
-
-## What The Patch Adds
-
-### App-Level Shell Mount
-
-`App.vue` is patched to:
-
-- listen for a `toggle-klipperai` event from the top bar
-- keep a local `showKlipperAiShell` boolean
-- mount the drawer shell component
-
-### Topbar Launcher
-
-`TheTopbar.vue` is patched to:
-
-- add a `KlipperAI` icon button beside the existing topbar controls
-- emit `toggle-klipperai` upward
-
-### Embedded Drawer
-
-`KlipperAiShell.vue` is a thin Mainsail-native shell that:
-
-- opens as a right-side drawer
-- requests a UI session from `/klipperai/api/ui-sessions`
-- shows a loading or error state if bootstrap fails
-- loads the returned `embed_path` into an iframe
-
-## Apply The Optional Patch
-
-From a local Mainsail source checkout:
-
-```bash
-chmod +x ./integrations/mainsail/apply-patch.sh
-./integrations/mainsail/apply-patch.sh /path/to/mainsail
-```
-
-The helper script runs `git apply --check` first, then applies the patch.
-
-## Build And Deploy
-
-After applying the patch in a Mainsail source checkout:
-
-```bash
-npm install
-npm run build
-```
-
-Then deploy the generated Mainsail build as you normally would for your environment.
-
-## Requirements
-
-This shell patch assumes:
-
-- KlipperAI is reverse-proxied on the same origin at `/klipperai/`
-- `POST /klipperai/api/ui-sessions` is reachable from the Mainsail frontend
-- `embed_path` points to an embeddable iframe route
-
-## Current Limitations
-
-- The patch does not add localization keys; the launcher label is effectively icon-first and the shell title is hardcoded `KlipperAI`.
-- The patch is version-targeted to the upstream commit above and may need refreshing for future Mainsail releases.
-- The patch bundle does not rebuild or deploy Mainsail automatically.
-- The patch assumes the current `/klipperai` mount path.
+See [same-origin routing and page checks](../../docs/mainsail-shell.md).

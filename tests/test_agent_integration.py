@@ -15,13 +15,14 @@ from klipperai_agent.agent.workflow import AgentWorkflow
 from klipperai_agent.application.chat import ChatService
 from klipperai_agent.application.sessions import InMemorySessionStore
 from klipperai_agent.contracts.api import AgentEvent, ChatRequest
+from klipperai_agent.diagnostics.rules import RuleEngine
 from klipperai_agent.profile.models import PrinterProfile
 from klipperai_agent.runtime.settings import Settings
 from klipperai_agent.web.streaming import ChatEventStream
 
 
 class ProfileModel:
-    async def respond(self, conversation, tools):
+    async def respond(self, conversation, tools, *, response_format=None):
         if any(item.get("type") == "function_call_output" for item in conversation):
             return ModelTurn([], text=json.dumps({"response": "Your saved firmware is Kalico."}))
         output = {
@@ -36,6 +37,7 @@ class ProfileModel:
 @pytest.fixture
 def agent_service():
     context = SimpleNamespace(
+        rules=RuleEngine(),
         profile=PrinterProfile(firmware_flavor="Kalico"),
         collector=SimpleNamespace(
             ping=AsyncMock(return_value=True), ping_printer=AsyncMock(return_value=True)
@@ -192,7 +194,18 @@ async def test_container_wires_agent_and_closes_provider_client(monkeypatch, tmp
         collect_systemd_diagnostics=False,
     )
     container = container_module.build_container(settings)
-    assert container.chat_service.agent_workflow.web_search_enabled is search
+    assert container.chat_service.provider_ready is bool(key)
+    if key:
+        assert container.chat_service.agent_workflow.web_search_enabled is search
+    else:
+        assert container.chat_service.agent_workflow is None
+        with pytest.raises(ValueError, match="Configure an LLM"):
+            await container.chat_service.chat(
+                ChatRequest(
+                    session_id=(await container.chat_service.create_ui_session()).session_id,
+                    message="Audit active configuration",
+                )
+            )
     await container.aclose()
-    responses.aclose.assert_awaited_once()
+    assert responses.aclose.await_count == int(bool(key))
     moonraker.aclose.assert_awaited_once()

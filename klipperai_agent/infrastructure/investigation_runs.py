@@ -89,6 +89,18 @@ class SqliteRunRepository:
     ) -> None:
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
+            if evidence is None:
+                changed = db.execute(
+                    """UPDATE pending_runs SET lease_until=?
+                    WHERE investigation_id=? AND run_id=? AND owner=? AND investigation_id IN
+                    (SELECT id FROM investigations WHERE printer_id=?)""",
+                    (lease_deadline(), thread_id, run_id, owner, printer_id),
+                ).rowcount
+                if not changed:
+                    raise InvestigationConflict(
+                        "The investigation was deleted or recovered by another worker."
+                    )
+                return
             row = db.execute(
                 """SELECT p.content FROM pending_runs p JOIN investigations i ON i.id=p.investigation_id
                 WHERE i.printer_id=? AND i.id=? AND p.run_id=? AND p.owner=?""",

@@ -28,7 +28,7 @@ class _FakeChatService:
             raise ValueError("bad session")
         return {
             "session_id": session_id,
-            "provider": "stub",
+            "provider": "openai",
             "moonraker_reachable": True,
             "klipper_reachable": True,
             "expires_at": datetime(2030, 1, 1, tzinfo=timezone.utc),
@@ -44,7 +44,7 @@ class _FakeChatService:
             "response": "ok",
             "findings": [],
             "next_actions": [],
-            "provider": "stub",
+            "provider": "openai",
             "moonraker_reachable": True,
         }
 

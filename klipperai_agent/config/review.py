@@ -10,9 +10,14 @@ from typing import Literal
 from uuid import uuid4
 
 from klipperai_agent.config.models import ConfigSnapshot
+from klipperai_agent.config.option_review import review_options
 from klipperai_agent.config.parser import ConfigParser
+from klipperai_agent.config.patches import attach_file_plan
+from klipperai_agent.config.review_guidance import manual_verification
+from klipperai_agent.config.review_parser import parse_review_config
+from klipperai_agent.config.review_versions import exact_klipper_release
 from klipperai_agent.domain.investigation import utc_now
-from klipperai_agent.domain.proposals import ConfigProposal, ProposalReview
+from klipperai_agent.domain.proposals import ConfigProposal, ProposalReview, ReviewFirmware
 
 
 class ProposalReviewer:
@@ -23,13 +28,32 @@ class ProposalReviewer:
         *,
         previous: ProposalReview | None = None,
         expected_revision: str | None = None,
+        firmware: ReviewFirmware | None = None,
+        inventory: ConfigSnapshot | None = None,
     ) -> ConfigProposal:
         errors: list[str] = []
         warnings = [
             "Manual editing only. KlipperAI has not changed any printer files.",
-            "Static checks do not validate firmware option support, pin wiring, or physical safety.",
+            "Bundled option checks are partial. They do not certify the installed firmware, pin wiring, macro execution or physical safety.",
             "The comparison covers proposed sections only. Preserve all other content in the file.",
         ]
+        firmware = firmware or ReviewFirmware()
+        parsed, checks = parse_review_config(proposal.config)
+        checks.extend(
+            review_options(parsed, snapshot, proposal.target_file.replace("\\", "/"), firmware)
+        )
+        for check in checks:
+            check_location = (
+                f"[{check.section}] {check.option} (line {check.line}): " if check.section else ""
+            )
+            if check.severity == "error":
+                errors.append(check_location + check.message)
+            elif check.severity == "warning":
+                warnings.append(check_location + check.message)
+        if not exact_klipper_release(firmware):
+            warnings.append(
+                "No exact bundled Klipper release match. Git builds, dirty trees, unknown versions and forks require commit-specific option verification."
+            )
         path = proposal.target_file.replace("\\", "/")
         target = PurePosixPath(path)
         if (
@@ -41,7 +65,9 @@ class ProposalReviewer:
             errors.append(
                 "Choose a .cfg path relative to the printer config directory, without parent traversal."
             )
-        sections = ConfigParser.extract_sections(proposal.config)
+        sections = [section.name for section in parsed] or ConfigParser.extract_sections(
+            proposal.config
+        )
         normalized = [section.casefold() for section in sections]
         if not sections:
             errors.append("The proposal must contain at least one config section.")
@@ -49,11 +75,6 @@ class ProposalReviewer:
             errors.append("The proposal repeats a config section.")
         if re.search(r"\bYOUR_[A-Z0-9_]+\b|<[A-Z][A-Z0-9_]*>|\bTODO\b", proposal.config):
             errors.append("Resolve placeholder values before editing printer configuration.")
-        if any(
-            line.lstrip().startswith("[") and not re.match(r"^\s*\[[^\]\n]+\]\s*(?:[#;].*)?$", line)
-            for line in proposal.config.splitlines()
-        ):
-            errors.append("A config section header is malformed.")
         if not snapshot.documents:
             errors.append(
                 "Current configuration could not be inspected; conflicts cannot be checked."
@@ -109,12 +130,34 @@ class ProposalReviewer:
         )
         revision = snapshot.revision()
         baseline = previous.baseline_revision if previous else expected_revision or revision
+        baseline_firmware = previous.baseline_firmware if previous else firmware
+        firmware_observed = not (
+            baseline_firmware
+            and baseline_firmware.source == "live_version_saved_flavor"
+            and firmware.source != "live_version_saved_flavor"
+        )
+        if not firmware_observed:
+            warnings.append(
+                "The previous live firmware version could not be rechecked. Saved profile values do not establish a firmware change; verify the running version before editing."
+            )
+        firmware_changed = bool(
+            firmware_observed
+            and baseline_firmware
+            and baseline_firmware.version
+            and firmware.version
+            and (baseline_firmware.version, baseline_firmware.flavor.casefold())
+            != (firmware.version, firmware.flavor.casefold())
+        )
         status: Literal["stale", "needs_information", "manual_review"] = (
-            "stale" if baseline != revision else "needs_information" if errors else "manual_review"
+            "stale"
+            if baseline != revision or firmware_changed or (previous and previous.status == "stale")
+            else "needs_information"
+            if errors
+            else "manual_review"
         )
         if status == "stale":
             warnings.append(
-                "Configuration changed since this proposal's evidence was collected. Request a refreshed proposal before editing."
+                "Configuration or firmware changed since this proposal's evidence was collected, or this proposal was already stale. Request a refreshed proposal before editing."
             )
         review = ProposalReview(
             proposal_id=previous.proposal_id if previous else str(uuid4()),
@@ -125,5 +168,12 @@ class ProposalReviewer:
             errors=list(dict.fromkeys(errors)),
             warnings=warnings,
             comparison=comparison,
+            checks=checks,
+            manual_steps=manual_verification(parsed),
+            firmware=firmware,
+            baseline_firmware=baseline_firmware,
         )
-        return proposal.copy(update={"review": review})
+        result = proposal.copy(update={"review": review})
+        if inventory is not None:
+            attach_file_plan(result, snapshot, inventory, previous)
+        return result

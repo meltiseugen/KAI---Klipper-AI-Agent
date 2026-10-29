@@ -50,7 +50,7 @@ async def test_interrupted_request_resumes_once_with_fresh_config_and_dated_obse
     waiting = asyncio.Event()
 
     class PausedModel(ConfigModel):
-        async def respond(self, conversation, tools):
+        async def respond(self, conversation, tools, *, response_format=None):
             if len(conversation) > 2:
                 waiting.set()
                 await asyncio.Event().wait()

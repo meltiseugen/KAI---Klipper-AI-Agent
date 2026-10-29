@@ -4,8 +4,8 @@ import pytest
 
 from klipperai_agent.config.models import ConfigRequestTarget, ConfigSnapshot
 from klipperai_agent.config.requests import ConfigPromptPayload
+from klipperai_agent.config.templates.catalog import ProposalCatalog
 from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.providers.config_stub import StubConfigAssistantProvider
 from klipperai_agent.providers.openai import OpenAIConfigAssistantProvider
 
 
@@ -27,11 +27,11 @@ from klipperai_agent.providers.openai import OpenAIConfigAssistantProvider
         ("generic", "klipperai/custom.cfg"),
     ],
 )
-async def test_stub_config_provider_returns_a_proposal_for_each_feature(
+async def test_template_catalog_returns_a_proposal_for_each_feature(
     feature: str,
     expected_target: str,
 ) -> None:
-    provider = StubConfigAssistantProvider()
+    catalog = ProposalCatalog()
     payload = ConfigPromptPayload(
         user_message=f"Generate me a {feature} config",
         snapshot=ConfigSnapshot(root_file=None, documents=[], notes=[]),
@@ -39,10 +39,8 @@ async def test_stub_config_provider_returns_a_proposal_for_each_feature(
         profile=PrinterProfile(),
     )
 
-    result = await provider.propose(payload)
-
-    assert result.proposals
-    assert result.proposals[0].target_file == expected_target
+    proposal = catalog.build(payload)
+    assert proposal.target_file == expected_target
 
 
 class _FakeOpenAIJsonClient:

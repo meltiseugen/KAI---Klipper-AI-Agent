@@ -31,7 +31,9 @@ detect_nginx_server_block_path() {
     /usr/data/nginx/conf/nginx.conf \
     /etc/nginx/conf.d/mainsail.conf \
     /etc/nginx/sites-enabled/mainsail \
-    /etc/nginx/sites-available/mainsail
+    /etc/nginx/sites-available/mainsail \
+    /opt/etc/nginx/conf.d/mainsail.conf \
+    /opt/etc/nginx/nginx.conf
   do
     if [[ -f "$candidate" ]]; then
       printf '%s' "$candidate"

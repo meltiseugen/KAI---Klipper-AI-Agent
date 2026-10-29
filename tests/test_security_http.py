@@ -59,7 +59,7 @@ def test_http_origin_checks_headers_and_private_validation_errors(monkeypatch, t
             "/api/chat", json={"session_id": "valid", "message": {"api_key": "private-value"}}
         )
         assert invalid.status_code == 422 and "private-value" not in invalid.text
-        # No new aggregate request cap or artifact-count restriction in this milestone.
+        # The attachment UI and both chat endpoints share bounded text-artifact limits.
         payload = {
             "session_id": "valid",
             "message": "hello",
@@ -68,6 +68,8 @@ def test_http_origin_checks_headers_and_private_validation_errors(monkeypatch, t
                 for index in range(30)
             ],
         }
+        assert client.post("/api/chat", json=payload).status_code == 422
+        payload["artifacts"] = payload["artifacts"][:4]
         assert client.post("/api/chat", json=payload).status_code == 200
 
 

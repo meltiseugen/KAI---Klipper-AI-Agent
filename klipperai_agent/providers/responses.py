@@ -11,6 +11,7 @@ from klipperai_agent.agent.models import ModelTurn, ToolCall
 from klipperai_agent.domain.provider_settings import ModelProfile, ProviderPolicy
 from klipperai_agent.domain.redaction import redact_data, redact_text
 from klipperai_agent.providers.usage import UsageGuard
+from klipperai_agent.runtime.model_usage import model_request
 
 
 class ProviderError(RuntimeError):
@@ -84,15 +85,16 @@ class ResponsesClient:
                 if self._guard
                 else nullcontext(None) as reservation
             ):
-                response = await self._http.post(
-                    "https://api.openai.com/v1/responses",
-                    headers={"Authorization": f"Bearer {self._api_key}"},
-                    json=body,
-                )
-                if response.status_code == 429 and self._guard:
-                    self._guard.throttle(response.headers.get("retry-after", "60"))
-                response.raise_for_status()
-                data = response.json()
+                async with model_request(profile.model):
+                    response = await self._http.post(
+                        "https://api.openai.com/v1/responses",
+                        headers={"Authorization": f"Bearer {self._api_key}"},
+                        json=body,
+                    )
+                    if response.status_code == 429 and self._guard:
+                        self._guard.throttle(response.headers.get("retry-after", "60"))
+                    response.raise_for_status()
+                    data = response.json()
                 if self._guard and reservation is not None:
                     self._guard.record(reservation, data)
         except (httpx.HTTPError, ValueError):
@@ -115,13 +117,15 @@ class OpenAIAgentModel:
         self,
         conversation: list[dict[str, Any]],
         tools: list[dict[str, Any]],
+        *,
+        response_format: dict[str, Any] | None = None,
     ) -> ModelTurn:
         output = await self._client.create(
             input=conversation,
             tools=tools,
             parallel_tool_calls=False,
             include=["reasoning.encrypted_content"],
-            text={"format": {"type": "json_object"}},
+            text={"format": response_format or {"type": "json_object"}},
         )
         calls: list[ToolCall] = []
         text: list[str] = []

@@ -3,20 +3,19 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr
 
-import klipperai_agent.providers.config_stub as providers_config_stub
 import klipperai_agent.providers.factory as providers_factory
 import klipperai_agent.providers.json_client as providers_json_client
 import klipperai_agent.providers.models as providers_models
 import klipperai_agent.providers.normalization as providers_normalization
 import klipperai_agent.providers.openai as providers_openai
-import klipperai_agent.providers.stub as providers_stub
+from klipperai_agent.config.lookup import build_config_lookup_response
 from klipperai_agent.config.models import (
     ConfigDocument,
     ConfigRequestTarget,
     ConfigSnapshot,
 )
 from klipperai_agent.config.requests import ConfigPromptPayload
-from klipperai_agent.contracts.api import IssueFinding
+from klipperai_agent.config.templates.catalog import ProposalCatalog
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.diagnostics.requests import DiagnosisPromptPayload
 from klipperai_agent.profile.models import PrinterProfile
@@ -32,46 +31,12 @@ def _snapshot_with(*sections: str) -> ConfigSnapshot:
     )
 
 
-@pytest.mark.asyncio
-async def test_stub_diagnosis_with_and_without_findings() -> None:
-    finding = IssueFinding(
-        code="timer",
-        severity="high",
-        source="klippy.log",
-        summary="Timer issue",
-        evidence="Timer too close",
-        proposed_fix="Reduce load",
-    )
-    base = dict(
-        user_message="help",
-        snapshot=DiagnosticsSnapshot(True, {}, []),
-        config_snapshot=ConfigSnapshot(root_file=None, documents=[], notes=[]),
-    )
-    provider = providers_stub.StubDiagnosisProvider()
-    matched = await provider.analyze(
-        DiagnosisPromptPayload(
-            **base, findings=[finding], profile=PrinterProfile(firmware_flavor="Kalico")
-        )
-    )
-    assert matched.summary.startswith("Timer issue")
-    assert matched.recommended_actions == ["Reduce load"]
-
-    unmatched = await provider.analyze(
-        DiagnosisPromptPayload(
-            **base, findings=[], profile=PrinterProfile(firmware_flavor="Klipper")
-        )
-    )
-    assert "No deterministic" in unmatched.summary
-    assert "Klipper" in unmatched.summary
-
-
-@pytest.mark.asyncio
-async def test_stub_config_profile_specific_warnings() -> None:
-    provider = providers_config_stub.StubConfigAssistantProvider()
+def test_template_profile_specific_warnings() -> None:
+    catalog = ProposalCatalog()
     snapshot = _snapshot_with("fan", "klippyai managed")
 
-    async def propose(feature: str, profile: PrinterProfile):
-        return await provider.propose(
+    def propose(feature: str, profile: PrinterProfile):
+        return catalog.build(
             ConfigPromptPayload(
                 user_message="configure",
                 snapshot=snapshot,
@@ -80,20 +45,19 @@ async def test_stub_config_profile_specific_warnings() -> None:
             )
         )
 
-    fan = await propose("fan", PrinterProfile(canbus_interfaces=["can0"]))
-    assert any("fan-related" in warning for warning in fan.proposals[0].warnings)
-    assert any("CAN-connected" in warning for warning in fan.proposals[0].warnings)
-    assert "Detected printer profile" in fan.summary
+    fan = propose("fan", PrinterProfile(canbus_interfaces=["can0"]))
+    assert any("fan-related" in warning for warning in fan.warnings)
+    assert any("CAN-connected" in warning for warning in fan.warnings)
 
-    probe = await propose("probe", PrinterProfile(probe_type="beacon"))
-    assert any("beacon" in warning for warning in probe.proposals[0].warnings)
+    probe = propose("probe", PrinterProfile(probe_type="beacon"))
+    assert any("beacon" in warning for warning in probe.warnings)
 
-    motion = await propose("filament", PrinterProfile(filament_sensor="motion"))
-    assert any("motion-style" in warning for warning in motion.proposals[0].warnings)
-    switch = await propose("filament", PrinterProfile(filament_sensor="switch"))
-    assert any("switch-style" in warning for warning in switch.proposals[0].warnings)
-    none = await propose("filament", PrinterProfile(filament_sensor="none"))
-    assert any("no filament sensor" in item for item in none.proposals[0].assumptions)
+    motion = propose("filament", PrinterProfile(filament_sensor="motion"))
+    assert any("motion-style" in warning for warning in motion.warnings)
+    switch = propose("filament", PrinterProfile(filament_sensor="switch"))
+    assert any("switch-style" in warning for warning in switch.warnings)
+    none = propose("filament", PrinterProfile(filament_sensor="none"))
+    assert any("no filament sensor" in item for item in none.assumptions)
 
 
 @pytest.mark.asyncio
@@ -161,20 +125,12 @@ async def test_openai_providers_build_prompts_and_normalize_results() -> None:
 
 
 @pytest.mark.asyncio
-async def test_json_client_stub_router_and_lookup(monkeypatch) -> None:
-    assert (
-        await providers_stub.StubIntentRouterProvider().classify("Where is my fan? ")
-    ).intent == "config_lookup"
-
-    lookup = await providers_config_stub.StubConfigAssistantProvider().propose(
-        ConfigPromptPayload(
-            user_message="where",
-            snapshot=_snapshot_with("fan"),
-            target=ConfigRequestTarget(feature="fan", intent="locate", rationale="test"),
-            profile=PrinterProfile(),
-        )
+async def test_json_client_and_config_lookup(monkeypatch) -> None:
+    lookup, _ = build_config_lookup_response(
+        _snapshot_with("fan"),
+        ConfigRequestTarget(feature="fan", intent="locate", rationale="test"),
     )
-    assert lookup.proposals == []
+    assert "fan" in lookup
 
     class Response:
         def raise_for_status(self):
@@ -248,7 +204,7 @@ def test_llm_normalization_helpers_cover_malformed_shapes() -> None:
     assert providers_normalization._stringify_llm_item(["one", "two"]) == "one; two"
 
 
-def test_provider_factories_select_openai_and_stub(monkeypatch) -> None:
+def test_provider_factories_use_openai_with_or_without_configured_credentials(monkeypatch) -> None:
     monkeypatch.setattr(
         providers_factory, "OpenAIDiagnosisProvider", lambda **kwargs: ("diagnosis", kwargs)
     )
@@ -265,14 +221,7 @@ def test_provider_factories_select_openai_and_stub(monkeypatch) -> None:
     assert providers_factory.build_config_provider(settings)[1]["model"] == "model"
     assert providers_factory.build_intent_router(settings)[1]["api_key"] == "secret"
 
-    stub = Settings(llm_provider="stub")
-    assert isinstance(
-        providers_factory.build_diagnosis_provider(stub), providers_stub.StubDiagnosisProvider
-    )
-    assert isinstance(
-        providers_factory.build_config_provider(stub),
-        providers_config_stub.StubConfigAssistantProvider,
-    )
-    assert isinstance(
-        providers_factory.build_intent_router(stub), providers_stub.StubIntentRouterProvider
-    )
+    unconfigured = Settings()
+    assert providers_factory.build_diagnosis_provider(unconfigured)[1]["api_key"] is None
+    assert providers_factory.build_config_provider(unconfigured)[1]["api_key"] is None
+    assert providers_factory.build_intent_router(unconfigured)[1]["api_key"] is None

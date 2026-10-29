@@ -119,6 +119,12 @@ def test_host_log_collector_skips_excluded_logs_by_name_stem_and_glob(tmp_path: 
 
 
 class _FakeMoonraker:
+    async def get_printer_info(self):
+        return {"state": "ready"}
+
+    async def list_printer_objects(self):
+        return []
+
     async def ping(self) -> bool:
         return True
 

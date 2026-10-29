@@ -1,6 +1,6 @@
 // Application-owned knowledge details and explicit public-document refreshes.
 class PrinterKnowledgePanel {
-  constructor(transport, schedule = setTimeout, cancel = clearTimeout) {
+  constructor(transport, schedule = (fn, delay) => setTimeout(fn, delay), cancel = id => clearTimeout(id)) {
     this.transport = transport;
     this.schedule = schedule;
     this.cancel = cancel;
@@ -14,6 +14,7 @@ class PrinterKnowledgePanel {
     this.reloadButton = document.getElementById("knowledge-reload");
     this.addButton = document.getElementById("knowledge-add");
     this.reviewButtons = [];
+    this.actions = new KnowledgeActions(this);
     this.busy = false;
     this.setup = null;
     this.fields = [];
@@ -50,7 +51,7 @@ class PrinterKnowledgePanel {
     this.toggle.setAttribute("aria-expanded", "false");
     this.cancel(this.timer);
     document.getElementById("conversation-panel").inert = false;
-    this.toggle.focus();
+    focusPanelLauncher(this.toggle);
   }
 
   lock(value) {
@@ -95,7 +96,10 @@ class PrinterKnowledgePanel {
         option.textContent = item;
         input.appendChild(option);
       }
-    } else { input.type = type; input.maxLength = maxLength; }
+    } else {
+      if (type !== "textarea") input.type = type;
+      input.maxLength = maxLength;
+    }
     if (type === "checkbox") input.checked = Boolean(value);
     else input.value = value || "";
     wrapper.appendChild(caption);
@@ -108,6 +112,7 @@ class PrinterKnowledgePanel {
   }
 
   renderForm(setup) {
+    const sections = settingsSectionState(this.form);
     this.setup = setup;
     this.form.textContent = "";
     this.fields = [];
@@ -115,11 +120,9 @@ class PrinterKnowledgePanel {
     this.printerModel = this.input(this.form, "Printer model (helps distinguish vendor variants)", setup.printer_model);
     this.components = setup.components.map((item, index) => {
       const role = item.role;
-      const group = document.createElement("fieldset");
-      const legend = document.createElement("legend");
-      legend.textContent = role;
-      group.appendChild(legend);
-      this.form.appendChild(group);
+      const content = settingsSection(this.form, role, item.model || "Add hardware identity and connection");
+      const group = this.line(content, "", "div");
+      group.className = "settings-fields";
       const fields = {
         role: this.input(group, "Component name (unique, lowercase, no spaces)", role, null, "text", 40),
         category: this.input(group, "Component type", item.category || "board", ["board", "probe", "device"]),
@@ -127,12 +130,13 @@ class PrinterKnowledgePanel {
         model: this.input(group, "Exact model", item.model),
         revision: this.input(group, "Hardware revision", item.revision, null, "text", 30),
         mcu: this.input(group, "Klipper MCU name (mcu for [mcu])", item.mcu, null, "text", 60),
-        connection: this.input(group, "Connection", item.connection || "unknown", ["unknown", "USB", "CAN", "UART", "I2C"]),
+        connection: this.input(group, "Connection", item.connection || "unknown", ["unknown", "USB", "CAN", "UART", "I2C", "SPI"]),
         confirmed: this.input(group, "I checked this identity and connection", item.confirmed, null, "checkbox"),
         references: this.input(group, "Optional public documentation URLs (up to 3, one per line)", (item.reference_urls || []).join("\n"), null, "textarea", 6146),
       };
       const remove = this.line(group, "Remove component", "button");
       remove.type = "button";
+      remove.className = "quiet-button";
       remove.addEventListener("click", () => {
         if (this.busy) return;
         const values = this.values();
@@ -144,9 +148,14 @@ class PrinterKnowledgePanel {
       this.fields.push(remove);
       return fields;
     });
-    this.flavor = this.input(this.form, "Installed firmware / fork", setup.firmware_flavor, null, "text", 80);
-    this.version = this.input(this.form, "Installed firmware version / commit", setup.firmware_version);
-    this.facts = this.input(this.form, "Confirmed wiring details and past resolutions", setup.facts, null, "textarea", 3000);
+    const firmware = this.line(settingsSection(this.form, "Firmware", setup.firmware_flavor || "Installed version and exact source"), "", "div");
+    firmware.className = "settings-fields";
+    this.flavor = this.input(firmware, "Installed firmware / fork", setup.firmware_flavor, null, "text", 80);
+    this.version = this.input(firmware, "Installed firmware version / commit", setup.firmware_version);
+    this.firmwareRepository = this.input(firmware, "Optional exact firmware source repository (https://github.com/owner/repo)", setup.firmware_repository, null, "text", 200);
+    this.firmwareCommit = this.input(firmware, "Full 40-character firmware commit (no branch/tag fallback)", setup.firmware_commit, null, "text", 40);
+    this.facts = this.input(settingsSection(this.form, "Wiring and past resolutions", "Details you have confirmed"), "Confirmed wiring details and past resolutions", setup.facts, null, "textarea", 3000);
+    restoreSettingsSections(this.form, sections);
   }
 
   values() {
@@ -157,6 +166,7 @@ class PrinterKnowledgePanel {
         connection: item.connection.value, confirmed: item.confirmed.checked,
         reference_urls: item.references.value.split("\n").map(value => value.trim()).filter(Boolean) })),
       firmware_flavor: this.flavor.value.trim(), firmware_version: this.version.value.trim(), facts: this.facts.value.trim(),
+      firmware_repository: this.firmwareRepository.value.trim(), firmware_commit: this.firmwareCommit.value.trim(),
     };
   }
 
@@ -206,31 +216,36 @@ class PrinterKnowledgePanel {
   }
 
   renderStatus(payload) {
+    const sections = settingsSectionState(this.records);
     const job = payload.job;
     this.status.textContent = `${job.message} ${job.state === "running" ? `${job.completed}/${job.total}` : ""}`;
     this.refreshButton.textContent = payload.documents.length ? "Refresh knowledge" : "Build printer knowledge";
     this.records.textContent = "";
     this.reviewButtons = [];
-    if (!payload.automatic_research) this.line(this.records, "Automatic discovery requires the configured agent and web-search provider. You can supply public documentation URLs to cache references without search.");
-    if (payload.profile_changed) this.line(this.records, "The saved printer profile changed. Recheck component identities, then save these details.");
-    if (payload.setup.updated_at) this.line(this.records, `Details confirmed/saved: ${payload.setup.updated_at}`);
+    const library = settingsSection(this.records, "Reference library", `${payload.documents.length} cached document${payload.documents.length === 1 ? "" : "s"} · Component research and sources`);
+    if (!payload.automatic_research) this.line(library, "Automatic discovery requires the configured agent and web-search provider. You can supply public documentation URLs to cache references without search.");
+    if (payload.profile_changed) this.line(library, "The saved printer profile changed. Recheck component identities, then save these details.");
+    if (payload.setup.updated_at) this.line(library, `Details confirmed/saved: ${payload.setup.updated_at}`);
     for (const item of payload.components) {
-      this.line(this.records, `${item.role}: ${item.model || "Not specified"} — ${item.status}`, "h3");
-      for (const gap of item.gaps) this.line(this.records, gap);
-      if (!item.document_ids.length) this.line(this.records, "No documents cached for this identity yet.");
+      const record = this.line(library, "", "section");
+      record.className = "component-record";
+      this.line(record, `${item.role}: ${item.model || "Not specified"} — ${item.status}`, "h3");
+      for (const gap of item.gaps) this.line(record, gap);
+      if (!item.document_ids.length) this.line(record, "No documents cached for this identity yet.");
       const evidence = item.fan_evidence;
       if (evidence.candidates.length) {
-        this.line(this.records, "Candidate fan mappings: check the original sources match this board and revision before confirming.");
+        this.line(record, "Candidate fan mappings: check the original sources match this board and revision before confirming.");
         for (const candidate of evidence.candidates) {
-          this.line(this.records, `${candidate.connector}: ${candidate.pin} — ${candidate.electrical || "Verify electrical limits in the source."}`);
-          this.line(this.records, candidate.quote, "blockquote");
-          const link = this.line(this.records, "Review source", "a");
+          this.line(record, `${candidate.connector}: ${candidate.pin} — ${candidate.electrical || "Verify electrical limits in the source."}`);
+          this.line(record, candidate.quote, "blockquote");
+          const link = this.line(record, "Review source", "a");
           link.href = candidate.url;
           link.target = "_blank";
           link.rel = "noopener noreferrer";
         }
-        if (evidence.conflicts.length) this.line(this.records, `Conflicting connectors: ${evidence.conflicts.join(", ")}. Resolve the source/variant mismatch first.`);
-        const button = this.line(this.records, item.fan_mappings_reviewed ? "Connector evidence reviewed" : "I verified these sources and connector mappings", "button");
+        if (evidence.conflicts.length) this.line(record, `Conflicting connectors: ${evidence.conflicts.join(", ")}. Resolve the source/variant mismatch first.`);
+        const button = this.line(record, item.fan_mappings_reviewed ? "Connector evidence reviewed" : "I verified these sources and connector mappings", "button");
+        button.className = "secondary-button";
         button.type = "button";
         const component = payload.setup.components.find(component => component.role === item.role);
         button.dataset.blocked = String(item.fan_mappings_reviewed || evidence.conflicts.length > 0 || !component.confirmed || !component.revision || payload.profile_changed);
@@ -239,16 +254,23 @@ class PrinterKnowledgePanel {
       }
     }
     for (const doc of payload.documents) {
-      const row = this.line(this.records, `${doc.title} · retrieved ${doc.fetched_at} · SHA-256 ${doc.digest.slice(0, 12)} `);
-      const source = this.line(row, "Source document", "a");
+      const row = this.line(library, "", "section");
+      row.className = "component-record";
+      this.line(row, doc.title, "h3");
+      this.line(row, `Retrieved ${doc.fetched_at} · SHA-256 ${doc.digest.slice(0, 12)}`);
+      const actions = this.line(row, "", "div"); actions.className = "actions";
+      const source = this.line(actions, "Source document", "a");
       source.href = doc.url;
       source.target = "_blank";
       source.rel = "noopener noreferrer";
-      const button = this.line(row, "Download cached copy", "button");
+      const button = this.line(actions, "Download cached copy", "button");
       button.type = "button";
+      button.className = "secondary-button";
       button.addEventListener("click", () => this.download(doc.id));
     }
-    for (const change of job.changes) this.line(this.records, change);
+    for (const change of job.changes) this.line(library, change);
+    this.actions.render(payload);
+    restoreSettingsSections(this.records, sections);
   }
 
   async download(id) {

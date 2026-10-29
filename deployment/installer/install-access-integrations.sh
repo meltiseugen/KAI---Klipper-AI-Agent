@@ -11,9 +11,14 @@ install_access_integrations() {
     fi
   fi
 
-  log "Reloading systemd and enabling the service."
-  run_root systemctl daemon-reload
-  run_root systemctl enable --now "$SERVICE_NAME"
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    log "Starting the native KlipperAI init service."
+    start_appliance_service
+  else
+    log "Reloading systemd and enabling the service."
+    run_root systemctl daemon-reload
+    run_root systemctl enable --now "$SERVICE_NAME"
+  fi
 
   if [[ "$INSTALL_OCTOEVERYWHERE_PATCH" == "yes" ]]; then
     log "Applying OctoEverywhere /klipperai integration patch."

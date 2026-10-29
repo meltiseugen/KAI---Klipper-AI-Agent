@@ -16,7 +16,7 @@ class MacroProposal:
                 "gcode:\n"
                 '  RESPOND MSG="Replace this body with your real macro steps"\n'
             ),
-            rationale="A minimal macro stub gives you the correct structure for a new Klipper macro while keeping the logic easy to replace.",
+            rationale="A minimal macro scaffold gives the agent a structure to refine against the requested behavior and evidence.",
             assumptions=[
                 "You want a new macro scaffold rather than edits to an existing macro.",
             ],
@@ -71,7 +71,7 @@ class GenericProposal:
                 "[section_name_here]\n"
                 "option_name: <VALUE>\n"
             ),
-            rationale="This generic scaffold formats the request as a managed include snippet even when the local stub provider cannot infer a more precise built-in template.",
+            rationale="This generic scaffold gives the agent a managed include structure to refine using the requested feature and collected evidence.",
             assumptions=[
                 "The request did not map cleanly to a more specific built-in template.",
             ],

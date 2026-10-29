@@ -133,7 +133,7 @@ class ConfigModel:
     def __init__(self):
         self.requests = []
 
-    async def respond(self, conversation, tools):
+    async def respond(self, conversation, tools, *, response_format=None):
         request = json.loads(conversation[1]["content"])
         self.requests.append(request)
         if not any(item.get("type") == "function_call_output" for item in conversation):
@@ -248,9 +248,12 @@ def test_investigation_api_restores_rechecks_and_forgets_without_config_writes(
             client.get("/api/investigations", params=query).json()[0]["id"] == answer["thread_id"]
         )
         restored = client.get(path, params=query).json()
-        assert (
-            restored["turns"][0]["result"]["config_proposals"][0]["review"]["mode"] == "manual_only"
-        )
+        saved_review = restored["turns"][0]["result"]["config_proposals"][0]["review"]
+        assert saved_review == answer["config_proposals"][0]["review"]
+        assert saved_review["mode"] == "manual_only"
+        assert saved_review["checks"][0]["option"] == "kick_start_time"
+        assert saved_review["checks"][0]["line"] == 3
+        assert saved_review["manual_steps"] and saved_review["firmware"]["observed_at"]
         proposal_id = answer["config_proposals"][0]["review"]["proposal_id"]
         recheck = f"{path}/proposals/{proposal_id}/revalidate"
         assert (

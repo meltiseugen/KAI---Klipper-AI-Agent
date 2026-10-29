@@ -7,6 +7,7 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from klipperai_agent.agent.claim_citations import resolve_claims
 from klipperai_agent.agent.deadline import within
 from klipperai_agent.agent.models import (
     AgentAnswer,
@@ -17,11 +18,20 @@ from klipperai_agent.agent.models import (
 )
 from klipperai_agent.agent.prompts import SYSTEM_PROMPT
 from klipperai_agent.agent.registry import ToolRegistry
+from klipperai_agent.agent.response_contracts import (
+    WorkflowKind,
+    response_format,
+    response_model,
+    select_workflow,
+    workflow_prompt,
+)
 from klipperai_agent.agent.starting_context import prepare_context
 from klipperai_agent.agent.tools.base import ToolContext
+from klipperai_agent.diagnostics.evidence import link_findings
+from klipperai_agent.domain.artifacts import CollectedArtifact
 from klipperai_agent.domain.context import AgentMode
-from klipperai_agent.domain.evidence import AgentEvent
-from klipperai_agent.domain.investigation import InvestigationRequest, InvestigationResult
+from klipperai_agent.domain.evidence import AgentEvent, GroundedClaim
+from klipperai_agent.domain.investigation import Evidence, InvestigationRequest, InvestigationResult
 from klipperai_agent.domain.provider_settings import ProviderLimitError
 from klipperai_agent.domain.redaction import redact_data
 
@@ -35,15 +45,28 @@ class AgentRun:
     events: list[AgentEvent] = field(default_factory=list)
     answer: AgentAnswer | None = None
     status: str = "completed"
+    workflow: WorkflowKind = "general"
+    claims: list[GroundedClaim] = field(default_factory=list)
+    missing_evidence: list[str] = field(default_factory=list)
+    hypotheses: list[str] = field(default_factory=list)
 
     def result(self) -> InvestigationResult:
         assert self.answer is not None
         citations = {
-            (item.path, item.line_number, item.section): item for item in self.context.citations
+            (item.path, item.line_number, item.end_line, item.section): item
+            for item in [
+                *self.context.citations,
+                *(citation for finding in self.context.findings for citation in finding.citations),
+                *(citation for claim in self.claims for citation in claim.citations),
+            ]
         }
         return InvestigationResult.parse_obj(
             {
                 "mode": self.mode,
+                "workflow": self.workflow,
+                "answer_claims": self.claims,
+                "missing_evidence": self.missing_evidence,
+                "hypotheses": self.hypotheses,
                 "context_included": self.context.context_included,
                 "response_text": self.answer.response,
                 "next_actions": self.answer.next_actions,
@@ -71,7 +94,7 @@ class AgentRunner:
         on_event: EventSink | None = None,
         on_checkpoint: CheckpointSink | None = None,
     ) -> InvestigationResult:
-        run = AgentRun(context, mode=request.mode)
+        run = AgentRun(context, mode=request.mode, workflow=select_workflow(request))
 
         async def emit(event: AgentEvent) -> None:
             run.events.append(event)
@@ -105,8 +128,23 @@ class AgentRunner:
         self, request: InvestigationRequest, run: AgentRun, registry: ToolRegistry, emit: EventSink
     ) -> None:
         payload = await prepare_context(request, run.context, registry, self._limits, emit)
+        if request.artifacts and not run.context.findings:
+            observations: list[CollectedArtifact] = list(run.context.evidence)
+            run.context.findings = link_findings(
+                run.context.services.rules.analyze(
+                    request.artifacts, config_snapshot=run.context.snapshots.get(False)
+                ),
+                observations,
+            )
+            known = {item.id for item in run.context.evidence}
+            run.context.evidence.extend(
+                Evidence.parse_obj(item.model_dump())
+                for item in observations
+                if item.id not in known
+            )
+            payload["deterministic_findings"] = [item.model_dump() for item in run.context.findings]
         conversation = [
-            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "system", "content": SYSTEM_PROMPT + workflow_prompt(run.workflow)},
             {
                 "role": "user",
                 "content": json.dumps(redact_data(payload)),
@@ -135,18 +173,25 @@ class AgentRunner:
             for item in run.context.context_included:
                 if item.status != "omitted":
                     item.sent_to_model = True
-            turn = await self._model.respond(conversation, definitions)
+            turn = await self._model.respond(
+                conversation, definitions, response_format=response_format(run.workflow)
+            )
             conversation.extend(turn.output)
             if not turn.calls:
                 try:
-                    run.answer = AgentAnswer.parse_raw(turn.text)
+                    parsed = response_model(run.workflow).parse_raw(turn.text)
+                    claims = resolve_claims(parsed.claims, run.context.evidence)
+                    run.answer = AgentAnswer.parse_obj(parsed.model_dump())
+                    run.claims = claims
+                    run.missing_evidence = parsed.missing_evidence
+                    run.hypotheses = getattr(parsed, "hypotheses", [])
                     return
                 except ValueError:
                     # Allow a bounded repair without treating malformed output as a successful answer.
                     conversation.append(
                         {
                             "role": "user",
-                            "content": "Return the final answer as the requested JSON object with a nonempty response.",
+                            "content": "Return the final answer as the selected workflow's JSON schema with a nonempty response. Use only available evidence IDs and retained line ranges for claims; read missing sources or state the gap. Do not include proposals outside the config_draft workflow or invent review results.",
                         }
                     )
                     continue
@@ -178,7 +223,7 @@ class AgentRunner:
                     {
                         "type": "function_call_output",
                         "call_id": call.call_id,
-                        "output": json.dumps(result, ensure_ascii=False),
+                        "output": json.dumps(registry.model_result(call.name), ensure_ascii=False),
                     }
                 )
         await self._stop(

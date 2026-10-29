@@ -1,0 +1,58 @@
+{
+  "date": "2026-10-29",
+  "scope": "Synthetic development-host workloads; not printer hardware acceptance",
+  "before": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.13.12",
+    "measurement": "operation time and peak traced Python allocations; synthetic local data",
+    "workloads": {
+      "tail_16mib_long_line": {
+        "median_ms": 11422.758,
+        "peak_python_mib": 48.001
+      },
+      "config_with_500_backups": {
+        "median_ms": 117.735,
+        "peak_python_mib": 0.468
+      },
+      "sidebar_30_investigations": {
+        "median_ms": 466.774,
+        "peak_python_mib": 4.213
+      },
+      "search_12_manuals": {
+        "median_ms": 190.163,
+        "peak_python_mib": 8.309
+      }
+    }
+  },
+  "after": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python": "3.13.12",
+    "measurement": "operation time and peak traced Python allocations; synthetic local data",
+    "workloads": {
+      "tail_16mib_long_line": {
+        "median_ms": 0.621,
+        "peak_python_mib": 0.501
+      },
+      "config_with_500_backups": {
+        "median_ms": 4.256,
+        "peak_python_mib": 0.079
+      },
+      "sidebar_30_investigations": {
+        "median_ms": 9.437,
+        "peak_python_mib": 0.053
+      },
+      "search_12_manuals": {
+        "median_ms": 190.79,
+        "peak_python_mib": 1.522
+      }
+    }
+  },
+  "isolated_application_idle": {
+    "peak_working_set_mib": 57.7,
+    "cpu_seconds": 0.015625,
+    "pid": 5572,
+    "note": "Windows isolated real application lifespan; no provider, printer or flight recorder",
+    "working_set_mib": 57.69,
+    "window_seconds": 20
+  }
+}

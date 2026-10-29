@@ -9,7 +9,7 @@ Choose **Debug** and describe the shutdown, for example:
 Debug automatically runs `investigate_shutdown` when the question or initial
 diagnostics mention communication, timing or shutdown failures. Chat exposes the
 same tool for relevant follow-up investigations. This requires the tool-using
-agent; the offline stub has the expanded deterministic signature rules only.
+agent and an active API key. Deterministic signature rules supply evidence to the model.
 There are no printer writes, firmware flashes, service restarts or active CAN
 discovery scans. All proposed fixes remain manual.
 
@@ -90,12 +90,15 @@ The model receives observations; no private reasoning is stored.
   never pretend they are original file lines. Existing registry/context budgets
   may further truncate the report and mark it partial.
 
-There is no continuous host process/CPU/pressure recorder. Existing logs cannot
-identify every short CPU, swap, I/O or power spike. Long prints may push the clock
-anchor or failure outside the read window, and rotation/volatile journals may
-remove evidence. Preserve the logs promptly and use a supervised reproduction
-when evidence is insufficient. A future opt-in bounded flight recorder could
-capture the missing process history; this implementation does not claim to do so.
+An optional, default-off [host flight recorder](host-diagnostics.md) retains
+bounded CPU/process, memory/swap and pressure observations. With an incident
+clock anchor, its pre-stop summary and nearby samples appear under
+`historical_host`, separately from `current_host`. Without prior opt-in sampling,
+retained samples or a usable anchor, that evidence stays unavailable. Neither
+logs nor sampled history identifies every short spike. Long prints can push
+anchors/failures outside the read window, and rotation or volatile journals can
+remove evidence. Preserve logs promptly and use a supervised reproduction when
+evidence is insufficient.
 
 ## Implementation and validation
 
@@ -109,8 +112,11 @@ context are composed in `agent/` and wired in `bootstrap/container.py`.
 failure families, clock/counter resets, unrelated primary failures, pre/post-stop
 separation, file/byte limits, exclusions, malformed/missing evidence, fixed API and
 journal requests, argument rejection, timeouts, report bounds, model handoff and
-HTTP persistence. These are offline fixtures/scripted models; real Linux journal
-access, printer fault diagnosis and live provider answer quality need live checks.
+HTTP persistence. Sourced real public USB/CAN excerpts also pass automated replay
+through `python -m tools.validate_shutdown`; hashes, original-line positions and
+limits are recorded. Scripted-model handoff stays separate from live answer
+quality. Linux permissions/overhead, supervised printer diagnosis and live
+provider answer review still need live checks; see the [validation guide](host-diagnostics.md#real-incident-replay-and-live-answer-review).
 
 ## Research references
 

@@ -8,131 +8,150 @@
   </head>
   <body data-session-id="{{ session_id }}" data-api-base="{{ api_base }}">
     <div class="app-shell">
-      <aside id="shell-sidebar" class="sidebar">
-        <div class="brand-lockup">
-          <span class="brand-copy">
-            <strong class="brand-title">KlipperAI</strong>
-            <span class="brand-label">Diagnostics Assistant</span>
-          </span>
-        </div>
-
-        <section class="sidebar-history">
-          <div class="sidebar-history-header">
-            <h2 class="sidebar-history-title">Chat History</h2>
-            <button id="new-chat-button" class="secondary-button history-action-button" type="button">
-              <span class="history-action-icon" aria-hidden="true"></span>
-              <span>New chat</span>
-            </button>
-          </div>
-
+      <aside id="shell-sidebar" class="sidebar" aria-label="Chat history and settings">
+        <div class="brand-lockup"><strong>KlipperAI</strong></div>
+        <button id="new-chat-button" class="sidebar-link" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7M16 3l5 5M9 15l1-5L19 1l5 5-9 9z" transform="translate(0 1) scale(.9)"/></svg>
+          New chat
+        </button>
+        <section class="sidebar-history" aria-label="Conversations">
+          <h2 class="sidebar-history-title">Chats</h2>
           <div id="history-list" class="history-list"></div>
         </section>
+
+        <nav class="sidebar-tools" aria-label="Assistant settings">
+          <button id="knowledge-toggle" type="button" class="sidebar-link" aria-controls="knowledge-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v16M3 4c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2z"/></svg>Printer knowledge</button>
+          <button id="memory-toggle" type="button" class="sidebar-link" aria-controls="memory-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM4 7h3m-3 5h3m-3 5h3M10 8h4m-4 4h4"/></svg>Printer memory</button>
+          <button id="providers-toggle" type="button" class="sidebar-link" aria-controls="providers-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5v18h14V3h-4M9 3v4h6V3zM9 12h6m-6 4h4"/></svg>Provider settings</button>
+        </nav>
+        <div class="sidebar-footnote">Read-only access to your printer</div>
       </aside>
 
       <button id="shell-scrim" class="shell-scrim" type="button" aria-label="Close chat history"></button>
 
       <section class="workspace">
         <header class="topbar">
-          <button id="providers-toggle" type="button" class="secondary-button" aria-controls="providers-panel" aria-expanded="false" hidden>Provider settings</button>
-          <button id="knowledge-toggle" type="button" class="secondary-button" aria-controls="knowledge-panel" aria-expanded="false" hidden>Printer knowledge</button>
-          <button id="memory-toggle" type="button" class="secondary-button" aria-controls="memory-panel" aria-expanded="false" hidden>Printer memory</button>
           <div class="topbar-leading">
-            <button id="shell-menu-toggle" class="menu-toggle" type="button" aria-label="Toggle chat history">
-              <span></span>
-              <span></span>
-              <span></span>
+            <button id="shell-menu-toggle" class="icon-button" type="button" aria-label="Toggle sidebar" aria-controls="shell-sidebar" aria-expanded="false">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>
             </button>
-            <div class="status-panel topbar-status-panel">
+            <h1 id="conversation-title" class="topbar-title">New chat</h1>
+          </div>
+          <details id="connection-details" class="connection-details">
+            <summary><span id="connection-dot" class="connection-dot"></span><span id="connection-label">Checking printer</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></summary>
+            <div class="connection-popover" aria-label="Printer and assistant status">
+              <h2>Connection</h2>
+              <span id="klipper-badge" class="badge muted">Klipper: checking</span>
+              <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
+              <span id="moonraker-events-badge" class="badge muted" hidden>Events: connecting</span>
               <span id="provider-badge" class="badge">Provider: loading</span>
               <span id="model-badge" class="badge">Model: loading</span>
-              <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
-              <span id="klipper-badge" class="badge muted">Klipper: checking</span>
-              <span id="moonraker-events-badge" class="badge muted" hidden>Events: connecting</span>
             </div>
-          </div>
+          </details>
         </header>
 
         <main class="workspace-main">
-          <section id="memory-panel" class="knowledge-panel" aria-label="Printer memory" hidden>
-            <div class="actions"><h2>Printer memory</h2><button id="memory-close" type="button" class="secondary-button">Close</button></div>
-            <p>Save facts you have checked, your preferences, or how an incident was resolved. Only entries you explicitly confirm are saved here. They remain dated user statements; current configuration and status are checked again.</p>
+          <section id="memory-panel" class="knowledge-panel" role="dialog" aria-modal="true" aria-labelledby="memory-title" hidden>
+            <div class="panel-heading"><h2 id="memory-title">Printer memory</h2><button id="memory-close" type="button" class="quiet-button">Close</button></div>
+            <p class="panel-intro">Facts and preferences you want the agent to remember.</p>
             <label class="field"><span>Entry type</span><select id="memory-kind"><option value="fact">Printer fact</option><option value="preference">Preference</option><option value="resolution">Incident resolution</option></select></label>
             <label class="field"><span>Statement to remember</span><textarea id="memory-content" rows="3" maxlength="2000"></textarea></label>
             <label><input id="memory-link" type="checkbox" /> Link this chat and selected evidence</label>
             <div id="memory-evidence" class="memory-evidence"></div>
             <label><input id="memory-confirmed" type="checkbox" /> I confirm this statement is accurate and want it remembered.</label>
             <div class="actions"><button id="memory-save" type="button" disabled>Confirm and remember</button><button id="memory-reload" type="button" class="secondary-button">Reload entries</button></div>
-            <p>Entries are kept until forgotten. Deleting a linked chat also forgets its entries. With cross-chat memory disabled, only entries linked to the current chat are supplied.</p>
+            <details class="settings-help"><summary>How memory works</summary><p>Only statements you explicitly confirm are saved. These are dated user statements; current config and status are checked again. Entries stay until forgotten. Deleting a linked chat also forgets its entries. With cross-chat memory disabled, only entries linked to the current chat are supplied.</p></details>
             <p id="memory-status" role="status" aria-live="polite"></p>
             <div id="memory-records"></div>
           </section>
-          <section id="providers-panel" class="knowledge-panel" aria-label="Provider settings" hidden>
-            <div class="actions"><h2>Provider settings</h2><button id="providers-close" type="button" class="secondary-button">Close</button></div>
-            <p>Set up or rotate your OpenAI key. Keys are kept in private server storage and are never returned to this page. Leave the key empty to keep the saved key.</p>
-            <p>Saving checks access to the configured model IDs without generating a response. Model access does not guarantee billing, reasoning-option or tool compatibility. Use model IDs and reasoning options supported by your account.</p>
-            <div id="providers-form" class="providers-form"></div>
-            <label class="field"><span>New or replacement API key</span><input id="providers-key" type="password" autocomplete="new-password" spellcheck="false" maxlength="512" /></label>
-            <label><input id="providers-remove" type="checkbox" /> Remove stored key (select Offline first)</label>
-            <p>Limits apply to all OpenAI requests, including background research. Token accounting includes conservative reservations for failed or interrupted calls; it is not a dollar billing cap. Hosted search may add charges. Keep account spending controls enabled at your provider.</p>
-            <p>Saved changes take effect after you manually restart KlipperAI. Rotation does not revoke the previous key at OpenAI. After restarting and checking the new key, revoke the old key in your provider account.</p>
-            <div class="actions">
-              <button id="providers-validate" type="button" disabled>Check access</button>
-              <button id="providers-save" type="button" disabled>Validate and save</button>
-              <button id="providers-reload" type="button" class="secondary-button">Reload settings</button>
+          <section id="providers-panel" class="knowledge-panel sectioned-panel" role="dialog" aria-modal="true" aria-labelledby="providers-title" hidden>
+            <div class="panel-header">
+              <div class="panel-heading"><h2 id="providers-title">Provider settings</h2><button id="providers-close" type="button" class="quiet-button">Close</button></div>
+              <p class="panel-intro">Connect OpenAI and choose how the agent uses it.</p>
             </div>
-            <p id="providers-status" role="status" aria-live="polite"></p>
+            <div class="panel-body settings-stack">
+              <details class="settings-section" open>
+                <summary><span class="settings-section-title">Connection</span><span class="settings-section-description">Your OpenAI API key</span></summary>
+                <div class="settings-section-content">
+                  <label class="field"><span>New or replacement API key</span><input id="providers-key" type="password" autocomplete="new-password" spellcheck="false" maxlength="512" /></label>
+                  <p class="field-help">Stored privately on your server. Leave this empty to keep your saved key.</p>
+                  <details class="settings-help"><summary>Remove or rotate a key</summary><label class="check-field"><input id="providers-remove" type="checkbox" /> Remove stored key on save</label><p>Removing the key makes the agent unavailable after restart. Rotation does not revoke the previous key at OpenAI; revoke it there after the replacement works.</p></details>
+                </div>
+              </details>
+              <div id="providers-form" class="settings-stack"></div>
+            </div>
+            <div class="panel-footer">
+              <p id="providers-status" role="status" aria-live="polite"></p>
+              <div class="actions">
+                <button id="providers-save" type="button" disabled>Validate and save</button>
+                <button id="providers-validate" type="button" class="secondary-button" disabled>Check access</button>
+                <button id="providers-reload" type="button" class="quiet-button">Reload</button>
+              </div>
+              <p class="field-help">Access checks do not generate a reply. Restart KlipperAI manually after saving.</p>
+            </div>
           </section>
-          <section id="knowledge-panel" class="knowledge-panel" aria-label="Printer knowledge" hidden>
-            <div class="actions"><h2>Printer knowledge</h2><button id="knowledge-close" type="button" class="secondary-button">Close</button></div>
-            <p>Review the components from your printer profile, then build a local reference library for your hardware. Any manufacturer or model can be researched. Add more components as needed; unclear board identities remain questions to resolve.</p>
-            <p>Build/Refresh uses your configured search provider and may use provider credits. Research sends public product names, hardware revisions and firmware versions; it does not send printer configs, logs, MCU identifiers or wiring notes. Use only public product details in those fields.</p>
-            <p>Discovered sources and extracted connector mappings need checking against the exact hardware. PDFs and diagrams are saved for download; readable companion text is searchable.</p>
-            <div id="knowledge-form" class="knowledge-form"></div>
-            <div class="actions">
-              <button id="knowledge-add" type="button" class="secondary-button" disabled>Add component</button>
-              <button id="knowledge-save" type="button" disabled>Save details</button>
-              <button id="knowledge-refresh" type="button" disabled>Build printer knowledge</button>
-              <button id="knowledge-reload" type="button" class="secondary-button">Reload details</button>
+          <section id="knowledge-panel" class="knowledge-panel sectioned-panel" role="dialog" aria-modal="true" aria-labelledby="knowledge-title" hidden>
+            <div class="panel-header">
+              <div class="panel-heading"><h2 id="knowledge-title">Printer knowledge</h2><button id="knowledge-close" type="button" class="quiet-button">Close</button></div>
+              <p class="panel-intro">Hardware details, reference material and manual observations.</p>
             </div>
-            <p>Saving changes only KlipperAI knowledge. Fan suggestions still require checking the physical connector, voltage and current. Firmware procedures need documentation matching the installed fork and version.</p>
-            <p id="knowledge-status" role="status" aria-live="polite"></p>
-            <div id="knowledge-records"></div>
+            <div class="panel-body settings-stack">
+              <details class="settings-section">
+                <summary><span class="settings-section-title">Printer setup</span><span class="settings-section-description">Component identities, firmware and confirmed wiring</span></summary>
+                <div class="settings-section-content">
+                  <div id="knowledge-form" class="knowledge-form"></div>
+                  <div class="actions"><button id="knowledge-add" type="button" class="secondary-button" disabled>Add component</button></div>
+                  <p class="field-help">Saving changes this reference library. Physical wiring and electrical ratings still need manual verification.</p>
+                </div>
+              </details>
+              <div id="knowledge-records" class="settings-stack"></div>
+              <details class="settings-help"><summary>About research and source review</summary><p>Build/Refresh uses your model provider and may use credits. Research sends public product names, revisions and firmware versions, not printer configs, logs, MCU identifiers or wiring notes. Use public product details. Check discovered sources and connector mappings against the exact hardware. PDFs and diagrams remain available for download. Unclear hardware identities need confirmation.</p></details>
+            </div>
+            <div class="panel-footer">
+              <p id="knowledge-status" role="status" aria-live="polite"></p>
+              <div class="actions">
+                <button id="knowledge-save" type="button" disabled>Save details</button>
+                <button id="knowledge-refresh" type="button" class="secondary-button" disabled>Build printer knowledge</button>
+                <button id="knowledge-reload" type="button" class="quiet-button">Reload</button>
+              </div>
+            </div>
           </section>
           <div id="conversation-panel" class="conversation-panel">
-            <section id="messages" class="messages">
-              <article class="message assistant">
-                <div class="message-meta">KlipperAI</div>
-                <div class="message-body">
-                  Ask about your printer or its configuration. Chat starts with printer context; Debug also collects current status and recent diagnostic excerpts. You can paste extra config or logs into the question.
-                </div>
-              </article>
+            <div id="chat-notices" class="chat-notices" aria-live="polite" hidden></div>
+            <section id="chat-welcome" class="chat-welcome" aria-labelledby="welcome-title">
+              <h2 id="welcome-title">What can I help with?</h2>
+              <p id="welcome-description">Your printer config and recent logs are already part of the conversation.</p>
+              <button id="connect-provider" class="connect-provider" type="button" hidden>Connect OpenAI</button>
+              <p id="chat-intro" hidden>Ask about your printer. The agent reads configuration and recent logs automatically.</p>
             </section>
-
-            <section class="composer-shell">
+            <section id="messages" class="messages" aria-label="Conversation"></section>
+            <section class="composer-shell" aria-label="Question">
+              <button id="scroll-to-bottom" class="scroll-to-bottom" type="button" aria-label="Go to latest message" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg></button>
               <div class="composer-column">
-                <div class="mode-controls">
-                  <label for="agent-mode">Mode</label>
-                  <select id="agent-mode" aria-describedby="mode-description" disabled>
-                    <option value="chat">Chat</option>
-                    <option value="debug">Debug</option>
-                  </select>
-                  <p id="mode-description" class="mode-description">Loading agent modes…</p>
-                </div>
                 <label class="field">
-                  <span>Question</span>
-                  <textarea id="message-input" rows="5" maxlength="40000" placeholder="Why is the printer shutting down during homing? You can paste relevant config or log text here too."></textarea>
+                  <span class="sr-only">Question</span>
+                  <textarea id="message-input" rows="1" maxlength="40000" placeholder="Ask about your printer"></textarea>
                 </label>
-
-                <div class="actions">
-                  <button id="send-button" type="button">Analyze</button>
-                  <div id="composer-status" class="composer-status" aria-live="polite"></div>
+                <div class="composer-tools">
+                  <select id="agent-mode" aria-label="Investigation mode" aria-describedby="mode-description" disabled><option value="chat">Chat</option><option value="debug">Debug</option></select>
+                  <span id="mode-description" class="sr-only">Loading agent modes</span>
+                  <button id="send-button" class="send-button" type="button" aria-label="Ask agent" title="Send message">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg><span id="send-label" class="sr-only">Ask agent</span>
+                  </button>
                 </div>
               </div>
+              <div id="composer-status" class="composer-status" role="status" aria-live="polite"></div>
+              <div class="composer-footer"><span id="llm-summary">Checking provider</span><details class="request-disclosure"><summary>What's shared</summary><p id="llm-request-info">Checking LLM setup</p></details><span>Read-only</span></div>
             </section>
+            <div id="chat-starters" class="chat-starters" aria-label="Example questions" hidden>
+              <button id="starter-diagnose" type="button">Investigate why a print stopped <span aria-hidden="true">↗</span></button>
+              <button id="starter-config" type="button">Review my printer configuration <span aria-hidden="true">↗</span></button>
+            </div>
           </div>
         </main>
       </section>
     </div>
+    <button id="settings-scrim" class="settings-scrim" type="button" aria-label="Close settings"></button>
 
     <template id="message-template">
       <article class="message">

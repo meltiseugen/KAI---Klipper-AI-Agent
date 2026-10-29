@@ -58,7 +58,7 @@ def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) ->
         "klippy: 120  # Override\n"
         "moonraker: 220  # Override\n\n"
         "[llm]\n"
-        "llm_provider: stub  # Provider\n"
+        "llm_provider: openai  # Provider\n"
         "openai_model: gpt-5.4-mini  # Model\n",
         encoding="utf-8",
     )

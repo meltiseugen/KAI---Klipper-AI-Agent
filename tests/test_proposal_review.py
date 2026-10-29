@@ -52,7 +52,8 @@ def test_proposal_review_marks_uncertainty_and_conflicts(tmp_path):
         proposal(config="pin: PA1"),
         ConfigSnapshot(root_file=None, documents=[], notes=["Missing root"]),
     )
-    assert len(empty.review.errors) == 2
+    assert len(empty.review.errors) == 3
+    assert empty.review.checks[0].code == "config_syntax"
     assert any("gaps" in warning for warning in empty.review.warnings)
     clipped = ConfigCollector(tmp_path, max_chars_per_document=20).collect()
     incomplete = reviewer.review(proposal(target_file="printer.cfg"), clipped)

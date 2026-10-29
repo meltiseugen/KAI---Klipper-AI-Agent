@@ -20,6 +20,9 @@ from klipperai_agent.diagnostics.collector import DiagnosticsCollector
 from klipperai_agent.diagnostics.rules import RuleEngine
 from klipperai_agent.domain.moonraker import MoonrakerObservation
 from klipperai_agent.infrastructure.documentation import PublicDocumentationFetcher
+from klipperai_agent.infrastructure.host.flight_recorder import HostFlightRecorder
+from klipperai_agent.infrastructure.host.history_store import HostHistoryStore
+from klipperai_agent.infrastructure.host.log_reader import ReadOnlyLogReader
 from klipperai_agent.infrastructure.host.logs import HostLogCollector
 from klipperai_agent.infrastructure.host.shutdown import ShutdownCollector
 from klipperai_agent.infrastructure.host.system import (
@@ -54,8 +57,11 @@ class AppContainer:
     knowledge: PrinterKnowledge | None = None
     providers: ProviderManagement | None = None
     moonraker_agent: MoonrakerAgent | None = None
+    host_flight_recorder: HostFlightRecorder | None = None
 
     async def aclose(self) -> None:
+        if self.host_flight_recorder is not None:
+            await self.host_flight_recorder.aclose()
         if self.moonraker_agent is not None:
             await self.moonraker_agent.aclose()
         if self.knowledge is not None:
@@ -88,6 +94,7 @@ def build_container(settings: Settings) -> AppContainer:
             moonraker_service_name=settings.moonraker_service_name,
             klipper_service_name=settings.klipper_service_name,
             journal_lines=settings.journal_lines,
+            additional_journal_units=tuple(settings.additional_journal_units),
             status_artifact_char_limit=settings.system_status_artifact_char_limit,
             journal_artifact_char_limit=settings.journal_artifact_char_limit,
             runner=SystemCommandRunner(timeout_seconds=settings.system_command_timeout_seconds),
@@ -96,6 +103,23 @@ def build_container(settings: Settings) -> AppContainer:
         moonraker,
         host_logs=host_logs,
         host_system=host_system,
+    )
+    recorder = (
+        HostFlightRecorder(
+            HostHistoryStore(
+                settings.data_dir,
+                (
+                    settings.printer_data_root / "config",
+                    settings.mainsail_config_dir,
+                    settings.printer_data_root / "gcodes",
+                    settings.host_logs_dir(),
+                ),
+                settings.host_flight_recorder_max_samples,
+            ),
+            settings.host_flight_recorder_interval_seconds,
+        )
+        if settings.host_flight_recorder_enabled
+        else None
     )
     rules = RuleEngine()
     provider_options: dict[str, Any] = (
@@ -156,10 +180,12 @@ def build_container(settings: Settings) -> AppContainer:
         ),
         PublicDocumentationFetcher(),
         profile.to_summary(),
+        printer=moonraker,
+        config=config_collector,
     )
     responses = None
     agent = None
-    if settings.llm_provider == "openai" and settings.agent_enabled:
+    if settings.llm_provider == "openai" and settings.openai_api_key and settings.agent_enabled:
         responses = ResponsesClient(
             settings.openai_model,
             settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
@@ -188,12 +214,16 @@ def build_container(settings: Settings) -> AppContainer:
             search,
             knowledge=knowledge,
             file_metadata=moonraker,
+            log_reader=ReadOnlyLogReader(settings.host_logs_dir(), tuple(settings.excluded_logs))
+            if settings.collect_host_logs
+            else None,
             shutdown_reader=ShutdownCollector(
                 moonraker,
                 settings.host_logs_dir(),
                 logs_enabled=settings.collect_host_logs,
                 journal_enabled=settings.collect_systemd_diagnostics,
                 excluded_logs=tuple(settings.excluded_logs),
+                history=recorder,
                 runner=SystemCommandRunner(timeout_seconds=settings.system_command_timeout_seconds),
             ),
         )
@@ -204,6 +234,7 @@ def build_container(settings: Settings) -> AppContainer:
         config_graph=config_graph,
         workflow_context=workflow_context,
         sessions=sessions,
+        provider_ready=bool(settings.llm_provider == "openai" and settings.openai_api_key),
         provider_model=(
             providers.active_policy.agent.model
             if settings.agent_enabled
@@ -214,7 +245,9 @@ def build_container(settings: Settings) -> AppContainer:
         conversation_history_pairs=settings.conversation_history_pairs,
         agent_workflow=agent,
         investigations=investigations,
-        proposal_review=ProposalReviewService(config_collector, knowledge),
+        proposal_review=ProposalReviewService(
+            config_collector, knowledge, printer=moonraker, profile=profile
+        ),
         knowledge=knowledge,
     )
     return AppContainer(
@@ -225,6 +258,7 @@ def build_container(settings: Settings) -> AppContainer:
         responses=responses,
         knowledge=knowledge,
         providers=providers,
+        host_flight_recorder=recorder,
         moonraker_agent=MoonrakerAgent(
             settings.moonraker_socket_path
             or settings.printer_data_root / "comms" / "moonraker.sock",

@@ -2,23 +2,22 @@
 # Sourced by install.sh; no work is performed on import.
 
 configure_options() {
-  KLIPPERAI_LLM_PROVIDER="$(prompt_default "LLM provider (currently: openai or stub)" "openai")"
+  set +x
+  export -n KLIPPERAI_OPENAI_API_KEY
+  KLIPPERAI_LLM_PROVIDER="$(prompt_default "LLM provider (currently: openai)" "openai")"
   KLIPPERAI_LLM_PROVIDER="${KLIPPERAI_LLM_PROVIDER,,}"
   KLIPPERAI_OPENAI_MODEL="$(prompt_default "Model name" "gpt-5.4-mini")"
   KLIPPERAI_OPENAI_API_KEY=""
 
   case "$KLIPPERAI_LLM_PROVIDER" in
     openai)
-      KLIPPERAI_OPENAI_API_KEY="$(prompt_secret "OpenAI API key")"
+      KLIPPERAI_OPENAI_API_KEY="$(prompt_secret "OpenAI API key (leave empty to configure in the web page)")"
       if [[ -z "$KLIPPERAI_OPENAI_API_KEY" ]]; then
-        die "An OpenAI API key is required when provider is 'openai'."
+        warn "The agent requires an API key. Configure it in the web page before using Chat or Debug."
       fi
       ;;
-    stub)
-      warn "Using the local stub provider. Diagnostics will be limited to deterministic rules and placeholder responses."
-      ;;
     *)
-      die "Unsupported provider '$KLIPPERAI_LLM_PROVIDER'. Current installer support is: openai, stub."
+      die "Unsupported provider '$KLIPPERAI_LLM_PROVIDER'. Current installer support is: openai."
       ;;
   esac
 
@@ -27,7 +26,7 @@ configure_options() {
   INSTALL_MAINSAIL_AUTO_REAPPLY="no"
   if confirm "Install a Mainsail custom-navigation link to KlipperAI?" "Y"; then
     INSTALL_MAINSAIL_NAV="yes"
-    if confirm "Keep the Mainsail link restored at startup and after navigation changes?" "Y"; then
+    if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == systemd ]] && confirm "Keep the Mainsail link restored at startup and after navigation changes?" "Y"; then
       INSTALL_MAINSAIL_AUTO_REAPPLY="yes"
     fi
   else
@@ -52,7 +51,7 @@ configure_options() {
     log "Detected OctoEverywhere checkout at $KLIPPERAI_OE_ROOT."
     if confirm "Apply the optional OctoEverywhere /klipperai integration now?" "N"; then
       INSTALL_OCTOEVERYWHERE_PATCH="yes"
-      if confirm "Install an auto-reapply timer for the OctoEverywhere patch after future OE updates?" "Y"; then
+      if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == systemd ]] && confirm "Install an auto-reapply timer for the OctoEverywhere patch after future OE updates?" "Y"; then
         INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY="yes"
       fi
     fi

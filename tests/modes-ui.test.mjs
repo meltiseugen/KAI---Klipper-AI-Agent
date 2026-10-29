@@ -19,7 +19,7 @@ const server = {
 };
 const app = new ChatApplication(store, server, new ShellView());
 await app.start();
-app.select("saved");
+await app.select("saved");
 assert.equal(ids["agent-mode"].value, "debug");
 assert.match(ids.messages.textContent, /Context included · Debug/);
 assert.match(ids.messages.textContent, /Section index only <script>unsafe<\/script>/);
@@ -49,7 +49,7 @@ assert.equal(restored.getCurrentConversation().messages.at(-1).contextIncluded.l
 app.newChat();
 assert.equal(store.getCurrentConversation().mode, "chat");
 app.setMode("debug");
-app.select("saved");
+await app.select("saved");
 assert.equal(ids["agent-mode"].value, "chat");
 server.bootstrap = async () => ({ agent_modes: [], features: [] });
 await app.start();

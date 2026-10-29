@@ -10,6 +10,8 @@ from typing import AsyncIterator
 from klipperai_agent.application.chat import ChatService
 from klipperai_agent.contracts.api import ChatRequest
 from klipperai_agent.domain.evidence import AgentEvent
+from klipperai_agent.domain.model_usage import ModelUsage
+from klipperai_agent.domain.repositories import InvestigationConflict
 
 
 class ChatEventStream:
@@ -27,9 +29,23 @@ class ChatEventStream:
             try:
                 result = await self._service.chat(payload, on_event=on_event)
                 await queue.put(("result", result.model_dump()))
-            except Exception:
+            except Exception as exc:
                 await queue.put(
-                    ("error", {"message": "The investigation failed. Please try again."})
+                    (
+                        "error",
+                        {
+                            "message": str(exc)
+                            if isinstance(exc, InvestigationConflict)
+                            else "The investigation failed. Please try again.",
+                            "model_usage": getattr(
+                                exc,
+                                "model_usage",
+                                ModelUsage(status="not_used")
+                                if isinstance(exc, InvestigationConflict)
+                                else ModelUsage(),
+                            ).model_dump(),
+                        },
+                    )
                 )
             finally:
                 await queue.put(None)

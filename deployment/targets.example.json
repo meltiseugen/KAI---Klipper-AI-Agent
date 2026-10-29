@@ -1,0 +1,7 @@
+{
+  "printer": {
+    "host": "biqu@printer.local",
+    "install_dir": "/home/biqu/KlipperAI",
+    "url": "http://127.0.0.1:8811/readyz"
+  }
+}

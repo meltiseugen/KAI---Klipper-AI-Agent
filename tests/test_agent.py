@@ -25,7 +25,7 @@ class ScriptedModel:
         self.turns = list(turns)
         self.conversations = []
 
-    async def respond(self, conversation, tools):
+    async def respond(self, conversation, tools, *, response_format=None):
         self.conversations.append(json.loads(json.dumps(conversation)))
         turn = self.turns.pop(0)
         if isinstance(turn, Exception):
@@ -130,7 +130,7 @@ async def test_agent_observes_tools_and_follows_up_with_config_and_web_sources(t
     assert result["findings"] and result["moonraker_reachable"]
     assert any(source["line_number"] == 3 for source in result["source_citations"])
     assert any(source["url"] for source in result["source_citations"])
-    assert len(events) == 18  # Starting profile/config, then seven model-selected reads.
+    assert len(events) == 20  # Starting profile/config/logs, then seven model-selected reads.
     assert "PA1" in json.dumps(model.conversations[-1])
     assert "Official troubleshooting guidance" in json.dumps(model.conversations[-1])
     assert events[0].kind == "tool_started" and events[-1].kind == "tool_completed"
@@ -241,7 +241,7 @@ async def test_agent_repairs_final_json_times_out_and_propagates_cancellation(to
     assert result.agent_status == "completed"
 
     class SlowModel:
-        async def respond(self, *args):
+        async def respond(self, *args, **kwargs):
             await asyncio.sleep(5)
 
     runner = AgentRunner(SlowModel(), AgentLimits(run_timeout_seconds=0.001))
@@ -269,11 +269,13 @@ async def test_runs_have_isolated_evidence_and_empty_object_status_is_valid(tool
     model = ScriptedModel(call("get_printer_status"), answer(), answer("Unrelated question"))
     workflow = AgentWorkflow(model, tool_context.moonraker, AgentLimits())
     first = await workflow.ainvoke({"user_message": "status"}, context=tool_context.services)
+    tool_context.services.collector.collect.return_value = DiagnosticsSnapshot(False, None, [])
     second = await workflow.ainvoke({"user_message": "general"}, context=tool_context.services)
     assert first["moonraker_reachable"] and not second["moonraker_reachable"]
     assert {event["tool"] for event in second["agent_events"]} == {
         "get_printer_profile",
         "inspect_config",
+        "collect_diagnostics",
     }
     assert {source["path"] for source in second["source_citations"]} == {"printer.cfg"}
     tool_context.moonraker.query_printer_objects.assert_not_called()

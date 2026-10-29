@@ -13,7 +13,7 @@ class _FakeRunner:
     def __init__(self) -> None:
         self.commands: list[tuple[str, ...]] = []
 
-    def run(self, command: tuple[str, ...]) -> CommandResult:
+    def run(self, command: tuple[str, ...], **kwargs) -> CommandResult:
         self.commands.append(command)
         unit_name = command[command.index("--unit") + 1] if "--unit" in command else command[-1]
 
@@ -40,7 +40,7 @@ class _FakeRunner:
 
 
 class _FailingRunner:
-    def run(self, command: tuple[str, ...]) -> CommandResult:
+    def run(self, command: tuple[str, ...], **kwargs) -> CommandResult:
         if command[0] == "systemctl":
             raise FileNotFoundError("systemctl")
         raise subprocess.TimeoutExpired(command, 3)
@@ -100,7 +100,7 @@ class _EdgeRunner:
     def __init__(self, result: CommandResult) -> None:
         self.result = result
 
-    def run(self, command: tuple[str, ...]) -> CommandResult:
+    def run(self, command: tuple[str, ...], **kwargs) -> CommandResult:
         return CommandResult(
             command, self.result.returncode, self.result.stdout, self.result.stderr
         )
@@ -122,7 +122,7 @@ def test_host_system_collector_reports_failed_and_empty_commands() -> None:
 
 def test_host_system_collector_handles_remaining_errors_and_clipping() -> None:
     class Runner:
-        def run(self, command: tuple[str, ...]) -> CommandResult:
+        def run(self, command: tuple[str, ...], **kwargs) -> CommandResult:
             if command[0] == "systemctl":
                 raise subprocess.TimeoutExpired(command, 1)
             raise FileNotFoundError("journalctl")

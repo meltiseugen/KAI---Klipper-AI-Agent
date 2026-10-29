@@ -1,0 +1,4 @@
+# Synthetic regression example, not a real printer incident.
+Stats 100.0: extruder: target=210 temp=24.0 pwm=1.000
+Stats 110.0: extruder: target=210 temp=24.3 pwm=1.000
+Transition to shutdown state: Heater extruder not heating at expected rate

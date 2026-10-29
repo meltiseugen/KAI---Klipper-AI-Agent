@@ -5,7 +5,7 @@ import vm from "node:vm";
 export function element(tag) {
   let text = "";
   const classes = new Set();
-  return {
+  const node = {
     tag, children: [], listeners: {}, attributes: {}, dataset: {}, value: "",
     classList: {
       add(...names) { names.forEach(name => classes.add(name)); },
@@ -35,14 +35,21 @@ export function element(tag) {
     focus() { this.focused = true; },
     click() { this.clicked = true; return this.listeners.click?.(); },
   };
+  // Native textarea/select types are read-only; assigning them aborts rendering.
+  if (tag === "textarea" || tag === "select") Object.defineProperty(node, "type", { value: tag === "textarea" ? "textarea" : "select-one" });
+  return node;
 }
 
 export async function loadUI(globals = {}) {
   const ids = Object.fromEntries([
     "message-input", "messages", "history-list", "send-button", "new-chat-button",
-    "composer-status", "shell-menu-toggle", "shell-scrim", "provider-badge",
+    "chat-notices",
+    "composer-status", "shell-menu-toggle", "shell-scrim", "settings-scrim", "provider-badge",
     "model-badge", "moonraker-badge", "klipper-badge", "moonraker-events-badge",
-    "agent-mode", "mode-description", "conversation-panel",
+    "agent-mode", "mode-description", "llm-request-info", "llm-summary", "conversation-panel",
+    "chat-welcome", "welcome-title", "welcome-description", "connect-provider", "chat-starters",
+    "starter-diagnose", "starter-config", "conversation-title", "send-label", "scroll-to-bottom",
+    "connection-dot", "connection-label", "connection-details",
     "knowledge-toggle", "knowledge-panel", "knowledge-form", "knowledge-status",
     "knowledge-records", "knowledge-save", "knowledge-refresh", "knowledge-reload", "knowledge-close", "knowledge-add",
     "providers-toggle", "providers-panel", "providers-form", "providers-status", "providers-key", "providers-remove",
@@ -51,6 +58,7 @@ export async function loadUI(globals = {}) {
     "memory-content", "memory-kind", "memory-confirmed", "memory-link", "memory-save", "memory-reload",
   ].map(id => [id, element("div")]));
   const document = {
+    ...element("document"),
     body: element("body"), getElementById: id => ids[id], createElement: element,
     createDocumentFragment: () => element("fragment"),
     createTextNode: value => { const node = element("text"); node.textContent = value; return node; },
@@ -60,7 +68,7 @@ export async function loadUI(globals = {}) {
   for (const name of manifest.filter(name => name !== "embed.js")) {
     vm.runInContext(await readFile(new URL(`../klipperai_agent/web/static/${name}`, import.meta.url), "utf8"), context);
   }
-  vm.runInContext("globalThis.UI = { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, PrinterKnowledgePanel, PrinterMemoryPanel, InvestigationSync, ProviderPanel, MoonrakerStatusFeed };", context);
+  vm.runInContext("globalThis.UI = { ConversationStore, ChatTransport, ChatStreamReader, ChatApplication, ShellView, resolveApiBase, PrinterKnowledgePanel, PrinterMemoryPanel, InvestigationSync, ProviderPanel, MoonrakerStatusFeed };", context);
   return { ...context.UI, document, ids };
 }
 

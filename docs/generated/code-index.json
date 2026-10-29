@@ -2,20 +2,41 @@
   "modules": {
     "klipperai_agent.__main__": {
       "path": "klipperai_agent/__main__.py",
-      "lines": 43,
+      "lines": 48,
       "symbols": [
         {
           "name": "main",
-          "line": 14,
+          "line": 16,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
+        "klipperai_agent.domain.version",
         "klipperai_agent.runtime.logging",
         "klipperai_agent.runtime.settings"
       ],
       "tests": [
-        "tests/test_main.py"
+        "tests/test_main.py",
+        "tests/test_release_identity.py"
+      ]
+    },
+    "klipperai_agent.agent.claim_citations": {
+      "path": "klipperai_agent/agent/claim_citations.py",
+      "lines": 66,
+      "symbols": [
+        {
+          "name": "resolve_claims",
+          "line": 8,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.response_contracts",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation"
+      ],
+      "tests": [
+        "tests/test_structured_citations.py"
       ]
     },
     "klipperai_agent.agent.context_budget": {
@@ -48,7 +69,7 @@
     },
     "klipperai_agent.agent.models": {
       "path": "klipperai_agent/agent/models.py",
-      "lines": 69,
+      "lines": 71,
       "symbols": [
         {
           "name": "AgentAnswer",
@@ -86,24 +107,24 @@
         },
         {
           "name": "SearchResult",
-          "line": 53,
+          "line": 55,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "WebSearch",
-          "line": 58,
+          "line": 60,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "search",
-              "line": 59
+              "line": 61
             }
           ]
         },
         {
           "name": "AgentLimits",
-          "line": 63,
+          "line": 65,
           "kind": "ClassDef",
           "methods": []
         }
@@ -118,144 +139,171 @@
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_automatic_context.py",
+        "tests/test_config_analysis.py",
+        "tests/test_config_templates_agent.py",
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_evidence_pipeline.py",
+        "tests/test_hardware_knowledge.py",
+        "tests/test_intelligence_quality.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
         "tests/test_knowledge_research.py",
+        "tests/test_model_usage.py",
         "tests/test_moonraker_metadata.py",
         "tests/test_provider_agent.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_security_agent.py",
-        "tests/test_shutdown_agent.py"
+        "tests/test_shutdown_agent.py",
+        "tests/test_structured_citations.py",
+        "tests/test_workflow_contracts.py"
       ]
     },
     "klipperai_agent.agent.ports": {
       "path": "klipperai_agent/agent/ports.py",
-      "lines": 71,
+      "lines": 77,
       "symbols": [
         {
           "name": "KnowledgeReader",
-          "line": 14,
+          "line": 15,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "read",
-              "line": 15
+              "line": 16
             }
           ]
         },
         {
           "name": "ShutdownReader",
-          "line": 18,
+          "line": 19,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "read_logs",
-              "line": 19
+              "line": 20
             },
             {
               "name": "read_host",
-              "line": 20
+              "line": 21
             }
           ]
         },
         {
           "name": "ConfigReader",
-          "line": 23,
+          "line": 24,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "collect_with_options",
-              "line": 24
+              "line": 25
             },
             {
               "name": "read_collected_document",
-              "line": 28
+              "line": 29
             }
           ]
         },
         {
           "name": "DiagnosticReader",
-          "line": 31,
+          "line": 32,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "collect",
-              "line": 32
+              "line": 33
             }
           ]
         },
         {
           "name": "FindingRules",
-          "line": 41,
+          "line": 42,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "analyze",
-              "line": 42
+              "line": 43
             }
           ]
         },
         {
           "name": "SavedProfile",
-          "line": 47,
+          "line": 48,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "to_summary",
-              "line": 48
+              "line": 49
             }
           ]
         },
         {
           "name": "PrinterReader",
-          "line": 51,
+          "line": 52,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "get_printer_info",
-              "line": 52
-            },
-            {
-              "name": "list_printer_objects",
               "line": 53
             },
             {
-              "name": "query_printer_objects",
+              "name": "list_printer_objects",
               "line": 54
+            },
+            {
+              "name": "query_printer_objects",
+              "line": 55
             }
           ]
         },
         {
           "name": "FileMetadataReader",
-          "line": 59,
+          "line": 60,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "get_file_metadata",
-              "line": 60
+              "line": 61
+            }
+          ]
+        },
+        {
+          "name": "LogReader",
+          "line": 64,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "inventory",
+              "line": 65
+            },
+            {
+              "name": "read_window",
+              "line": 66
             }
           ]
         },
         {
           "name": "ToolServices",
-          "line": 63,
+          "line": 69,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "collector",
-              "line": 65
+              "line": 71
             },
             {
               "name": "rules",
-              "line": 67
+              "line": 73
             },
             {
               "name": "config_collector",
-              "line": 69
+              "line": 75
             },
             {
               "name": "profile",
-              "line": 71
+              "line": 77
             }
           ]
         }
@@ -265,45 +313,52 @@
         "klipperai_agent.diagnostics.models",
         "klipperai_agent.domain.evidence",
         "klipperai_agent.domain.knowledge",
+        "klipperai_agent.domain.logs",
         "klipperai_agent.domain.shutdown"
       ],
       "tests": []
     },
     "klipperai_agent.agent.prompts": {
       "path": "klipperai_agent/agent/prompts.py",
-      "lines": 59,
+      "lines": 87,
       "symbols": [],
       "imports": [],
-      "tests": []
+      "tests": [
+        "tests/test_agent_modes.py"
+      ]
     },
     "klipperai_agent.agent.registry": {
       "path": "klipperai_agent/agent/registry.py",
-      "lines": 105,
+      "lines": 176,
       "symbols": [
         {
           "name": "ToolRegistry",
-          "line": 23,
+          "line": 24,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 24
+              "line": 25
             },
             {
               "name": "definitions",
-              "line": 31
-            },
-            {
-              "name": "label",
               "line": 34
             },
             {
+              "name": "label",
+              "line": 37
+            },
+            {
               "name": "execute",
-              "line": 38
+              "line": 41
+            },
+            {
+              "name": "model_result",
+              "line": 129
             },
             {
               "name": "_execute",
-              "line": 61
+              "line": 139
             }
           ]
         }
@@ -313,6 +368,7 @@
         "klipperai_agent.agent.models",
         "klipperai_agent.agent.tools.base",
         "klipperai_agent.config.models",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.redaction"
@@ -320,55 +376,140 @@
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_evidence_pipeline.py",
+        "tests/test_hardware_knowledge.py",
         "tests/test_shutdown_agent.py"
+      ]
+    },
+    "klipperai_agent.agent.response_contracts": {
+      "path": "klipperai_agent/agent/response_contracts.py",
+      "lines": 160,
+      "symbols": [
+        {
+          "name": "EvidenceReference",
+          "line": 18,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "CitedClaim",
+          "line": 27,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "DraftProposal",
+          "line": 35,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "GeneralAnswer",
+          "line": 48,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "DiagnosisAnswer",
+          "line": 60,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConfigExplanationAnswer",
+          "line": 64,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConfigDraftAnswer",
+          "line": 68,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "select_workflow",
+          "line": 87,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "response_model",
+          "line": 128,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "response_format",
+          "line": 132,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "workflow_prompt",
+          "line": 152,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.targeting",
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": [
+        "tests/test_structured_citations.py",
+        "tests/test_workflow_contracts.py"
       ]
     },
     "klipperai_agent.agent.runner": {
       "path": "klipperai_agent/agent/runner.py",
-      "lines": 194,
+      "lines": 239,
       "symbols": [
         {
           "name": "AgentRun",
-          "line": 32,
+          "line": 42,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "result",
-              "line": 39
+              "line": 53
             }
           ]
         },
         {
           "name": "AgentRunner",
-          "line": 61,
+          "line": 84,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 62
+              "line": 85
             },
             {
               "name": "run",
-              "line": 66
+              "line": 89
             },
             {
               "name": "_loop",
-              "line": 104
+              "line": 127
             },
             {
               "name": "_stop",
-              "line": 191
+              "line": 236
             }
           ]
         }
       ],
       "imports": [
+        "klipperai_agent.agent.claim_citations",
         "klipperai_agent.agent.deadline",
         "klipperai_agent.agent.models",
         "klipperai_agent.agent.prompts",
         "klipperai_agent.agent.registry",
+        "klipperai_agent.agent.response_contracts",
         "klipperai_agent.agent.starting_context",
         "klipperai_agent.agent.tools.base",
+        "klipperai_agent.diagnostics.evidence",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.evidence",
         "klipperai_agent.domain.investigation",
@@ -381,16 +522,16 @@
     },
     "klipperai_agent.agent.starting_context": {
       "path": "klipperai_agent/agent/starting_context.py",
-      "lines": 235,
+      "lines": 232,
       "symbols": [
         {
           "name": "prepare_context",
-          "line": 20,
+          "line": 22,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "_config_context",
-          "line": 158,
+          "line": 155,
           "kind": "AsyncFunctionDef"
         }
       ],
@@ -401,6 +542,8 @@
         "klipperai_agent.agent.prompts",
         "klipperai_agent.agent.registry",
         "klipperai_agent.agent.tools.base",
+        "klipperai_agent.diagnostics.evidence",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.evidence",
         "klipperai_agent.domain.investigation"
@@ -409,45 +552,45 @@
     },
     "klipperai_agent.agent.tools.base": {
       "path": "klipperai_agent/agent/tools/base.py",
-      "lines": 93,
+      "lines": 106,
       "symbols": [
         {
           "name": "ToolArguments",
-          "line": 17,
+          "line": 18,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ToolContext",
-          "line": 26,
+          "line": 27,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "document",
-              "line": 42
+              "line": 46
             },
             {
               "name": "diagnostics",
-              "line": 54
+              "line": 67
             },
             {
               "name": "config",
-              "line": 65
+              "line": 78
             }
           ]
         },
         {
           "name": "Tool",
-          "line": 76,
+          "line": 89,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "definition",
-              "line": 82
+              "line": 95
             },
             {
               "name": "execute",
-              "line": 93
+              "line": 106
             }
           ]
         }
@@ -459,11 +602,52 @@
         "klipperai_agent.domain.base",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.logs"
       ],
       "tests": [
         "tests/test_agent.py",
+        "tests/test_config_analysis.py",
+        "tests/test_evidence_pipeline.py",
         "tests/test_knowledge_agent.py"
+      ]
+    },
+    "klipperai_agent.agent.tools.components": {
+      "path": "klipperai_agent/agent/tools/components.py",
+      "lines": 69,
+      "symbols": [
+        {
+          "name": "ComponentArguments",
+          "line": 15,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ComponentDiagnosticTool",
+          "line": 20,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 26
+            },
+            {
+              "name": "execute",
+              "line": 29
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.deadline",
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.agent.tools.base",
+        "klipperai_agent.agent.tools.knowledge",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.knowledge.components"
+      ],
+      "tests": [
+        "tests/test_hardware_knowledge.py"
       ]
     },
     "klipperai_agent.agent.tools.config": {
@@ -514,64 +698,156 @@
         "tests/test_agent_modes.py"
       ]
     },
+    "klipperai_agent.agent.tools.config_analysis": {
+      "path": "klipperai_agent/agent/tools/config_analysis.py",
+      "lines": 63,
+      "symbols": [
+        {
+          "name": "collect_analysis",
+          "line": 17,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "AnalyzeConfigTool",
+          "line": 40,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "execute",
+              "line": 46
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.agent.tools.base",
+        "klipperai_agent.config.analysis",
+        "klipperai_agent.config.models",
+        "klipperai_agent.diagnostics.evidence",
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.config_analysis",
+        "klipperai_agent.domain.investigation"
+      ],
+      "tests": [
+        "tests/test_config_analysis.py"
+      ]
+    },
     "klipperai_agent.agent.tools.config_search": {
       "path": "klipperai_agent/agent/tools/config_search.py",
-      "lines": 65,
+      "lines": 112,
       "symbols": [
         {
           "name": "SearchConfigArguments",
-          "line": 11,
+          "line": 14,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SearchConfigTool",
-          "line": 17,
+          "line": 20,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "execute",
-              "line": 28
+              "line": 33
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.agent.tools.base",
+        "klipperai_agent.agent.tools.text_search",
+        "klipperai_agent.config.models",
         "klipperai_agent.domain.evidence"
       ],
       "tests": [
-        "tests/test_agent_modes.py"
+        "tests/test_agent_modes.py",
+        "tests/test_agent_search.py"
+      ]
+    },
+    "klipperai_agent.agent.tools.config_templates": {
+      "path": "klipperai_agent/agent/tools/config_templates.py",
+      "lines": 47,
+      "symbols": [
+        {
+          "name": "TemplateArguments",
+          "line": 15,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConfigTemplateTool",
+          "line": 20,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "execute",
+              "line": 31
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.tools.base",
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.requests",
+        "klipperai_agent.config.templates.catalog",
+        "klipperai_agent.domain.proposals",
+        "klipperai_agent.profile.models"
+      ],
+      "tests": [
+        "tests/test_config_templates_agent.py"
       ]
     },
     "klipperai_agent.agent.tools.diagnostics": {
       "path": "klipperai_agent/agent/tools/diagnostics.py",
-      "lines": 50,
+      "lines": 110,
       "symbols": [
         {
+          "name": "SearchDiagnosticArguments",
+          "line": 13,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "SearchDiagnosticTool",
+          "line": 17,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "execute",
+              "line": 23
+            }
+          ]
+        },
+        {
           "name": "ReadDiagnosticArguments",
-          "line": 11,
+          "line": 71,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ReadDiagnosticTool",
-          "line": 17,
+          "line": 77,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "execute",
-              "line": 27
+              "line": 87
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.agent.tools.base",
-        "klipperai_agent.domain.evidence"
+        "klipperai_agent.agent.tools.text_search",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.redaction"
       ],
       "tests": [
-        "tests/test_agent_modes.py"
+        "tests/test_agent_modes.py",
+        "tests/test_agent_search.py"
       ]
     },
     "klipperai_agent.agent.tools.file_metadata": {
@@ -617,93 +893,93 @@
     },
     "klipperai_agent.agent.tools.knowledge": {
       "path": "klipperai_agent/agent/tools/knowledge.py",
-      "lines": 207,
+      "lines": 243,
       "symbols": [
         {
           "name": "complete_config",
-          "line": 20,
+          "line": 21,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "cite_passages",
-          "line": 37,
+          "line": 38,
           "kind": "FunctionDef"
         },
         {
           "name": "PrinterKnowledgeTool",
-          "line": 50,
+          "line": 55,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 56
+              "line": 61
             },
             {
               "name": "execute",
-              "line": 59
+              "line": 64
             }
           ]
         },
         {
           "name": "SearchKnowledgeArguments",
-          "line": 77,
+          "line": 83,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SearchKnowledgeTool",
-          "line": 82,
+          "line": 88,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 88
+              "line": 94
             },
             {
               "name": "execute",
-              "line": 91
+              "line": 97
             }
           ]
         },
         {
           "name": "FanPortsArguments",
-          "line": 110,
+          "line": 140,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "FanPortsTool",
-          "line": 114,
+          "line": 144,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 120
+              "line": 150
             },
             {
               "name": "execute",
-              "line": 123
+              "line": 153
             }
           ]
         },
         {
           "name": "EddyArguments",
-          "line": 165,
+          "line": 201,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "EddyCalibrationTool",
-          "line": 169,
+          "line": 205,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 175
+              "line": 211
             },
             {
               "name": "execute",
-              "line": 178
+              "line": 214
             }
           ]
         }
@@ -716,12 +992,109 @@
         "klipperai_agent.domain.evidence",
         "klipperai_agent.knowledge.eddy",
         "klipperai_agent.knowledge.fans",
+        "klipperai_agent.knowledge.firmware",
         "klipperai_agent.knowledge.identity",
         "klipperai_agent.knowledge.retrieval",
         "klipperai_agent.knowledge.sources"
       ],
       "tests": [
-        "tests/test_knowledge_agent.py"
+        "tests/test_knowledge_agent.py",
+        "tests/test_pdf_knowledge.py"
+      ]
+    },
+    "klipperai_agent.agent.tools.logs": {
+      "path": "klipperai_agent/agent/tools/logs.py",
+      "lines": 249,
+      "symbols": [
+        {
+          "name": "log_inventory",
+          "line": 26,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "log_window",
+          "line": 36,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "window_metadata",
+          "line": 55,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "log_citation",
+          "line": 72,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ListLogsArguments",
+          "line": 85,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ListLogsTool",
+          "line": 89,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 99
+            },
+            {
+              "name": "execute",
+              "line": 102
+            }
+          ]
+        },
+        {
+          "name": "SearchLogsArguments",
+          "line": 122,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "SearchLogsTool",
+          "line": 128,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 141
+            },
+            {
+              "name": "execute",
+              "line": 144
+            }
+          ]
+        },
+        {
+          "name": "ReadLogArguments",
+          "line": 213,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ReadLogTool",
+          "line": 219,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "execute",
+              "line": 225
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.agent.tools.base",
+        "klipperai_agent.agent.tools.text_search",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.logs"
+      ],
+      "tests": [
+        "tests/test_agent_search.py"
       ]
     },
     "klipperai_agent.agent.tools.objects": {
@@ -755,55 +1128,58 @@
     },
     "klipperai_agent.agent.tools.printer": {
       "path": "klipperai_agent/agent/tools/printer.py",
-      "lines": 106,
+      "lines": 124,
       "symbols": [
         {
           "name": "diagnostic_preview",
-          "line": 10,
+          "line": 13,
           "kind": "FunctionDef"
         },
         {
           "name": "PrinterProfileTool",
-          "line": 21,
+          "line": 24,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "execute",
-              "line": 27
+              "line": 30
             }
           ]
         },
         {
           "name": "PrinterStatusTool",
-          "line": 31,
+          "line": 34,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "execute",
-              "line": 37
+              "line": 40
             }
           ]
         },
         {
           "name": "DiagnosticsArguments",
-          "line": 47,
+          "line": 50,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "DiagnosticsTool",
-          "line": 52,
+          "line": 55,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "execute",
-              "line": 58
+              "line": 61
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base"
+        "klipperai_agent.agent.tools.base",
+        "klipperai_agent.diagnostics.evidence",
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent_modes.py"
@@ -846,7 +1222,7 @@
     },
     "klipperai_agent.agent.tools.shutdown": {
       "path": "klipperai_agent/agent/tools/shutdown.py",
-      "lines": 151,
+      "lines": 166,
       "symbols": [
         {
           "name": "ShutdownArguments",
@@ -884,29 +1260,64 @@
         "klipperai_agent.domain.shutdown"
       ],
       "tests": [
+        "tests/test_diagnostics_mvp.py",
         "tests/test_shutdown_agent.py"
+      ]
+    },
+    "klipperai_agent.agent.tools.text_search": {
+      "path": "klipperai_agent/agent/tools/text_search.py",
+      "lines": 90,
+      "symbols": [
+        {
+          "name": "LiteralSearchArguments",
+          "line": 15,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "LineMatch",
+          "line": 25,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "line_matches",
+          "line": 33,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "match_page",
+          "line": 67,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.tools.base"
+      ],
+      "tests": [
+        "tests/test_text_search.py"
       ]
     },
     "klipperai_agent.agent.workflow": {
       "path": "klipperai_agent/agent/workflow.py",
-      "lines": 107,
+      "lines": 122,
       "symbols": [
         {
           "name": "AgentWorkflow",
-          "line": 38,
+          "line": 43,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 41
+              "line": 46
             },
             {
               "name": "web_search_enabled",
-              "line": 60
+              "line": 67
             },
             {
               "name": "ainvoke",
-              "line": 63
+              "line": 70
             }
           ]
         }
@@ -917,11 +1328,15 @@
         "klipperai_agent.agent.registry",
         "klipperai_agent.agent.runner",
         "klipperai_agent.agent.tools.base",
+        "klipperai_agent.agent.tools.components",
         "klipperai_agent.agent.tools.config",
+        "klipperai_agent.agent.tools.config_analysis",
         "klipperai_agent.agent.tools.config_search",
+        "klipperai_agent.agent.tools.config_templates",
         "klipperai_agent.agent.tools.diagnostics",
         "klipperai_agent.agent.tools.file_metadata",
         "klipperai_agent.agent.tools.knowledge",
+        "klipperai_agent.agent.tools.logs",
         "klipperai_agent.agent.tools.objects",
         "klipperai_agent.agent.tools.printer",
         "klipperai_agent.agent.tools.search",
@@ -933,47 +1348,70 @@
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_automatic_context.py",
+        "tests/test_config_analysis.py",
+        "tests/test_config_templates_agent.py",
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_evidence_pipeline.py",
+        "tests/test_intelligence_quality.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
+        "tests/test_model_usage.py",
         "tests/test_moonraker_metadata.py",
         "tests/test_provider_agent.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_security_agent.py",
-        "tests/test_shutdown_agent.py"
+        "tests/test_shutdown_agent.py",
+        "tests/test_structured_citations.py",
+        "tests/test_workflow_contracts.py"
       ]
     },
     "klipperai_agent.application.chat": {
       "path": "klipperai_agent/application/chat.py",
-      "lines": 348,
+      "lines": 386,
       "symbols": [
         {
           "name": "ChatService",
-          "line": 48,
+          "line": 54,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "create_ui_session",
-              "line": 62
+              "line": 70
             },
             {
               "name": "bootstrap",
-              "line": 76
+              "line": 84
             },
             {
               "name": "chat",
-              "line": 90
+              "line": 98
+            },
+            {
+              "name": "_chat",
+              "line": 108
             },
             {
               "name": "resume",
-              "line": 146
+              "line": 166
+            },
+            {
+              "name": "_resume_run",
+              "line": 203
             },
             {
               "name": "_run",
-              "line": 178
+              "line": 210
+            },
+            {
+              "name": "_execute",
+              "line": 224
             },
             {
               "name": "_classify_chat_intent",
-              "line": 329
+              "line": 367
             }
           ]
         }
@@ -982,6 +1420,7 @@
         "klipperai_agent.agent.models",
         "klipperai_agent.agent.workflow",
         "klipperai_agent.application.chat_bootstrap",
+        "klipperai_agent.application.chat_response",
         "klipperai_agent.application.intent",
         "klipperai_agent.application.investigations",
         "klipperai_agent.application.knowledge",
@@ -990,13 +1429,18 @@
         "klipperai_agent.application.request_context",
         "klipperai_agent.application.sessions",
         "klipperai_agent.contracts.api",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.model_usage",
         "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.repositories",
+        "klipperai_agent.runtime.model_usage",
         "klipperai_agent.workflows.context"
       ],
       "tests": [
         "tests/test_agent_integration.py",
+        "tests/test_automatic_context.py",
         "tests/test_investigations.py",
         "tests/test_security_agent.py",
         "tests/test_services.py"
@@ -1020,6 +1464,44 @@
         "klipperai_agent.workflows.context"
       ],
       "tests": []
+    },
+    "klipperai_agent.application.chat_response": {
+      "path": "klipperai_agent/application/chat_response.py",
+      "lines": 38,
+      "symbols": [
+        {
+          "name": "chat_response",
+          "line": 8,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.contracts.api",
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.investigation"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.application.hardware_validation": {
+      "path": "klipperai_agent/application/hardware_validation.py",
+      "lines": 84,
+      "symbols": [
+        {
+          "name": "validate_hardware",
+          "line": 12,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.knowledge",
+        "klipperai_agent.knowledge.firmware",
+        "klipperai_agent.knowledge.pins"
+      ],
+      "tests": [
+        "tests/test_live_hardware_validation.py"
+      ]
     },
     "klipperai_agent.application.intent": {
       "path": "klipperai_agent/application/intent.py",
@@ -1086,7 +1568,7 @@
     },
     "klipperai_agent.application.investigations": {
       "path": "klipperai_agent/application/investigations.py",
-      "lines": 156,
+      "lines": 159,
       "symbols": [
         {
           "name": "InvestigationMemory",
@@ -1138,16 +1620,20 @@
               "line": 87
             },
             {
-              "name": "delete",
+              "name": "summaries",
               "line": 90
             },
             {
-              "name": "recall",
+              "name": "delete",
               "line": 93
             },
             {
+              "name": "recall",
+              "line": 96
+            },
+            {
               "name": "remember",
-              "line": 142
+              "line": 145
             }
           ]
         }
@@ -1165,75 +1651,149 @@
     },
     "klipperai_agent.application.knowledge": {
       "path": "klipperai_agent/application/knowledge.py",
-      "lines": 278,
+      "lines": 344,
       "symbols": [
         {
           "name": "PrinterKnowledge",
-          "line": 28,
+          "line": 37,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 29
+              "line": 38
             },
             {
               "name": "read",
-              "line": 50
+              "line": 62
             },
             {
               "name": "status",
-              "line": 61
+              "line": 75
             },
             {
               "name": "_idle",
-              "line": 77
+              "line": 100
             },
             {
               "name": "save",
-              "line": 83
+              "line": 106
             },
             {
               "name": "review_mappings",
-              "line": 102
+              "line": 133
             },
             {
               "name": "start_refresh",
-              "line": 135
+              "line": 166
+            },
+            {
+              "name": "review_buses",
+              "line": 184
+            },
+            {
+              "name": "observe",
+              "line": 212
+            },
+            {
+              "name": "validate_live",
+              "line": 229
             },
             {
               "name": "_run",
-              "line": 153
+              "line": 239
             },
             {
               "name": "_refresh",
-              "line": 167
+              "line": 253
             },
             {
               "name": "_component",
-              "line": 193
+              "line": 290
             },
             {
               "name": "original",
-              "line": 262
+              "line": 328
             },
             {
               "name": "aclose",
-              "line": 272
+              "line": 338
             }
           ]
         }
       ],
       "imports": [
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.application.hardware_validation",
+        "klipperai_agent.application.knowledge_observations",
+        "klipperai_agent.application.knowledge_refresh",
+        "klipperai_agent.domain.hardware",
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.knowledge",
         "klipperai_agent.domain.redaction",
+        "klipperai_agent.knowledge.buses",
+        "klipperai_agent.knowledge.firmware",
         "klipperai_agent.knowledge.identity",
         "klipperai_agent.knowledge.sources"
       ],
       "tests": [
+        "tests/test_firmware_knowledge.py",
         "tests/test_knowledge_storage.py",
         "tests/test_knowledge_web.py",
+        "tests/test_live_hardware_validation.py",
         "tests/test_security_agent.py"
+      ]
+    },
+    "klipperai_agent.application.knowledge_observations": {
+      "path": "klipperai_agent/application/knowledge_observations.py",
+      "lines": 67,
+      "symbols": [
+        {
+          "name": "record_connector",
+          "line": 10,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "connector_observations",
+          "line": 34,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "record_diagram",
+          "line": 42,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.hardware",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.knowledge",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.knowledge.buses"
+      ],
+      "tests": [
+        "tests/test_firmware_knowledge.py",
+        "tests/test_hardware_knowledge.py"
+      ]
+    },
+    "klipperai_agent.application.knowledge_refresh": {
+      "path": "klipperai_agent/application/knowledge_refresh.py",
+      "lines": 59,
+      "symbols": [
+        {
+          "name": "cache_source",
+          "line": 21,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.knowledge",
+        "klipperai_agent.knowledge.buses",
+        "klipperai_agent.knowledge.pdf_pages",
+        "klipperai_agent.knowledge.sources"
+      ],
+      "tests": [
+        "tests/test_pdf_knowledge.py"
       ]
     },
     "klipperai_agent.application.moonraker": {
@@ -1266,44 +1826,47 @@
     },
     "klipperai_agent.application.proposal_review": {
       "path": "klipperai_agent/application/proposal_review.py",
-      "lines": 68,
+      "lines": 107,
       "symbols": [
         {
           "name": "ProposalReviewService",
-          "line": 13,
+          "line": 14,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 14
+              "line": 15
             },
             {
               "name": "review",
-              "line": 19
+              "line": 29
             },
             {
               "name": "_hardware_snapshot",
-              "line": 46
+              "line": 83
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.agent.ports",
+        "klipperai_agent.application.review_firmware",
         "klipperai_agent.config.models",
         "klipperai_agent.config.review",
         "klipperai_agent.domain.investigation",
         "klipperai_agent.knowledge.review"
       ],
       "tests": [
+        "tests/test_config_patches.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
-        "tests/test_proposal_review.py"
+        "tests/test_proposal_review.py",
+        "tests/test_review_options.py"
       ]
     },
     "klipperai_agent.application.providers": {
       "path": "klipperai_agent/application/providers.py",
-      "lines": 83,
+      "lines": 82,
       "symbols": [
         {
           "name": "ProviderManagement",
@@ -1320,7 +1883,7 @@
             },
             {
               "name": "update",
-              "line": 50
+              "line": 51
             }
           ]
         }
@@ -1407,6 +1970,26 @@
         "tests/test_services.py"
       ]
     },
+    "klipperai_agent.application.review_firmware": {
+      "path": "klipperai_agent/application/review_firmware.py",
+      "lines": 36,
+      "symbols": [
+        {
+          "name": "read_review_firmware",
+          "line": 13,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.agent.ports",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.proposals",
+        "klipperai_agent.domain.redaction"
+      ],
+      "tests": [
+        "tests/test_review_options.py"
+      ]
+    },
     "klipperai_agent.application.sessions": {
       "path": "klipperai_agent/application/sessions.py",
       "lines": 43,
@@ -1448,6 +2031,7 @@
       "imports": [],
       "tests": [
         "tests/test_agent_integration.py",
+        "tests/test_automatic_context.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_security_agent.py",
@@ -1457,22 +2041,22 @@
     },
     "klipperai_agent.bootstrap.container": {
       "path": "klipperai_agent/bootstrap/container.py",
-      "lines": 239,
+      "lines": 273,
       "symbols": [
         {
           "name": "AppContainer",
-          "line": 48,
+          "line": 51,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "aclose",
-              "line": 58
+              "line": 62
             }
           ]
         },
         {
           "name": "build_container",
-          "line": 70,
+          "line": 76,
           "kind": "FunctionDef"
         }
       ],
@@ -1492,6 +2076,9 @@
         "klipperai_agent.diagnostics.rules",
         "klipperai_agent.domain.moonraker",
         "klipperai_agent.infrastructure.documentation",
+        "klipperai_agent.infrastructure.host.flight_recorder",
+        "klipperai_agent.infrastructure.host.history_store",
+        "klipperai_agent.infrastructure.host.log_reader",
         "klipperai_agent.infrastructure.host.logs",
         "klipperai_agent.infrastructure.host.shutdown",
         "klipperai_agent.infrastructure.host.system",
@@ -1511,21 +2098,22 @@
       "tests": [
         "tests/test_agent_integration.py",
         "tests/test_container.py",
+        "tests/test_diagnostics_mvp.py",
         "tests/test_provider_management.py"
       ]
     },
     "klipperai_agent.bootstrap.providers": {
       "path": "klipperai_agent/bootstrap/providers.py",
-      "lines": 61,
+      "lines": 67,
       "symbols": [
         {
           "name": "provider_management",
-          "line": 18,
+          "line": 19,
           "kind": "FunctionDef"
         },
         {
           "name": "effective_settings",
-          "line": 53,
+          "line": 59,
           "kind": "FunctionDef"
         }
       ],
@@ -1540,6 +2128,30 @@
       ],
       "tests": [
         "tests/test_provider_management.py"
+      ]
+    },
+    "klipperai_agent.cli.credentials": {
+      "path": "klipperai_agent/cli/credentials.py",
+      "lines": 108,
+      "symbols": [
+        {
+          "name": "initialize_credentials",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 81,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.provider_settings",
+        "klipperai_agent.infrastructure.credential_cipher",
+        "klipperai_agent.infrastructure.provider_store"
+      ],
+      "tests": [
+        "tests/test_credential_storage.py"
       ]
     },
     "klipperai_agent.cli.detect_profile": {
@@ -1611,74 +2223,101 @@
         "tests/test_main.py"
       ]
     },
-    "klipperai_agent.config.collector": {
-      "path": "klipperai_agent/config/collector.py",
-      "lines": 319,
+    "klipperai_agent.config.analysis": {
+      "path": "klipperai_agent/config/analysis.py",
+      "lines": 201,
       "symbols": [
         {
+          "name": "analyze_config",
+          "line": 16,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.include_paths",
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.domain.config_analysis",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.knowledge.pins"
+      ],
+      "tests": [
+        "tests/test_config_analysis.py"
+      ]
+    },
+    "klipperai_agent.config.collector": {
+      "path": "klipperai_agent/config/collector.py",
+      "lines": 355,
+      "symbols": [
+        {
+          "name": "read_config_text",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
           "name": "ConfigCollector",
-          "line": 20,
+          "line": 38,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 21
+              "line": 39
             },
             {
               "name": "collect",
-              "line": 38
+              "line": 56
             },
             {
               "name": "read_collected_document",
-              "line": 41
+              "line": 59
             },
             {
               "name": "collect_with_options",
-              "line": 62
+              "line": 78
             },
             {
               "name": "_normalize_root_config_name",
-              "line": 99
+              "line": 115
             },
             {
               "name": "_normalize_ignore_globs",
-              "line": 106
+              "line": 122
             },
             {
               "name": "_resolve_root_file",
-              "line": 114
+              "line": 130
             },
             {
               "name": "_resolve_root_candidate",
-              "line": 136
+              "line": 152
             },
             {
               "name": "_auto_detect_root_file",
-              "line": 142
+              "line": 158
             },
             {
               "name": "_collect_file",
-              "line": 175
+              "line": 203
             },
             {
               "name": "_collect_unincluded_config_files",
-              "line": 238
+              "line": 266
             },
             {
               "name": "_resolve_include_matches",
-              "line": 279
+              "line": 315
             },
             {
               "name": "_should_ignore",
-              "line": 288
+              "line": 324
             },
             {
               "name": "_relative_path_string",
-              "line": 301
+              "line": 337
             },
             {
               "name": "_clip_text",
-              "line": 311
+              "line": 347
             }
           ]
         }
@@ -1691,6 +2330,10 @@
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_automatic_context.py",
+        "tests/test_config_analysis.py",
+        "tests/test_config_patches.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_agent.py",
         "tests/test_printerconfig.py",
@@ -1698,9 +2341,27 @@
         "tests/test_printerprofile.py",
         "tests/test_printerprofile_extra.py",
         "tests/test_proposal_review.py",
+        "tests/test_resource_bounds.py",
+        "tests/test_review_options.py",
         "tests/test_rules.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_security.py",
         "tests/test_workflows.py"
+      ]
+    },
+    "klipperai_agent.config.include_paths": {
+      "path": "klipperai_agent/config/include_paths.py",
+      "lines": 13,
+      "symbols": [
+        {
+          "name": "matches_include",
+          "line": 7,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_config_patches.py"
       ]
     },
     "klipperai_agent.config.lookup": {
@@ -1774,6 +2435,7 @@
         "klipperai_agent.config.vocabulary"
       ],
       "tests": [
+        "tests/test_llm_extra.py",
         "tests/test_printerconfig.py",
         "tests/test_printerconfig_extra.py"
       ]
@@ -1859,128 +2521,198 @@
     },
     "klipperai_agent.config.models": {
       "path": "klipperai_agent/config/models.py",
-      "lines": 259,
+      "lines": 263,
       "symbols": [
         {
           "name": "ConfigReadError",
-          "line": 22,
+          "line": 23,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ConfigDocument",
-          "line": 27,
+          "line": 28,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "prompt_block",
-              "line": 34
+              "line": 35
             }
           ]
         },
         {
           "name": "ConfigPlaceholder",
-          "line": 40,
+          "line": 41,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "summary",
-              "line": 48
+              "line": 49
             }
           ]
         },
         {
           "name": "ConfigSectionLocation",
-          "line": 58,
+          "line": 59,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "summary",
-              "line": 63
+              "line": 64
             }
           ]
         },
         {
           "name": "_ConfigLineReference",
-          "line": 68,
+          "line": 69,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "summary",
-              "line": 74
+              "line": 75
             }
           ]
         },
         {
           "name": "ConfigSnapshot",
-          "line": 81,
+          "line": 82,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "revision",
-              "line": 88
+              "line": 90
             },
             {
               "name": "section_names",
-              "line": 98
+              "line": 100
             },
             {
               "name": "has_section_prefix",
-              "line": 104
+              "line": 106
             },
             {
               "name": "has_managed_include",
-              "line": 108
+              "line": 110
             },
             {
               "name": "find_section_locations",
-              "line": 115
+              "line": 117
             },
             {
               "name": "section_block",
-              "line": 139
+              "line": 141
             },
             {
               "name": "to_prompt_block",
-              "line": 158
+              "line": 160
             },
             {
               "name": "to_state",
-              "line": 178
+              "line": 180
             },
             {
               "name": "from_state",
-              "line": 214
+              "line": 217
             }
           ]
         },
         {
           "name": "ConfigRequestTarget",
-          "line": 255,
+          "line": 259,
           "kind": "ClassDef",
           "methods": []
         }
       ],
       "imports": [
         "klipperai_agent.config.matching",
-        "klipperai_agent.config.vocabulary"
+        "klipperai_agent.config.vocabulary",
+        "klipperai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_config_analysis.py",
+        "tests/test_config_features.py",
+        "tests/test_config_patches.py",
         "tests/test_knowledge_agent.py",
         "tests/test_llm_config.py",
         "tests/test_llm_extra.py",
         "tests/test_printerconfig_extra.py",
         "tests/test_printerprofile_extra.py",
         "tests/test_proposal_review.py",
+        "tests/test_resource_bounds.py",
         "tests/test_security.py",
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py",
         "tests/test_workflows.py",
         "tests/test_workflows_extra.py"
       ]
     },
+    "klipperai_agent.config.option_review": {
+      "path": "klipperai_agent/config/option_review.py",
+      "lines": 251,
+      "symbols": [
+        {
+          "name": "number_values",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "value_problem",
+          "line": 35,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_check",
+          "line": 62,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_relationships",
+          "line": 80,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "review_options",
+          "line": 159,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.option_rules",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.config.review_versions",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": [
+        "tests/test_review_options.py"
+      ]
+    },
+    "klipperai_agent.config.option_rules": {
+      "path": "klipperai_agent/config/option_rules.py",
+      "lines": 228,
+      "symbols": [
+        {
+          "name": "OptionRule",
+          "line": 18,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "section_family",
+          "line": 222,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_review_options.py"
+      ]
+    },
     "klipperai_agent.config.parser": {
       "path": "klipperai_agent/config/parser.py",
-      "lines": 97,
+      "lines": 99,
       "symbols": [
         {
           "name": "ConfigParser",
@@ -1989,19 +2721,19 @@
           "methods": [
             {
               "name": "extract_include_patterns",
-              "line": 21
+              "line": 23
             },
             {
               "name": "extract_sections",
-              "line": 27
+              "line": 29
             },
             {
               "name": "extract_section_locations",
-              "line": 37
+              "line": 39
             },
             {
               "name": "detect_placeholders",
-              "line": 60
+              "line": 62
             }
           ]
         }
@@ -2010,55 +2742,181 @@
         "klipperai_agent.config.models"
       ],
       "tests": [
+        "tests/test_config_analysis.py",
         "tests/test_printerconfig_extra.py"
+      ]
+    },
+    "klipperai_agent.config.patches": {
+      "path": "klipperai_agent/config/patches.py",
+      "lines": 229,
+      "symbols": [
+        {
+          "name": "valid_target",
+          "line": 20,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_digest",
+          "line": 26,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "merge_options",
+          "line": 32,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_assignment",
+          "line": 101,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "file_patch",
+          "line": 106,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "attach_file_plan",
+          "line": 125,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.include_paths",
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.parser",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.domain.proposals",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.knowledge.pins"
+      ],
+      "tests": [
+        "tests/test_config_patches.py"
       ]
     },
     "klipperai_agent.config.requests": {
       "path": "klipperai_agent/config/requests.py",
-      "lines": 17,
+      "lines": 34,
       "symbols": [
         {
           "name": "ConfigPromptPayload",
-          "line": 11,
-          "kind": "ClassDef",
-          "methods": []
-        }
-      ],
-      "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.profile.models"
-      ],
-      "tests": [
-        "tests/test_llm_config.py",
-        "tests/test_llm_extra.py"
-      ]
-    },
-    "klipperai_agent.config.review": {
-      "path": "klipperai_agent/config/review.py",
-      "lines": 129,
-      "symbols": [
-        {
-          "name": "ProposalReviewer",
-          "line": 18,
+          "line": 13,
           "kind": "ClassDef",
           "methods": [
             {
-              "name": "review",
-              "line": 19
+              "name": "__post_init__",
+              "line": 22
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.config.models",
+        "klipperai_agent.diagnostics.evidence",
+        "klipperai_agent.diagnostics.models",
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.profile.models"
+      ],
+      "tests": [
+        "tests/test_config_features.py",
+        "tests/test_llm_config.py",
+        "tests/test_llm_extra.py"
+      ]
+    },
+    "klipperai_agent.config.review": {
+      "path": "klipperai_agent/config/review.py",
+      "lines": 179,
+      "symbols": [
+        {
+          "name": "ProposalReviewer",
+          "line": 23,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "review",
+              "line": 24
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.option_review",
         "klipperai_agent.config.parser",
+        "klipperai_agent.config.patches",
+        "klipperai_agent.config.review_guidance",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.config.review_versions",
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.proposals"
       ],
       "tests": [
-        "tests/test_proposal_review.py"
+        "tests/test_config_patches.py",
+        "tests/test_proposal_review.py",
+        "tests/test_review_options.py"
       ]
+    },
+    "klipperai_agent.config.review_guidance": {
+      "path": "klipperai_agent/config/review_guidance.py",
+      "lines": 55,
+      "symbols": [
+        {
+          "name": "manual_verification",
+          "line": 7,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.option_rules",
+        "klipperai_agent.config.review_parser"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.config.review_parser": {
+      "path": "klipperai_agent/config/review_parser.py",
+      "lines": 66,
+      "symbols": [
+        {
+          "name": "ReviewSection",
+          "line": 13,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "parse_review_config",
+          "line": 20,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": [
+        "tests/test_advanced_templates.py",
+        "tests/test_review_options.py"
+      ]
+    },
+    "klipperai_agent.config.review_versions": {
+      "path": "klipperai_agent/config/review_versions.py",
+      "lines": 76,
+      "symbols": [
+        {
+          "name": "exact_klipper_release",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "version_checks",
+          "line": 27,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.option_rules",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": []
     },
     "klipperai_agent.config.targeting": {
       "path": "klipperai_agent/config/targeting.py",
@@ -2122,6 +2980,33 @@
         "tests/test_workflows.py"
       ]
     },
+    "klipperai_agent.config.templates.advanced": {
+      "path": "klipperai_agent/config/templates/advanced.py",
+      "lines": 164,
+      "symbols": [
+        {
+          "name": "_parameter",
+          "line": 10,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_draft",
+          "line": 20,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "advanced_proposal",
+          "line": 57,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.requests",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": []
+    },
     "klipperai_agent.config.templates.calibration": {
       "path": "klipperai_agent/config/templates/calibration.py",
       "lines": 79,
@@ -2168,35 +3053,35 @@
     },
     "klipperai_agent.config.templates.catalog": {
       "path": "klipperai_agent/config/templates/catalog.py",
-      "lines": 70,
+      "lines": 75,
       "symbols": [
         {
           "name": "ProposalTemplate",
-          "line": 31,
+          "line": 33,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "build",
-              "line": 32
+              "line": 34
             }
           ]
         },
         {
           "name": "ProposalCatalog",
-          "line": 35,
+          "line": 37,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 38
+              "line": 40
             },
             {
               "name": "build",
-              "line": 54
+              "line": 56
             },
             {
               "name": "_common_warnings",
-              "line": 60
+              "line": 65
             }
           ]
         }
@@ -2204,37 +3089,41 @@
       "imports": [
         "klipperai_agent.config.models",
         "klipperai_agent.config.requests",
+        "klipperai_agent.config.templates.advanced",
         "klipperai_agent.config.templates.calibration",
+        "klipperai_agent.config.templates.features",
         "klipperai_agent.config.templates.macros",
         "klipperai_agent.config.templates.motion",
         "klipperai_agent.config.templates.thermal",
         "klipperai_agent.domain.proposals",
         "klipperai_agent.profile.models"
       ],
-      "tests": []
+      "tests": [
+        "tests/test_advanced_templates.py",
+        "tests/test_config_features.py",
+        "tests/test_llm_config.py",
+        "tests/test_llm_extra.py"
+      ]
     },
-    "klipperai_agent.config.templates.guidance": {
-      "path": "klipperai_agent/config/templates/guidance.py",
-      "lines": 112,
+    "klipperai_agent.config.templates.features": {
+      "path": "klipperai_agent/config/templates/features.py",
+      "lines": 137,
       "symbols": [
         {
-          "name": "ProposalGuidance",
-          "line": 1,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "_build_next_actions",
-              "line": 3
-            },
-            {
-              "name": "_build_follow_up_questions",
-              "line": 61
-            }
-          ]
+          "name": "feature_proposal",
+          "line": 51,
+          "kind": "FunctionDef"
         }
       ],
-      "imports": [],
-      "tests": []
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.config.requests",
+        "klipperai_agent.config.review_parser",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": [
+        "tests/test_config_features.py"
+      ]
     },
     "klipperai_agent.config.templates.macros": {
       "path": "klipperai_agent/config/templates/macros.py",
@@ -2379,72 +3268,84 @@
     },
     "klipperai_agent.contracts.api": {
       "path": "klipperai_agent/contracts/api.py",
-      "lines": 120,
+      "lines": 143,
       "symbols": [
         {
           "name": "DetectedAddonSummary",
-          "line": 43,
+          "line": 47,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "PrinterProfileSummary",
-          "line": 50,
+          "line": 54,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ChatRequest",
-          "line": 71,
+          "line": 75,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "_reject_blank",
-              "line": 80
+              "line": 84
+            },
+            {
+              "name": "_bounded_text_artifacts",
+              "line": 90
             }
           ]
         },
         {
           "name": "ChatResponse",
-          "line": 86,
+          "line": 101,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "BootstrapResponse",
-          "line": 104,
+          "line": 126,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "UiSessionResponse",
-          "line": 117,
+          "line": 140,
           "kind": "ClassDef",
           "methods": []
         }
       ],
       "imports": [
         "klipperai_agent.contracts.base",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.evidence",
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.messages",
+        "klipperai_agent.domain.model_usage",
         "klipperai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
+        "tests/test_automatic_context.py",
+        "tests/test_config_analysis.py",
         "tests/test_confirmed_memory.py",
         "tests/test_diagnostics_extra.py",
+        "tests/test_embedded_experience.py",
+        "tests/test_evidence_pipeline.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
-        "tests/test_llm_extra.py",
+        "tests/test_model_usage.py",
         "tests/test_provider_agent.py",
+        "tests/test_resource_bounds.py",
         "tests/test_rules.py",
         "tests/test_schemas.py",
         "tests/test_security_agent.py",
         "tests/test_services.py",
+        "tests/test_structured_citations.py",
         "tests/test_workflows_extra.py"
       ]
     },
@@ -2459,85 +3360,190 @@
     },
     "klipperai_agent.diagnostics.collector": {
       "path": "klipperai_agent/diagnostics/collector.py",
-      "lines": 68,
+      "lines": 102,
       "symbols": [
         {
           "name": "DiagnosticsCollector",
-          "line": 13,
+          "line": 17,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 14
+              "line": 18
             },
             {
               "name": "ping",
-              "line": 25
+              "line": 29
             },
             {
               "name": "ping_printer",
-              "line": 28
+              "line": 32
             },
             {
               "name": "collect",
-              "line": 35
+              "line": 39
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.diagnostics.models",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation",
         "klipperai_agent.infrastructure.host.logs",
         "klipperai_agent.infrastructure.host.system",
-        "klipperai_agent.infrastructure.moonraker"
+        "klipperai_agent.infrastructure.moonraker",
+        "klipperai_agent.infrastructure.moonraker_state"
       ],
       "tests": [
+        "tests/test_automatic_context.py",
         "tests/test_diagnostics_extra.py",
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_evidence_pipeline.py",
         "tests/test_hostlogs.py"
+      ]
+    },
+    "klipperai_agent.diagnostics.evidence": {
+      "path": "klipperai_agent/diagnostics/evidence.py",
+      "lines": 120,
+      "symbols": [
+        {
+          "name": "config_evidence",
+          "line": 14,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "diagnostic_evidence",
+          "line": 44,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "link_findings",
+          "line": 64,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.diagnostics.models",
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation"
+      ],
+      "tests": [
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py"
+      ]
+    },
+    "klipperai_agent.diagnostics.host_history": {
+      "path": "klipperai_agent/diagnostics/host_history.py",
+      "lines": 60,
+      "symbols": [
+        {
+          "name": "summarize_history",
+          "line": 8,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.host_history"
+      ],
+      "tests": [
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_host_flight_recorder.py"
       ]
     },
     "klipperai_agent.diagnostics.models": {
       "path": "klipperai_agent/diagnostics/models.py",
-      "lines": 31,
+      "lines": 90,
       "symbols": [
         {
           "name": "DiagnosticsSnapshot",
-          "line": 10,
+          "line": 13,
           "kind": "ClassDef",
           "methods": [
             {
+              "name": "__post_init__",
+              "line": 22
+            },
+            {
+              "name": "refresh_artifacts",
+              "line": 30
+            },
+            {
+              "name": "to_state",
+              "line": 44
+            },
+            {
+              "name": "from_state",
+              "line": 56
+            },
+            {
               "name": "to_prompt_block",
-              "line": 16
+              "line": 66
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence"
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_modes.py",
         "tests/test_diagnostics_extra.py",
         "tests/test_llm_extra.py",
+        "tests/test_runtime_diagnostics.py",
+        "tests/test_typed_artifacts.py",
         "tests/test_workflows_extra.py"
+      ]
+    },
+    "klipperai_agent.diagnostics.playbooks": {
+      "path": "klipperai_agent/diagnostics/playbooks.py",
+      "lines": 215,
+      "symbols": [
+        {
+          "name": "_plan",
+          "line": 9,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "recovery_playbook",
+          "line": 213,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.recovery"
+      ],
+      "tests": [
+        "tests/test_intelligence_quality.py"
       ]
     },
     "klipperai_agent.diagnostics.requests": {
       "path": "klipperai_agent/diagnostics/requests.py",
-      "lines": 18,
+      "lines": 36,
       "symbols": [
         {
           "name": "DiagnosisPromptPayload",
-          "line": 12,
+          "line": 14,
           "kind": "ClassDef",
-          "methods": []
+          "methods": [
+            {
+              "name": "__post_init__",
+              "line": 23
+            }
+          ]
         }
       ],
       "imports": [
         "klipperai_agent.config.models",
+        "klipperai_agent.diagnostics.evidence",
         "klipperai_agent.diagnostics.models",
+        "klipperai_agent.domain.artifacts",
         "klipperai_agent.domain.evidence",
         "klipperai_agent.profile.models"
       ],
@@ -2547,38 +3553,54 @@
     },
     "klipperai_agent.diagnostics.rules": {
       "path": "klipperai_agent/diagnostics/rules.py",
-      "lines": 148,
+      "lines": 136,
       "symbols": [
         {
+          "name": "diagnostic_lines",
+          "line": 16,
+          "kind": "FunctionDef"
+        },
+        {
           "name": "RuleEngine",
-          "line": 9,
+          "line": 32,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "analyze",
-              "line": 82
+              "line": 35
             },
             {
               "name": "_severity_rank",
-              "line": 121
+              "line": 95
             },
             {
               "name": "_analyze_config_snapshot",
-              "line": 125
+              "line": 98
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.config.models",
+        "klipperai_agent.diagnostics.playbooks",
+        "klipperai_agent.diagnostics.signatures",
         "klipperai_agent.domain.evidence"
       ],
       "tests": [
         "tests/test_agent.py",
+        "tests/test_agent_integration.py",
+        "tests/test_automatic_context.py",
         "tests/test_diagnostics_extra.py",
+        "tests/test_evidence_pipeline.py",
+        "tests/test_failure_examples.py",
         "tests/test_hostlogs.py",
+        "tests/test_intelligence_quality.py",
         "tests/test_rules.py",
-        "tests/test_shutdown.py"
+        "tests/test_runtime_diagnostics.py",
+        "tests/test_runtime_rules.py",
+        "tests/test_shutdown.py",
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py"
       ]
     },
     "klipperai_agent.diagnostics.shutdown": {
@@ -2616,7 +3638,7 @@
     },
     "klipperai_agent.diagnostics.shutdown_assessment": {
       "path": "klipperai_agent/diagnostics/shutdown_assessment.py",
-      "lines": 125,
+      "lines": 156,
       "symbols": [
         {
           "name": "assess_shutdown",
@@ -2629,6 +3651,60 @@
       ],
       "tests": [
         "tests/test_shutdown.py"
+      ]
+    },
+    "klipperai_agent.diagnostics.signatures": {
+      "path": "klipperai_agent/diagnostics/signatures.py",
+      "lines": 185,
+      "symbols": [],
+      "imports": [
+        "klipperai_agent.domain.evidence"
+      ],
+      "tests": []
+    },
+    "klipperai_agent.domain.artifacts": {
+      "path": "klipperai_agent/domain/artifacts.py",
+      "lines": 194,
+      "symbols": [
+        {
+          "name": "CollectedArtifact",
+          "line": 39,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "prompt_metadata",
+              "line": 57
+            },
+            {
+              "name": "prompt_value",
+              "line": 60
+            }
+          ]
+        },
+        {
+          "name": "normalize_artifact",
+          "line": 67,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "normalize_input",
+          "line": 129,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "public_evidence_blocks",
+          "line": 161,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.redaction"
+      ],
+      "tests": [
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py"
       ]
     },
     "klipperai_agent.domain.base": {
@@ -2652,6 +3728,23 @@
         }
       ],
       "imports": [],
+      "tests": []
+    },
+    "klipperai_agent.domain.config_analysis": {
+      "path": "klipperai_agent/domain/config_analysis.py",
+      "lines": 16,
+      "symbols": [
+        {
+          "name": "ConfigAnalysis",
+          "line": 9,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.evidence"
+      ],
       "tests": []
     },
     "klipperai_agent.domain.context": {
@@ -2678,34 +3771,103 @@
     },
     "klipperai_agent.domain.evidence": {
       "path": "klipperai_agent/domain/evidence.py",
-      "lines": 53,
+      "lines": 96,
       "symbols": [
         {
+          "name": "severity_rank",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
           "name": "ArtifactInput",
-          "line": 21,
+          "line": 26,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "prompt_excerpt",
-              "line": 26
+              "line": 31
             }
           ]
         },
         {
           "name": "IssueFinding",
-          "line": 32,
+          "line": 37,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "_derive_rank",
+              "line": 55
+            }
+          ]
+        },
+        {
+          "name": "SourceCitation",
+          "line": 60,
           "kind": "ClassDef",
           "methods": []
         },
         {
-          "name": "SourceCitation",
-          "line": 41,
+          "name": "GroundedClaim",
+          "line": 80,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "AgentEvent",
-          "line": 50,
+          "line": 85,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.recovery"
+      ],
+      "tests": [
+        "tests/test_agent_modes.py",
+        "tests/test_agent_search.py",
+        "tests/test_evidence_pipeline.py",
+        "tests/test_failure_examples.py",
+        "tests/test_intelligence_quality.py",
+        "tests/test_knowledge_research.py",
+        "tests/test_runtime_diagnostics.py",
+        "tests/test_runtime_rules.py",
+        "tests/test_shutdown.py",
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py",
+        "tests/test_workflow_contracts.py"
+      ]
+    },
+    "klipperai_agent.domain.hardware": {
+      "path": "klipperai_agent/domain/hardware.py",
+      "lines": 61,
+      "symbols": [
+        {
+          "name": "BusMapping",
+          "line": 10,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConnectorObservation",
+          "line": 16,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "explicit_observation",
+              "line": 28
+            }
+          ]
+        },
+        {
+          "name": "PdfPageIndex",
+          "line": 41,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "DiagramNote",
+          "line": 52,
           "kind": "ClassDef",
           "methods": []
         }
@@ -2714,228 +3876,310 @@
         "klipperai_agent.domain.base"
       ],
       "tests": [
-        "tests/test_agent_modes.py",
-        "tests/test_knowledge_research.py",
-        "tests/test_shutdown.py"
+        "tests/test_firmware_knowledge.py",
+        "tests/test_hardware_knowledge.py"
+      ]
+    },
+    "klipperai_agent.domain.host_history": {
+      "path": "klipperai_agent/domain/host_history.py",
+      "lines": 37,
+      "symbols": [
+        {
+          "name": "ProcessSample",
+          "line": 10,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "PressureSample",
+          "line": 17,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "HostSample",
+          "line": 24,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base"
+      ],
+      "tests": [
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_host_flight_recorder.py"
       ]
     },
     "klipperai_agent.domain.investigation": {
       "path": "klipperai_agent/domain/investigation.py",
-      "lines": 136,
+      "lines": 151,
       "symbols": [
         {
           "name": "utc_now",
-          "line": 18,
+          "line": 26,
           "kind": "FunctionDef"
         },
         {
           "name": "Evidence",
-          "line": 22,
+          "line": 30,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "historical_context",
-              "line": 30
+              "line": 31
             }
           ]
         },
         {
           "name": "InvestigationRequest",
-          "line": 41,
+          "line": 51,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "MemorySource",
-          "line": 49,
+          "line": 59,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "InvestigationResult",
-          "line": 55,
+          "line": 65,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "_strip_response",
-              "line": 71
+              "line": 86
             }
           ]
         },
         {
           "name": "InvestigationTurn",
-          "line": 75,
+          "line": 90,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "PendingInvestigation",
-          "line": 83,
+          "line": 98,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ConfirmedMemory",
-          "line": 96,
+          "line": 111,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "as_evidence",
-              "line": 104
+              "line": 119
             }
           ]
         },
         {
           "name": "Investigation",
-          "line": 116,
+          "line": 131,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "history",
-              "line": 126
+              "line": 141
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.artifacts",
+        "klipperai_agent.domain.base",
+        "klipperai_agent.domain.context",
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.messages",
+        "klipperai_agent.domain.model_usage",
+        "klipperai_agent.domain.proposals"
+      ],
+      "tests": [
+        "tests/test_agent.py",
+        "tests/test_agent_modes.py",
+        "tests/test_config_patches.py",
+        "tests/test_confirmed_memory.py",
+        "tests/test_investigation_recovery.py",
+        "tests/test_investigations.py",
+        "tests/test_knowledge_agent.py",
+        "tests/test_model_usage.py",
+        "tests/test_proposal_review.py",
+        "tests/test_resource_bounds.py",
+        "tests/test_review_options.py",
+        "tests/test_security.py",
+        "tests/test_structured_citations.py",
+        "tests/test_typed_artifacts.py",
+        "tests/test_workflow_contracts.py"
+      ]
+    },
+    "klipperai_agent.domain.knowledge": {
+      "path": "klipperai_agent/domain/knowledge.py",
+      "lines": 151,
+      "symbols": [
+        {
+          "name": "ComponentIdentity",
+          "line": 21,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "named_component",
+              "line": 33
+            }
+          ]
+        },
+        {
+          "name": "KnowledgeSetup",
+          "line": 42,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "pinned_firmware",
+              "line": 64
+            },
+            {
+              "name": "unique_roles",
+              "line": 82
+            }
+          ]
+        },
+        {
+          "name": "DocumentSource",
+          "line": 92,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "FanMapping",
+          "line": 99,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "CachedDocument",
+          "line": 109,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "KnowledgeConflict",
+          "line": 127,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "KnowledgeRepository",
+          "line": 131,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "setup",
+              "line": 132
+            },
+            {
+              "name": "save_setup",
+              "line": 133
+            },
+            {
+              "name": "documents",
+              "line": 134
+            },
+            {
+              "name": "save_document",
+              "line": 135
+            },
+            {
+              "name": "original",
+              "line": 136
+            },
+            {
+              "name": "retain_components",
+              "line": 137
+            },
+            {
+              "name": "retain_sources",
+              "line": 138
+            }
+          ]
+        },
+        {
+          "name": "DocumentationFetcher",
+          "line": 141,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "fetch",
+              "line": 142
+            }
+          ]
+        },
+        {
+          "name": "KnowledgeResearcher",
+          "line": 145,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "discover",
+              "line": 146
+            },
+            {
+              "name": "extract",
+              "line": 149
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.domain.base",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.messages",
-        "klipperai_agent.domain.proposals"
+        "klipperai_agent.domain.hardware"
       ],
       "tests": [
-        "tests/test_agent.py",
-        "tests/test_agent_modes.py",
-        "tests/test_confirmed_memory.py",
-        "tests/test_investigation_recovery.py",
-        "tests/test_investigations.py",
-        "tests/test_knowledge_agent.py",
-        "tests/test_proposal_review.py",
-        "tests/test_security.py"
-      ]
-    },
-    "klipperai_agent.domain.knowledge": {
-      "path": "klipperai_agent/domain/knowledge.py",
-      "lines": 116,
-      "symbols": [
-        {
-          "name": "ComponentIdentity",
-          "line": 15,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "named_component",
-              "line": 27
-            }
-          ]
-        },
-        {
-          "name": "KnowledgeSetup",
-          "line": 36,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "unique_roles",
-              "line": 52
-            }
-          ]
-        },
-        {
-          "name": "DocumentSource",
-          "line": 62,
-          "kind": "ClassDef",
-          "methods": []
-        },
-        {
-          "name": "FanMapping",
-          "line": 69,
-          "kind": "ClassDef",
-          "methods": []
-        },
-        {
-          "name": "CachedDocument",
-          "line": 79,
-          "kind": "ClassDef",
-          "methods": []
-        },
-        {
-          "name": "KnowledgeConflict",
-          "line": 92,
-          "kind": "ClassDef",
-          "methods": []
-        },
-        {
-          "name": "KnowledgeRepository",
-          "line": 96,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "setup",
-              "line": 97
-            },
-            {
-              "name": "save_setup",
-              "line": 98
-            },
-            {
-              "name": "documents",
-              "line": 99
-            },
-            {
-              "name": "save_document",
-              "line": 100
-            },
-            {
-              "name": "original",
-              "line": 101
-            },
-            {
-              "name": "retain_components",
-              "line": 102
-            },
-            {
-              "name": "retain_sources",
-              "line": 103
-            }
-          ]
-        },
-        {
-          "name": "DocumentationFetcher",
-          "line": 106,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "fetch",
-              "line": 107
-            }
-          ]
-        },
-        {
-          "name": "KnowledgeResearcher",
-          "line": 110,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "discover",
-              "line": 111
-            },
-            {
-              "name": "extract",
-              "line": 114
-            }
-          ]
-        }
-      ],
-      "imports": [
-        "klipperai_agent.domain.base"
-      ],
-      "tests": [
+        "tests/test_firmware_knowledge.py",
+        "tests/test_hardware_knowledge.py",
         "tests/test_knowledge.py",
         "tests/test_knowledge_research.py",
         "tests/test_knowledge_storage.py",
         "tests/test_knowledge_web.py",
+        "tests/test_pdf_knowledge.py",
         "tests/test_security_agent.py"
+      ]
+    },
+    "klipperai_agent.domain.logs": {
+      "path": "klipperai_agent/domain/logs.py",
+      "lines": 46,
+      "symbols": [
+        {
+          "name": "LogReadError",
+          "line": 11,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "LogFile",
+          "line": 16,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "LogInventory",
+          "line": 28,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "LogWindow",
+          "line": 35,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_agent_search.py",
+        "tests/test_log_reader.py"
       ]
     },
     "klipperai_agent.domain.messages": {
@@ -2961,86 +4205,104 @@
         "tests/test_investigations.py"
       ]
     },
+    "klipperai_agent.domain.model_usage": {
+      "path": "klipperai_agent/domain/model_usage.py",
+      "lines": 14,
+      "symbols": [
+        {
+          "name": "ModelUsage",
+          "line": 10,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base"
+      ],
+      "tests": []
+    },
     "klipperai_agent.domain.moonraker": {
       "path": "klipperai_agent/domain/moonraker.py",
-      "lines": 126,
+      "lines": 127,
       "symbols": [
         {
           "name": "capabilities",
-          "line": 17,
+          "line": 18,
           "kind": "FunctionDef"
         },
         {
           "name": "public_scalar",
-          "line": 39,
+          "line": 40,
           "kind": "FunctionDef"
         },
         {
           "name": "gcode_filename",
-          "line": 49,
+          "line": 50,
           "kind": "FunctionDef"
         },
         {
           "name": "RemoteMethodError",
-          "line": 60,
+          "line": 61,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 61
+              "line": 62
             }
           ]
         },
         {
           "name": "MoonrakerObservation",
-          "line": 66,
+          "line": 67,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 67
+              "line": 68
             },
             {
               "name": "disconnect",
-              "line": 79
+              "line": 80
             },
             {
               "name": "update",
-              "line": 86
+              "line": 87
             },
             {
               "name": "snapshot",
-              "line": 107
+              "line": 108
             }
           ]
         },
         {
           "name": "MoonrakerExtension",
-          "line": 123,
+          "line": 124,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "state",
-              "line": 125
+              "line": 126
             },
             {
               "name": "dispatch",
-              "line": 126
+              "line": 127
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.domain.redaction"
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.domain.version"
       ],
       "tests": [
         "tests/test_moonraker_extension.py",
-        "tests/test_moonraker_web.py"
+        "tests/test_moonraker_web.py",
+        "tests/test_release_identity.py"
       ]
     },
     "klipperai_agent.domain.proposals": {
       "path": "klipperai_agent/domain/proposals.py",
-      "lines": 90,
+      "lines": 122,
       "symbols": [
         {
           "name": "PatchProposal",
@@ -3049,25 +4311,43 @@
           "methods": []
         },
         {
-          "name": "ProposalReview",
+          "name": "ReviewCheck",
           "line": 34,
           "kind": "ClassDef",
           "methods": []
         },
         {
+          "name": "ReviewFirmware",
+          "line": 44,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConfigFilePatch",
+          "line": 52,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ProposalReview",
+          "line": 59,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
           "name": "ConfigProposal",
-          "line": 46,
+          "line": 78,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "_normalize_string_list",
-              "line": 57
+              "line": 89
             }
           ]
         },
         {
           "name": "_stringify_dict",
-          "line": 80,
+          "line": 112,
           "kind": "FunctionDef"
         }
       ],
@@ -3075,13 +4355,15 @@
         "klipperai_agent.domain.base"
       ],
       "tests": [
+        "tests/test_config_patches.py",
         "tests/test_knowledge.py",
-        "tests/test_proposal_review.py"
+        "tests/test_proposal_review.py",
+        "tests/test_review_options.py"
       ]
     },
     "klipperai_agent.domain.provider_settings": {
       "path": "klipperai_agent/domain/provider_settings.py",
-      "lines": 72,
+      "lines": 74,
       "symbols": [
         {
           "name": "ModelProfile",
@@ -3124,53 +4406,75 @@
           "kind": "ClassDef",
           "methods": [
             {
-              "name": "load",
-              "line": 63
-            },
-            {
-              "name": "save",
+              "name": "credential_storage_available",
               "line": 64
             },
             {
-              "name": "reserve",
+              "name": "load",
               "line": 65
             },
             {
-              "name": "settle",
+              "name": "save",
               "line": 66
             },
             {
-              "name": "cooldown",
+              "name": "reserve",
               "line": 67
             },
             {
-              "name": "usage",
+              "name": "settle",
               "line": 68
+            },
+            {
+              "name": "cooldown",
+              "line": 69
+            },
+            {
+              "name": "usage",
+              "line": 70
             }
           ]
         },
         {
           "name": "CredentialValidator",
-          "line": 71,
+          "line": 73,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "validate",
-              "line": 72
+              "line": 74
             }
           ]
         }
       ],
       "imports": [],
       "tests": [
+        "tests/test_credential_storage.py",
+        "tests/test_embedded_experience.py",
         "tests/test_provider_agent.py",
         "tests/test_provider_management.py",
         "tests/test_provider_web.py"
       ]
     },
+    "klipperai_agent.domain.recovery": {
+      "path": "klipperai_agent/domain/recovery.py",
+      "lines": 16,
+      "symbols": [
+        {
+          "name": "RecoveryPlaybook",
+          "line": 8,
+          "kind": "ClassDef",
+          "methods": []
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.base"
+      ],
+      "tests": []
+    },
     "klipperai_agent.domain.redaction": {
       "path": "klipperai_agent/domain/redaction.py",
-      "lines": 77,
+      "lines": 78,
       "symbols": [
         {
           "name": "_mask",
@@ -3184,18 +4488,19 @@
         },
         {
           "name": "redact_data",
-          "line": 67,
+          "line": 68,
           "kind": "FunctionDef"
         }
       ],
       "imports": [],
       "tests": [
-        "tests/test_security.py"
+        "tests/test_security.py",
+        "tests/test_typed_artifacts.py"
       ]
     },
     "klipperai_agent.domain.repositories": {
       "path": "klipperai_agent/domain/repositories.py",
-      "lines": 57,
+      "lines": 59,
       "symbols": [
         {
           "name": "InvestigationConflict",
@@ -3217,54 +4522,58 @@
               "line": 24
             },
             {
-              "name": "save_turn",
+              "name": "summaries",
               "line": 26
             },
             {
+              "name": "save_turn",
+              "line": 28
+            },
+            {
               "name": "delete",
-              "line": 30
+              "line": 32
             }
           ]
         },
         {
           "name": "RunRepository",
-          "line": 33,
+          "line": 35,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "begin",
-              "line": 34
+              "line": 36
             },
             {
               "name": "claim",
-              "line": 38
-            },
-            {
-              "name": "checkpoint",
               "line": 40
             },
             {
+              "name": "checkpoint",
+              "line": 42
+            },
+            {
               "name": "release",
-              "line": 49
+              "line": 51
             }
           ]
         },
         {
           "name": "ConfirmedMemoryRepository",
-          "line": 52,
+          "line": 54,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "list",
-              "line": 53
-            },
-            {
-              "name": "save",
               "line": 55
             },
             {
-              "name": "delete",
+              "name": "save",
               "line": 57
+            },
+            {
+              "name": "delete",
+              "line": 59
             }
           ]
         }
@@ -3275,12 +4584,13 @@
       "tests": [
         "tests/test_confirmed_memory.py",
         "tests/test_investigation_recovery.py",
-        "tests/test_investigations.py"
+        "tests/test_investigations.py",
+        "tests/test_resource_bounds.py"
       ]
     },
     "klipperai_agent.domain.shutdown": {
       "path": "klipperai_agent/domain/shutdown.py",
-      "lines": 49,
+      "lines": 50,
       "symbols": [
         {
           "name": "LogExcerpt",
@@ -3302,13 +4612,13 @@
         },
         {
           "name": "ShutdownIncident",
-          "line": 32,
+          "line": 33,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "CauseAssessment",
-          "line": 45,
+          "line": 46,
           "kind": "ClassDef",
           "methods": []
         }
@@ -3318,8 +4628,19 @@
         "klipperai_agent.domain.evidence"
       ],
       "tests": [
+        "tests/test_diagnostics_mvp.py",
         "tests/test_shutdown.py",
         "tests/test_shutdown_agent.py"
+      ]
+    },
+    "klipperai_agent.domain.version": {
+      "path": "klipperai_agent/domain/version.py",
+      "lines": 3,
+      "symbols": [],
+      "imports": [],
+      "tests": [
+        "tests/test_release_artifacts.py",
+        "tests/test_release_identity.py"
       ]
     },
     "klipperai_agent.infrastructure.confirmed_memory": {
@@ -3357,112 +4678,298 @@
       ],
       "tests": []
     },
-    "klipperai_agent.infrastructure.documentation": {
-      "path": "klipperai_agent/infrastructure/documentation.py",
-      "lines": 97,
+    "klipperai_agent.infrastructure.credential_cipher": {
+      "path": "klipperai_agent/infrastructure/credential_cipher.py",
+      "lines": 95,
       "symbols": [
         {
-          "name": "_Text",
-          "line": 15,
+          "name": "CredentialStorageError",
+          "line": 18,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "CredentialCipher",
+          "line": 22,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 16
+              "line": 23
+            },
+            {
+              "name": "available",
+              "line": 29
+            },
+            {
+              "name": "_key",
+              "line": 32
+            },
+            {
+              "name": "encrypt",
+              "line": 39
+            },
+            {
+              "name": "decrypt",
+              "line": 49
+            }
+          ]
+        },
+        {
+          "name": "load_credential_cipher",
+          "line": 66,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_appliance_deployment.py",
+        "tests/test_credential_storage.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.documentation": {
+      "path": "klipperai_agent/infrastructure/documentation.py",
+      "lines": 101,
+      "symbols": [
+        {
+          "name": "_Text",
+          "line": 17,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 18
             },
             {
               "name": "handle_starttag",
-              "line": 21
+              "line": 23
             },
             {
               "name": "handle_endtag",
-              "line": 27
+              "line": 29
             },
             {
               "name": "handle_data",
-              "line": 31
+              "line": 33
             }
           ]
         },
         {
           "name": "extract_document",
-          "line": 36,
+          "line": 38,
           "kind": "FunctionDef"
         },
         {
           "name": "PublicDocumentationFetcher",
-          "line": 62,
+          "line": 64,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 63
+              "line": 65
             },
             {
               "name": "fetch",
-              "line": 66
+              "line": 68
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.domain.knowledge",
+        "klipperai_agent.infrastructure.pdf_index",
         "klipperai_agent.infrastructure.public_docs"
       ],
       "tests": [
-        "tests/test_knowledge_research.py"
+        "tests/test_knowledge_research.py",
+        "tests/test_pdf_knowledge.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.host.flight_recorder": {
+      "path": "klipperai_agent/infrastructure/host/flight_recorder.py",
+      "lines": 77,
+      "symbols": [
+        {
+          "name": "HostFlightRecorder",
+          "line": 19,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 20
+            },
+            {
+              "name": "start",
+              "line": 28
+            },
+            {
+              "name": "aclose",
+              "line": 41
+            },
+            {
+              "name": "_record",
+              "line": 48
+            },
+            {
+              "name": "_run",
+              "line": 51
+            },
+            {
+              "name": "read_window",
+              "line": 66
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.diagnostics.host_history",
+        "klipperai_agent.infrastructure.host.history_store",
+        "klipperai_agent.infrastructure.host.proc"
+      ],
+      "tests": [
+        "tests/test_host_flight_recorder.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.host.history_store": {
+      "path": "klipperai_agent/infrastructure/host/history_store.py",
+      "lines": 87,
+      "symbols": [
+        {
+          "name": "HostHistoryStore",
+          "line": 17,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 18
+            },
+            {
+              "name": "_check_path",
+              "line": 35
+            },
+            {
+              "name": "_connect",
+              "line": 45
+            },
+            {
+              "name": "_trim",
+              "line": 56
+            },
+            {
+              "name": "append",
+              "line": 62
+            },
+            {
+              "name": "window",
+              "line": 79
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.host_history",
+        "klipperai_agent.infrastructure.private_files"
+      ],
+      "tests": [
+        "tests/test_host_flight_recorder.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.host.log_reader": {
+      "path": "klipperai_agent/infrastructure/host/log_reader.py",
+      "lines": 184,
+      "symbols": [
+        {
+          "name": "_stamp",
+          "line": 34,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ReadOnlyLogReader",
+          "line": 38,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 39
+            },
+            {
+              "name": "_eligible",
+              "line": 43
+            },
+            {
+              "name": "inventory",
+              "line": 54
+            },
+            {
+              "name": "read_window",
+              "line": 107
+            },
+            {
+              "name": "_compressed",
+              "line": 171
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.logs",
+        "klipperai_agent.domain.redaction"
+      ],
+      "tests": [
+        "tests/test_agent_search.py",
+        "tests/test_log_reader.py"
       ]
     },
     "klipperai_agent.infrastructure.host.logs": {
       "path": "klipperai_agent/infrastructure/host/logs.py",
-      "lines": 170,
+      "lines": 181,
       "symbols": [
         {
           "name": "KnownLogKind",
-          "line": 13,
+          "line": 16,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "HostLogCollector",
-          "line": 18,
+          "line": 21,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 25
+              "line": 28
             },
             {
               "name": "collect",
-              "line": 48
+              "line": 51
             },
             {
               "name": "_discover_log_files",
-              "line": 74
+              "line": 89
             },
             {
               "name": "_build_artifact",
-              "line": 86
+              "line": 101
             },
             {
               "name": "_tail_lines_for",
-              "line": 106
+              "line": 121
             },
             {
               "name": "_is_excluded",
-              "line": 110
-            },
-            {
-              "name": "_read_last_lines",
               "line": 125
             },
             {
+              "name": "_read_last_lines",
+              "line": 140
+            },
+            {
               "name": "_render_metadata",
-              "line": 148
+              "line": 159
             },
             {
               "name": "_clip_text",
-              "line": 164
+              "line": 175
             }
           ]
         }
@@ -3472,40 +4979,84 @@
         "klipperai_agent.domain.redaction"
       ],
       "tests": [
+        "tests/test_automatic_context.py",
         "tests/test_hostlogs.py",
+        "tests/test_resource_bounds.py",
         "tests/test_security.py",
         "tests/test_workflows.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.shutdown": {
-      "path": "klipperai_agent/infrastructure/host/shutdown.py",
-      "lines": 155,
+    "klipperai_agent.infrastructure.host.proc": {
+      "path": "klipperai_agent/infrastructure/host/proc.py",
+      "lines": 143,
       "symbols": [
         {
-          "name": "_current_fields",
-          "line": 19,
+          "name": "counters",
+          "line": 16,
           "kind": "FunctionDef"
         },
         {
-          "name": "ShutdownCollector",
-          "line": 56,
+          "name": "pressure",
+          "line": 27,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ProcSampler",
+          "line": 41,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 57
+              "line": 42
+            },
+            {
+              "name": "_read",
+              "line": 48
+            },
+            {
+              "name": "sample",
+              "line": 55
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.host_history",
+        "klipperai_agent.domain.redaction"
+      ],
+      "tests": [
+        "tests/test_host_flight_recorder.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.host.shutdown": {
+      "path": "klipperai_agent/infrastructure/host/shutdown.py",
+      "lines": 164,
+      "symbols": [
+        {
+          "name": "_current_fields",
+          "line": 20,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ShutdownCollector",
+          "line": 57,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 58
             },
             {
               "name": "read_logs",
-              "line": 74
+              "line": 77
             },
             {
               "name": "read_host",
-              "line": 79
+              "line": 82
             },
             {
               "name": "_kernel",
-              "line": 106
+              "line": 115
             }
           ]
         }
@@ -3513,11 +5064,13 @@
       "imports": [
         "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.shutdown",
+        "klipperai_agent.infrastructure.host.flight_recorder",
         "klipperai_agent.infrastructure.host.shutdown_logs",
         "klipperai_agent.infrastructure.host.system",
         "klipperai_agent.infrastructure.moonraker"
       ],
       "tests": [
+        "tests/test_host_flight_recorder.py",
         "tests/test_shutdown_agent.py",
         "tests/test_shutdown_host.py"
       ]
@@ -3547,75 +5100,75 @@
     },
     "klipperai_agent.infrastructure.host.system": {
       "path": "klipperai_agent/infrastructure/host/system.py",
-      "lines": 243,
+      "lines": 275,
       "symbols": [
         {
           "name": "CommandResult",
-          "line": 14,
+          "line": 15,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SystemCommandRunner",
-          "line": 22,
+          "line": 23,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 23
+              "line": 24
             },
             {
               "name": "run",
-              "line": 26
+              "line": 27
             }
           ]
         },
         {
           "name": "ServiceUnit",
-          "line": 77,
+          "line": 78,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "HostSystemCollector",
-          "line": 82,
+          "line": 83,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 99
+              "line": 100
             },
             {
               "name": "collect",
-              "line": 118
+              "line": 130
             },
             {
               "name": "_collect_service_status",
-              "line": 137
+              "line": 155
             },
             {
               "name": "_collect_service_journal",
-              "line": 172
+              "line": 197
             },
             {
               "name": "_render_status_artifact",
-              "line": 208
+              "line": 240
             },
             {
               "name": "_render_journal_artifact",
-              "line": 216
+              "line": 248
             },
             {
               "name": "_clip_text",
-              "line": 226
+              "line": 258
             },
             {
               "name": "_format_command",
-              "line": 237
+              "line": 269
             },
             {
               "name": "_append_unique",
-              "line": 241
+              "line": 273
             }
           ]
         }
@@ -3625,6 +5178,7 @@
         "klipperai_agent.domain.redaction"
       ],
       "tests": [
+        "tests/test_diagnostics_mvp.py",
         "tests/test_hostsystem.py",
         "tests/test_security.py",
         "tests/test_shutdown_agent.py",
@@ -3650,7 +5204,7 @@
     },
     "klipperai_agent.infrastructure.investigation_runs": {
       "path": "klipperai_agent/infrastructure/investigation_runs.py",
-      "lines": 119,
+      "lines": 131,
       "symbols": [
         {
           "name": "lease_deadline",
@@ -3680,7 +5234,7 @@
             },
             {
               "name": "release",
-              "line": 113
+              "line": 125
             }
           ]
         }
@@ -3695,7 +5249,7 @@
     },
     "klipperai_agent.infrastructure.investigations": {
       "path": "klipperai_agent/infrastructure/investigations.py",
-      "lines": 176,
+      "lines": 187,
       "symbols": [
         {
           "name": "SqliteInvestigationRepository",
@@ -3723,16 +5277,24 @@
               "line": 89
             },
             {
+              "name": "summaries",
+              "line": 92
+            },
+            {
+              "name": "_recent",
+              "line": 96
+            },
+            {
               "name": "_load",
-              "line": 99
+              "line": 106
             },
             {
               "name": "save_turn",
-              "line": 118
+              "line": 129
             },
             {
               "name": "delete",
-              "line": 167
+              "line": 178
             }
           ]
         }
@@ -3748,6 +5310,7 @@
       ],
       "tests": [
         "tests/test_investigations.py",
+        "tests/test_resource_bounds.py",
         "tests/test_security.py"
       ]
     },
@@ -3817,7 +5380,7 @@
     },
     "klipperai_agent.infrastructure.moonraker": {
       "path": "klipperai_agent/infrastructure/moonraker.py",
-      "lines": 141,
+      "lines": 146,
       "symbols": [
         {
           "name": "MoonrakerError",
@@ -3893,8 +5456,10 @@
         "klipperai_agent.domain.moonraker"
       ],
       "tests": [
+        "tests/test_automatic_context.py",
         "tests/test_detect_profile.py",
         "tests/test_diagnostics_extra.py",
+        "tests/test_diagnostics_mvp.py",
         "tests/test_moonraker.py",
         "tests/test_moonraker_metadata.py",
         "tests/test_printerprofile_extra.py",
@@ -4008,6 +5573,56 @@
         "tests/test_moonraker_rpc.py"
       ]
     },
+    "klipperai_agent.infrastructure.moonraker_state": {
+      "path": "klipperai_agent/infrastructure/moonraker_state.py",
+      "lines": 104,
+      "symbols": [
+        {
+          "name": "public_fields",
+          "line": 23,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "collect_core_state",
+          "line": 37,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.domain.redaction",
+        "klipperai_agent.infrastructure.moonraker"
+      ],
+      "tests": [
+        "tests/test_diagnostics_mvp.py"
+      ]
+    },
+    "klipperai_agent.infrastructure.pdf_index": {
+      "path": "klipperai_agent/infrastructure/pdf_index.py",
+      "lines": 82,
+      "symbols": [
+        {
+          "name": "parse_pdf",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "index_pdf",
+          "line": 47,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 68,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_pdf_knowledge.py"
+      ]
+    },
     "klipperai_agent.infrastructure.private_files": {
       "path": "klipperai_agent/infrastructure/private_files.py",
       "lines": 34,
@@ -4025,57 +5640,68 @@
     },
     "klipperai_agent.infrastructure.provider_store": {
       "path": "klipperai_agent/infrastructure/provider_store.py",
-      "lines": 119,
+      "lines": 167,
       "symbols": [
         {
           "name": "ProviderStore",
-          "line": 19,
+          "line": 25,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 20
+              "line": 26
             },
             {
               "name": "_check_path",
-              "line": 40
+              "line": 61
             },
             {
               "name": "_connect",
-              "line": 52
+              "line": 73
             },
             {
               "name": "load",
-              "line": 58
+              "line": 79
+            },
+            {
+              "name": "credential_storage_available",
+              "line": 94
+            },
+            {
+              "name": "migrate_from",
+              "line": 97
             },
             {
               "name": "save",
-              "line": 63
+              "line": 110
             },
             {
               "name": "reserve",
-              "line": 75
+              "line": 123
             },
             {
               "name": "settle",
-              "line": 100
+              "line": 148
             },
             {
               "name": "cooldown",
-              "line": 107
+              "line": 155
             },
             {
               "name": "usage",
-              "line": 114
+              "line": 162
             }
           ]
         }
       ],
       "imports": [
         "klipperai_agent.domain.provider_settings",
+        "klipperai_agent.infrastructure.credential_cipher",
         "klipperai_agent.infrastructure.private_files"
       ],
       "tests": [
+        "tests/test_appliance_deployment.py",
+        "tests/test_credential_storage.py",
         "tests/test_provider_management.py"
       ]
     },
@@ -4102,6 +5728,70 @@
         "tests/test_security_agent.py"
       ]
     },
+    "klipperai_agent.knowledge.buses": {
+      "path": "klipperai_agent/knowledge/buses.py",
+      "lines": 106,
+      "symbols": [
+        {
+          "name": "extract_bus_mappings",
+          "line": 14,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "bus_evidence",
+          "line": 28,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "resolved_ownership",
+          "line": 56,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "connector_identity",
+          "line": 101,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.domain.hardware",
+        "klipperai_agent.domain.knowledge",
+        "klipperai_agent.knowledge.pins",
+        "klipperai_agent.knowledge.sources"
+      ],
+      "tests": [
+        "tests/test_firmware_knowledge.py",
+        "tests/test_hardware_knowledge.py"
+      ]
+    },
+    "klipperai_agent.knowledge.components": {
+      "path": "klipperai_agent/knowledge/components.py",
+      "lines": 95,
+      "symbols": [
+        {
+          "name": "matches_family",
+          "line": 51,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "inspect_component",
+          "line": 55,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.config.models",
+        "klipperai_agent.domain.knowledge",
+        "klipperai_agent.knowledge.buses",
+        "klipperai_agent.knowledge.firmware",
+        "klipperai_agent.knowledge.retrieval",
+        "klipperai_agent.knowledge.sources"
+      ],
+      "tests": [
+        "tests/test_hardware_knowledge.py"
+      ]
+    },
     "klipperai_agent.knowledge.eddy": {
       "path": "klipperai_agent/knowledge/eddy.py",
       "lines": 125,
@@ -4125,24 +5815,54 @@
     },
     "klipperai_agent.knowledge.fans": {
       "path": "klipperai_agent/knowledge/fans.py",
-      "lines": 88,
+      "lines": 111,
       "symbols": [
         {
           "name": "inspect_fan_ports",
-          "line": 10,
+          "line": 11,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
         "klipperai_agent.config.models",
+        "klipperai_agent.domain.hardware",
         "klipperai_agent.domain.knowledge",
+        "klipperai_agent.knowledge.buses",
         "klipperai_agent.knowledge.identity",
-        "klipperai_agent.knowledge.pins",
         "klipperai_agent.knowledge.sources"
       ],
       "tests": [
+        "tests/test_hardware_knowledge.py",
         "tests/test_knowledge.py",
         "tests/test_knowledge_research.py"
+      ]
+    },
+    "klipperai_agent.knowledge.firmware": {
+      "path": "klipperai_agent/knowledge/firmware.py",
+      "lines": 47,
+      "symbols": [
+        {
+          "name": "firmware_key",
+          "line": 8,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "firmware_sources",
+          "line": 12,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "firmware_scope",
+          "line": 31,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.knowledge"
+      ],
+      "tests": [
+        "tests/test_firmware_knowledge.py",
+        "tests/test_pdf_knowledge.py"
       ]
     },
     "klipperai_agent.knowledge.identity": {
@@ -4166,6 +5886,23 @@
       ],
       "tests": [
         "tests/test_knowledge.py"
+      ]
+    },
+    "klipperai_agent.knowledge.pdf_pages": {
+      "path": "klipperai_agent/knowledge/pdf_pages.py",
+      "lines": 37,
+      "symbols": [
+        {
+          "name": "pdf_pages",
+          "line": 8,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.hardware"
+      ],
+      "tests": [
+        "tests/test_pdf_knowledge.py"
       ]
     },
     "klipperai_agent.knowledge.pins": {
@@ -4204,11 +5941,16 @@
     },
     "klipperai_agent.knowledge.retrieval": {
       "path": "klipperai_agent/knowledge/retrieval.py",
-      "lines": 35,
+      "lines": 61,
       "symbols": [
         {
           "name": "search_documents",
-          "line": 10,
+          "line": 12,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_matches",
+          "line": 20,
           "kind": "FunctionDef"
         }
       ],
@@ -4216,7 +5958,8 @@
         "klipperai_agent.domain.knowledge"
       ],
       "tests": [
-        "tests/test_knowledge.py"
+        "tests/test_knowledge.py",
+        "tests/test_pdf_knowledge.py"
       ]
     },
     "klipperai_agent.knowledge.review": {
@@ -4279,6 +6022,7 @@
         "tests/test_knowledge.py",
         "tests/test_knowledge_research.py",
         "tests/test_knowledge_storage.py",
+        "tests/test_pdf_knowledge.py",
         "tests/test_security_agent.py"
       ]
     },
@@ -4575,12 +6319,16 @@
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_integration.py",
+        "tests/test_automatic_context.py",
+        "tests/test_config_features.py",
         "tests/test_container.py",
         "tests/test_detect_profile.py",
         "tests/test_investigations.py",
         "tests/test_llm_config.py",
         "tests/test_llm_extra.py",
         "tests/test_printerprofile_extra.py",
+        "tests/test_review_options.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_security_agent.py",
         "tests/test_services.py",
         "tests/test_workflows_extra.py"
@@ -4678,38 +6426,6 @@
         "tests/test_printerprofile_extra.py"
       ]
     },
-    "klipperai_agent.providers.config_stub": {
-      "path": "klipperai_agent/providers/config_stub.py",
-      "lines": 40,
-      "symbols": [
-        {
-          "name": "StubConfigAssistantProvider",
-          "line": 10,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "__init__",
-              "line": 13
-            },
-            {
-              "name": "propose",
-              "line": 16
-            }
-          ]
-        }
-      ],
-      "imports": [
-        "klipperai_agent.config.lookup",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.templates.catalog",
-        "klipperai_agent.config.templates.guidance",
-        "klipperai_agent.providers.models"
-      ],
-      "tests": [
-        "tests/test_llm_config.py",
-        "tests/test_llm_extra.py"
-      ]
-    },
     "klipperai_agent.providers.credentials": {
       "path": "klipperai_agent/providers/credentials.py",
       "lines": 38,
@@ -4739,31 +6455,29 @@
     },
     "klipperai_agent.providers.factory": {
       "path": "klipperai_agent/providers/factory.py",
-      "lines": 62,
+      "lines": 45,
       "symbols": [
         {
           "name": "build_diagnosis_provider",
-          "line": 20,
+          "line": 15,
           "kind": "FunctionDef"
         },
         {
           "name": "build_config_provider",
-          "line": 35,
+          "line": 26,
           "kind": "FunctionDef"
         },
         {
           "name": "build_intent_router",
-          "line": 50,
+          "line": 37,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
         "klipperai_agent.application.intent",
         "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.providers.config_stub",
         "klipperai_agent.providers.models",
         "klipperai_agent.providers.openai",
-        "klipperai_agent.providers.stub",
         "klipperai_agent.providers.usage",
         "klipperai_agent.runtime.settings"
       ],
@@ -4773,20 +6487,20 @@
     },
     "klipperai_agent.providers.json_client": {
       "path": "klipperai_agent/providers/json_client.py",
-      "lines": 66,
+      "lines": 68,
       "symbols": [
         {
           "name": "OpenAIJsonClient",
-          "line": 14,
+          "line": 15,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 15
+              "line": 16
             },
             {
               "name": "complete_json",
-              "line": 28
+              "line": 29
             }
           ]
         }
@@ -4795,10 +6509,12 @@
         "klipperai_agent.domain.provider_settings",
         "klipperai_agent.domain.redaction",
         "klipperai_agent.providers.normalization",
-        "klipperai_agent.providers.usage"
+        "klipperai_agent.providers.usage",
+        "klipperai_agent.runtime.model_usage"
       ],
       "tests": [
         "tests/test_llm_extra.py",
+        "tests/test_model_usage.py",
         "tests/test_provider_management.py",
         "tests/test_security_agent.py"
       ]
@@ -4919,8 +6635,10 @@
         "klipperai_agent.providers.normalization"
       ],
       "tests": [
+        "tests/test_evidence_pipeline.py",
         "tests/test_llm_extra.py",
         "tests/test_llm_output.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_workflows_extra.py"
       ]
     },
@@ -4963,50 +6681,50 @@
     },
     "klipperai_agent.providers.openai": {
       "path": "klipperai_agent/providers/openai.py",
-      "lines": 151,
+      "lines": 157,
       "symbols": [
         {
           "name": "OpenAIDiagnosisProvider",
-          "line": 17,
+          "line": 19,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 20
+              "line": 22
             },
             {
               "name": "analyze",
-              "line": 30
+              "line": 32
             }
           ]
         },
         {
           "name": "OpenAIIntentRouterProvider",
-          "line": 67,
+          "line": 72,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 70
+              "line": 75
             },
             {
               "name": "classify",
-              "line": 80
+              "line": 85
             }
           ]
         },
         {
           "name": "OpenAIConfigAssistantProvider",
-          "line": 100,
+          "line": 105,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 103
+              "line": 108
             },
             {
               "name": "propose",
-              "line": 113
+              "line": 118
             }
           ]
         }
@@ -5026,52 +6744,70 @@
         "tests/test_llm_extra.py"
       ]
     },
+    "klipperai_agent.providers.probe": {
+      "path": "klipperai_agent/providers/probe.py",
+      "lines": 55,
+      "symbols": [
+        {
+          "name": "probe_provider",
+          "line": 9,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.investigation",
+        "klipperai_agent.providers.responses"
+      ],
+      "tests": [
+        "tests/test_live_hardware_validation.py"
+      ]
+    },
     "klipperai_agent.providers.responses": {
       "path": "klipperai_agent/providers/responses.py",
-      "lines": 142,
+      "lines": 146,
       "symbols": [
         {
           "name": "ProviderError",
-          "line": 16,
+          "line": 17,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "private_payload",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDef"
         },
         {
           "name": "ResponsesClient",
-          "line": 39,
+          "line": 40,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 40
+              "line": 41
             },
             {
               "name": "aclose",
-              "line": 57
+              "line": 58
             },
             {
               "name": "create",
-              "line": 60
+              "line": 61
             }
           ]
         },
         {
           "name": "OpenAIAgentModel",
-          "line": 110,
+          "line": 112,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 111
+              "line": 113
             },
             {
               "name": "respond",
-              "line": 114
+              "line": 116
             }
           ]
         }
@@ -5080,48 +6816,15 @@
         "klipperai_agent.agent.models",
         "klipperai_agent.domain.provider_settings",
         "klipperai_agent.domain.redaction",
-        "klipperai_agent.providers.usage"
+        "klipperai_agent.providers.usage",
+        "klipperai_agent.runtime.model_usage"
       ],
       "tests": [
         "tests/test_agent_providers.py",
+        "tests/test_model_usage.py",
         "tests/test_provider_management.py",
-        "tests/test_provider_web.py"
-      ]
-    },
-    "klipperai_agent.providers.stub": {
-      "path": "klipperai_agent/providers/stub.py",
-      "lines": 51,
-      "symbols": [
-        {
-          "name": "StubIntentRouterProvider",
-          "line": 11,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "classify",
-              "line": 14
-            }
-          ]
-        },
-        {
-          "name": "StubDiagnosisProvider",
-          "line": 18,
-          "kind": "ClassDef",
-          "methods": [
-            {
-              "name": "analyze",
-              "line": 21
-            }
-          ]
-        }
-      ],
-      "imports": [
-        "klipperai_agent.application.intent",
-        "klipperai_agent.diagnostics.requests",
-        "klipperai_agent.providers.models"
-      ],
-      "tests": [
-        "tests/test_llm_extra.py"
+        "tests/test_provider_web.py",
+        "tests/test_workflow_contracts.py"
       ]
     },
     "klipperai_agent.providers.usage": {
@@ -5240,65 +6943,119 @@
         "tests/test_security.py"
       ]
     },
+    "klipperai_agent.runtime.model_usage": {
+      "path": "klipperai_agent/runtime/model_usage.py",
+      "lines": 53,
+      "symbols": [
+        {
+          "name": "UsageScope",
+          "line": 13,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "track_model_usage",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "model_request",
+          "line": 34,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.model_usage"
+      ],
+      "tests": [
+        "tests/test_model_usage.py"
+      ]
+    },
+    "klipperai_agent.runtime.release": {
+      "path": "klipperai_agent/runtime/release.py",
+      "lines": 20,
+      "symbols": [
+        {
+          "name": "release_info",
+          "line": 10,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.domain.version"
+      ],
+      "tests": [
+        "tests/test_release_identity.py"
+      ]
+    },
     "klipperai_agent.runtime.settings": {
       "path": "klipperai_agent/runtime/settings.py",
-      "lines": 256,
+      "lines": 290,
       "symbols": [
         {
           "name": "Settings",
-          "line": 12,
+          "line": 13,
           "kind": "ClassDef",
           "methods": [
             {
+              "name": "_journal_units",
+              "line": 107
+            },
+            {
               "name": "_normalize_moonraker_socket",
-              "line": 96
+              "line": 122
             },
             {
               "name": "_normalize_optional_identity",
-              "line": 117
+              "line": 143
             },
             {
               "name": "_normalize_required_strings",
-              "line": 124
+              "line": 150
             },
             {
               "name": "_log_basename",
-              "line": 131
+              "line": 157
             },
             {
               "name": "_normalize_log_tail_lines_overrides",
-              "line": 137
+              "line": 163
             },
             {
               "name": "_normalize_excluded_logs",
-              "line": 152
+              "line": 178
+            },
+            {
+              "name": "_normalize_provider",
+              "line": 199
             },
             {
               "name": "_enforce_read_only_runtime",
-              "line": 173
+              "line": 207
             },
             {
               "name": "host_logs_dir",
-              "line": 190
+              "line": 224
             },
             {
               "name": "agent_log_path",
-              "line": 195
+              "line": 229
             },
             {
               "name": "ensure_directories",
-              "line": 198
+              "line": 232
             }
           ]
         },
         {
           "name": "_load_klipperai_cfg_values",
-          "line": 203,
+          "line": 237,
           "kind": "FunctionDef"
         },
         {
           "name": "get_settings",
-          "line": 253,
+          "line": 287,
           "kind": "FunctionDef"
         }
       ],
@@ -5308,33 +7065,39 @@
         "tests/test_app.py",
         "tests/test_confirmed_memory.py",
         "tests/test_container.py",
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_embedded_experience.py",
+        "tests/test_evidence_pipeline.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_web.py",
+        "tests/test_live_hardware_validation.py",
         "tests/test_llm_extra.py",
         "tests/test_moonraker_web.py",
         "tests/test_printerprofile.py",
         "tests/test_provider_management.py",
         "tests/test_provider_web.py",
+        "tests/test_release_identity.py",
         "tests/test_runtime_logging.py",
         "tests/test_security.py",
         "tests/test_security_http.py",
         "tests/test_settings.py",
-        "tests/test_shutdown_agent.py"
+        "tests/test_shutdown_agent.py",
+        "tests/test_shutdown_validation.py"
       ]
     },
     "klipperai_agent.web.app": {
       "path": "klipperai_agent/web/app.py",
-      "lines": 224,
+      "lines": 238,
       "symbols": [
         {
           "name": "create_app",
-          "line": 38,
+          "line": 41,
           "kind": "FunctionDef"
         },
         {
           "name": "_get_container",
-          "line": 220,
+          "line": 234,
           "kind": "FunctionDef"
         }
       ],
@@ -5345,7 +7108,10 @@
         "klipperai_agent.domain.context",
         "klipperai_agent.domain.provider_settings",
         "klipperai_agent.domain.repositories",
+        "klipperai_agent.domain.version",
+        "klipperai_agent.runtime.release",
         "klipperai_agent.runtime.settings",
+        "klipperai_agent.web.chat_readiness",
         "klipperai_agent.web.investigations",
         "klipperai_agent.web.knowledge",
         "klipperai_agent.web.memory",
@@ -5358,14 +7124,39 @@
         "tests/test_agent_integration.py",
         "tests/test_app.py",
         "tests/test_confirmed_memory.py",
+        "tests/test_diagnostics_mvp.py",
+        "tests/test_embedded_experience.py",
+        "tests/test_evidence_pipeline.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
         "tests/test_knowledge_web.py",
+        "tests/test_live_hardware_validation.py",
         "tests/test_moonraker_web.py",
         "tests/test_provider_web.py",
+        "tests/test_release_identity.py",
         "tests/test_security_http.py",
         "tests/test_shutdown_agent.py"
       ]
+    },
+    "klipperai_agent.web.chat_readiness": {
+      "path": "klipperai_agent/web/chat_readiness.py",
+      "lines": 25,
+      "symbols": [
+        {
+          "name": "provider_configured",
+          "line": 8,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "require_provider",
+          "line": 15,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [
+        "klipperai_agent.bootstrap.container"
+      ],
+      "tests": []
     },
     "klipperai_agent.web.investigations": {
       "path": "klipperai_agent/web/investigations.py",
@@ -5387,34 +7178,46 @@
     },
     "klipperai_agent.web.knowledge": {
       "path": "klipperai_agent/web/knowledge.py",
-      "lines": 103,
+      "lines": 140,
       "symbols": [
         {
           "name": "KnowledgeRequest",
-          "line": 19,
+          "line": 20,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SaveKnowledgeRequest",
-          "line": 26,
+          "line": 27,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ReviewMappingsRequest",
-          "line": 30,
+          "line": 31,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ConnectorRequest",
+          "line": 37,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "DiagramRequest",
+          "line": 42,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "storage_errors",
-          "line": 37,
+          "line": 48,
           "kind": "FunctionDef"
         },
         {
           "name": "knowledge_routes",
-          "line": 46,
+          "line": 57,
           "kind": "FunctionDef"
         }
       ],
@@ -5422,6 +7225,7 @@
         "klipperai_agent.application.chat",
         "klipperai_agent.application.knowledge",
         "klipperai_agent.domain.base",
+        "klipperai_agent.domain.hardware",
         "klipperai_agent.domain.knowledge"
       ],
       "tests": []
@@ -5486,22 +7290,24 @@
     },
     "klipperai_agent.web.providers": {
       "path": "klipperai_agent/web/providers.py",
-      "lines": 62,
+      "lines": 79,
       "symbols": [
         {
           "name": "provider_errors",
-          "line": 20,
+          "line": 22,
           "kind": "FunctionDef"
         },
         {
           "name": "provider_routes",
-          "line": 36,
+          "line": 38,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
         "klipperai_agent.bootstrap.container",
-        "klipperai_agent.domain.provider_settings"
+        "klipperai_agent.domain.provider_settings",
+        "klipperai_agent.providers.probe",
+        "klipperai_agent.web.knowledge"
       ],
       "tests": []
     },
@@ -5537,20 +7343,20 @@
     },
     "klipperai_agent.web.streaming": {
       "path": "klipperai_agent/web/streaming.py",
-      "lines": 53,
+      "lines": 69,
       "symbols": [
         {
           "name": "ChatEventStream",
-          "line": 15,
+          "line": 17,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 16
+              "line": 18
             },
             {
               "name": "events",
-              "line": 20
+              "line": 22
             }
           ]
         }
@@ -5558,10 +7364,14 @@
       "imports": [
         "klipperai_agent.application.chat",
         "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.evidence"
+        "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.model_usage",
+        "klipperai_agent.domain.repositories"
       ],
       "tests": [
-        "tests/test_agent_integration.py"
+        "tests/test_agent_integration.py",
+        "tests/test_model_usage.py",
+        "tests/test_resource_bounds.py"
       ]
     },
     "klipperai_agent.workflows.citations": {
@@ -5622,41 +7432,41 @@
     },
     "klipperai_agent.workflows.configuration": {
       "path": "klipperai_agent/workflows/configuration.py",
-      "lines": 222,
+      "lines": 220,
       "symbols": [
         {
           "name": "_config_target_from_chat_intent",
-          "line": 19,
+          "line": 20,
           "kind": "FunctionDef"
         },
         {
           "name": "detect_config_target",
-          "line": 69,
+          "line": 70,
           "kind": "FunctionDef"
         },
         {
           "name": "collect_config_context",
-          "line": 83,
+          "line": 84,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "resolve_config_lookup",
-          "line": 123,
+          "line": 119,
           "kind": "FunctionDef"
         },
         {
           "name": "call_config_llm",
-          "line": 148,
+          "line": 144,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "compose_config_response",
-          "line": 185,
+          "line": 183,
           "kind": "FunctionDef"
         },
         {
           "name": "route_config_request",
-          "line": 221,
+          "line": 219,
           "kind": "FunctionDef"
         }
       ],
@@ -5668,6 +7478,7 @@
         "klipperai_agent.config.vocabulary",
         "klipperai_agent.diagnostics.models",
         "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation",
         "klipperai_agent.domain.proposals",
         "klipperai_agent.workflows.citations",
         "klipperai_agent.workflows.context",
@@ -5680,7 +7491,7 @@
     },
     "klipperai_agent.workflows.context": {
       "path": "klipperai_agent/workflows/context.py",
-      "lines": 74,
+      "lines": 77,
       "symbols": [
         {
           "name": "WorkflowContext",
@@ -5713,7 +7524,7 @@
         },
         {
           "name": "ConfigState",
-          "line": 60,
+          "line": 62,
           "kind": "ClassDef",
           "methods": []
         }
@@ -5731,26 +7542,26 @@
     },
     "klipperai_agent.workflows.diagnosis": {
       "path": "klipperai_agent/workflows/diagnosis.py",
-      "lines": 116,
+      "lines": 117,
       "symbols": [
         {
           "name": "collect_context",
-          "line": 11,
+          "line": 12,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "run_rules",
-          "line": 37,
+          "line": 33,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "call_llm",
-          "line": 52,
+          "line": 48,
           "kind": "AsyncFunctionDef"
         },
         {
           "name": "compose_response",
-          "line": 79,
+          "line": 76,
           "kind": "FunctionDef"
         }
       ],
@@ -5759,6 +7570,7 @@
         "klipperai_agent.diagnostics.models",
         "klipperai_agent.diagnostics.requests",
         "klipperai_agent.domain.evidence",
+        "klipperai_agent.domain.investigation",
         "klipperai_agent.workflows.context",
         "klipperai_agent.workflows.text"
       ],
@@ -5819,6 +7631,8 @@
         "klipperai_agent.workflows.diagnosis"
       ],
       "tests": [
+        "tests/test_evidence_pipeline.py",
+        "tests/test_runtime_diagnostics.py",
         "tests/test_workflows_extra.py"
       ]
     },

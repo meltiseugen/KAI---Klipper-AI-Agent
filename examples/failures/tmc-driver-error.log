@@ -1,0 +1,3 @@
+# Synthetic regression example, not a real printer incident.
+TMC 'stepper_x' reports error: GSTAT: 00000001 reset=1
+# This reset flag alone does not establish overheating or a defective driver.

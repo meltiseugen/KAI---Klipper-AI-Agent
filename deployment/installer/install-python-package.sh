@@ -26,6 +26,7 @@ install_python_package() {
   if [[ ! -d "$INSTALL_DIR/.venv" ]]; then
     create_python_virtual_environment
   fi
+  ensure_crypto_build_prerequisites
 
   log "Installing Python package into the virtual environment."
   run_as_user "$INSTALL_DIR/.venv/bin/python" -m pip install --upgrade pip

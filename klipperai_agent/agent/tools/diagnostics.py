@@ -5,7 +5,67 @@ from typing import Any
 from pydantic import Field, StrictStr, conint
 
 from klipperai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
+from klipperai_agent.agent.tools.text_search import LiteralSearchArguments, line_matches, match_page
 from klipperai_agent.domain.evidence import SourceCitation
+from klipperai_agent.domain.redaction import redact_text
+
+
+class SearchDiagnosticArguments(LiteralSearchArguments):
+    artifact_ids: list[StrictStr] = Field(default_factory=list, max_items=12)
+
+
+class SearchDiagnosticTool(Tool[SearchDiagnosticArguments]):
+    name = "search_diagnostic_artifacts"
+    label = "Search collected diagnostics"
+    description = "Find literal text with context in diagnostic artifact IDs from collect_diagnostics, including collected service journals. No new commands or filesystem reads. Lines refer to the collected excerpt, not original log lines."
+    arguments_type = SearchDiagnosticArguments
+
+    async def execute(
+        self, arguments: SearchDiagnosticArguments, context: ToolContext
+    ) -> dict[str, Any]:
+        query = arguments.query.strip()
+        if not query:
+            return {"error": "Enter nonblank search text."}
+        ids = set(arguments.artifact_ids)
+        if ids - context.diagnostic_artifacts.keys() or not context.diagnostic_artifacts:
+            return {
+                "error": "Unknown or missing diagnostic artifacts. Call collect_diagnostics first."
+            }
+
+        def matches():
+            for identifier, artifact in context.diagnostic_artifacts.items():
+                if ids and identifier not in ids:
+                    continue
+                for hit in line_matches(
+                    redact_text(artifact.content),
+                    query,
+                    case_sensitive=arguments.case_sensitive,
+                    whole_word=arguments.whole_word,
+                    context_lines=arguments.context_lines,
+                ):
+                    citation = SourceCitation(
+                        label=f"{artifact.label} (excerpt lines {hit.start_line}–{hit.end_line})",
+                        path=f"diagnostic:{identifier}",
+                        line_number=hit.start_line,
+                        end_line=hit.end_line,
+                        excerpt=hit.excerpt,
+                        line_basis="excerpt",
+                    )
+                    yield {
+                        "artifact_id": identifier,
+                        "match_line": hit.line,
+                        "source": citation.model_dump(),
+                        "excerpt_truncated": hit.truncated,
+                    }
+
+        result = match_page(matches(), arguments.offset, arguments.max_matches)
+        context.citations.extend(
+            SourceCitation.parse_obj(item["source"]) for item in result["matches"]
+        )
+        return {
+            **result,
+            "scope": "Previously collected diagnostic excerpts only; missing or older events may be outside these excerpts.",
+        }
 
 
 class ReadDiagnosticArguments(ToolArguments):

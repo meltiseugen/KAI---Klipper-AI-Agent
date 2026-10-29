@@ -8,6 +8,7 @@ from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding
 from klipperai_agent.domain.knowledge import CachedDocument, KnowledgeSetup
+from klipperai_agent.domain.logs import LogFile, LogInventory, LogWindow
 from klipperai_agent.domain.shutdown import HostObservation, ShutdownLogs
 
 
@@ -58,6 +59,11 @@ class PrinterReader(Protocol):
 
 class FileMetadataReader(Protocol):
     async def get_file_metadata(self, filename: str) -> dict[str, Any]: ...
+
+
+class LogReader(Protocol):
+    def inventory(self) -> LogInventory: ...
+    def read_window(self, reference: LogFile, before_byte: int | None = None) -> LogWindow: ...
 
 
 class ToolServices(Protocol):

@@ -1,0 +1,8 @@
+[
+  {"file": "heater-not-heating.log", "expected": ["heater_heating_failure"], "question": "Why did the extruder stop heating?"},
+  {"file": "mcu-disconnect.log", "expected": ["mcu_communication_lost"], "question": "Investigate the toolhead MCU disconnect; distinguish observations from possible causes."},
+  {"file": "move-out-of-range.log", "expected": ["move_out_of_range"], "question": "Which move was rejected and what config or macro evidence is needed?"},
+  {"file": "tmc-driver-error.log", "expected": ["tmc_driver_fault"], "question": "Interpret this driver error without assuming a thermal fault."},
+  {"file": "missing-include.log", "expected": ["config_file_missing"], "question": "Find the missing config include and show the relevant evidence."},
+  {"file": "normal-startup.log", "expected": [], "question": "Does this excerpt establish a printer failure?"}
+]

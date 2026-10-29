@@ -34,6 +34,7 @@ class ConversationStore {
   createIntroEntry() {
     return {
       role: "assistant",
+      intro: true,
       text: this.introMessage,
       configProposals: [],
       sourceCitations: [],
@@ -48,6 +49,7 @@ class ConversationStore {
       title: deriveConversationTitle(normalizedMessages, seed.title),
       sessionId: typeof seed.sessionId === "string" && seed.sessionId.trim() ? seed.sessionId : null,
       threadId: typeof seed.threadId === "string" && seed.threadId.trim() ? seed.threadId : null,
+      loaded: seed.loaded !== false,
       draft: typeof seed.draft === "string" ? seed.draft : "",
       mode: normalizeAgentMode(seed.mode),
       updatedAt: normalizeTimestamp(seed.updatedAt),
@@ -149,7 +151,7 @@ class ConversationStore {
       .filter((entry) => {
         const role = String(entry.role || "").trim();
         const text = String(entry.text || "").trim();
-        return (role === "user" || role === "assistant") && text && text !== this.introMessage;
+        return !entry.error && (role === "user" || role === "assistant") && text && text !== this.introMessage;
       })
       .slice(-messageLimit)
       .map((entry) => ({

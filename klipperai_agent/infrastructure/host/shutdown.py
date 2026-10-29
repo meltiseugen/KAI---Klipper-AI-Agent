@@ -11,6 +11,7 @@ from pathlib import Path
 
 from klipperai_agent.domain.investigation import utc_now
 from klipperai_agent.domain.shutdown import HostObservation, ShutdownLogs
+from klipperai_agent.infrastructure.host.flight_recorder import HostFlightRecorder
 from klipperai_agent.infrastructure.host.shutdown_logs import collect_shutdown_logs
 from klipperai_agent.infrastructure.host.system import SystemCommandRunner
 from klipperai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
@@ -63,6 +64,7 @@ class ShutdownCollector:
         journal_enabled: bool,
         excluded_logs: tuple[str, ...] = (),
         runner: SystemCommandRunner | None = None,
+        history: HostFlightRecorder | None = None,
     ) -> None:
         self._moonraker = moonraker
         self._logs_dir = logs_dir
@@ -70,6 +72,7 @@ class ShutdownCollector:
         self._journal_enabled = journal_enabled
         self._excluded = excluded_logs
         self._runner = runner or SystemCommandRunner()
+        self._history = history
 
     async def read_logs(self) -> ShutdownLogs:
         if not self._logs_enabled:
@@ -78,6 +81,12 @@ class ShutdownCollector:
 
     async def read_host(self, estimated_unix_time: float | None) -> HostObservation:
         result = HostObservation()
+        if self._history is not None:
+            result.history = await asyncio.to_thread(self._history.read_window, estimated_unix_time)
+        else:
+            result.notes.append(
+                "Host flight recorder disabled; no recorded process/pressure history available."
+            )
         try:
             data = await self._moonraker.get_process_stats()
             # Explicit fields only; omit network addresses, identifiers and connection metadata.

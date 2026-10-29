@@ -46,7 +46,7 @@ This repository is an early implementation. What exists today:
 - full-page and embedded chat UI served by the agent
 - Moonraker client abstraction
 - reconnecting Moonraker agent registration, live printer-state badges and G-code metadata inspection
-- bounded tool-using agent loop for OpenAI, with deterministic offline workflows
+- bounded tool-using agent loop for OpenAI, with deterministic evidence tools
 - read-only config, profile, printer-status and diagnostics tools
 - Chat/Debug starting context, a mode selector and saved **Context included** receipts
 - literal config search, targeted diagnostic reads and fixed component-status groups
@@ -58,10 +58,12 @@ This repository is an early implementation. What exists today:
 - static proposal review, section comparisons and read-only revalidation
 - direct OpenAI-compatible provider integration path
 - private server-side credential setup/rotation, per-task model profiles and persistent provider usage limits
-- deterministic rule engine for a small set of common Klipper failures
+- deterministic [runtime diagnostic rules](docs/runtime-diagnostics.md) for MCU, heater, homing/probe, TMC driver, motion-limit, config-loading and service failures
 - host-side current `*.log` collection with configurable line-tail excerpts
 - private runtime file logging to `<data_dir>/logs/klipperai.log`
-- optional `systemctl` and `journalctl` diagnostics for Moonraker and Klipper services
+- optional `systemctl` and `journalctl` diagnostics for Moonraker/Klipper and explicitly selected broader service journals
+- default-off bounded [host flight recorder](docs/host-diagnostics.md) for incident CPU/process, memory/swap and pressure history
+- [typed diagnostic context and API evidence blocks](docs/evidence-contract.md), with source IDs, collection dates, impact ranking and separate confidence hints
 - one-time printer-profile detection during install, persisted into `klipperai.cfg`
 - firmware flavor detection for mainline Klipper, Kalico, and custom forks
 - addon and hardware hint detection for common probes, CAN toolhead boards, and companion services
@@ -72,7 +74,7 @@ This repository is an early implementation. What exists today:
 - an optional maintained Mainsail source patch bundle for advanced installs
 
 See [Chat and Debug modes](docs/agent-modes.md) for context contents, limits and
-the behavior of the offline/legacy workflows.
+the behavior of the single-pass compatibility workflow.
 See [provider management](docs/providers.md) for setup, rotation, model routing,
 request/token limits and activation through a manual KlipperAI restart.
 See [Moonraker integration](docs/moonraker-integration.md) for socket setup, live
@@ -89,7 +91,7 @@ What does not exist yet:
 - continuous host process/CPU, swap and I/O-pressure history for intermittent failures
 - complete firmware/hardware validation of proposed configuration
 - deeper config specialization beyond the current broad scaffold generation path
-- multi-provider support beyond the current initial OpenAI path and local `stub`
+- multi-provider support beyond the current OpenAI path
 
 ## Feature Vision
 
@@ -137,7 +139,7 @@ What does not exist yet:
 
 OpenAI requests use a bounded tool loop by default. The model can inspect evidence, call another tool, search public documentation, and then compose a cited answer. Set `web_search_enabled: false` to disable search, or `agent_enabled: false` to use the former single-pass workflow. Search and model calls use provider credits.
 
-- keep explicit, deterministic local workflows for diagnostics and config assistance
+- use deterministic diagnostic and configuration tools to supply evidence to the LLM
 - keep host access deterministic and tightly bounded
 - avoid Rust-backed runtime dependencies in the default host install so embedded printer images can install the package
 
@@ -147,7 +149,7 @@ OpenAI requests use a bounded tool loop by default. The model can inspect eviden
 - `Moonraker`: canonical source for printer state, managed files, and future integration points
 - `Mainsail integration`: supported custom-nav link in `v1`, optional native patch for advanced installs
 - `KlipperAI UI`: chat-style assistant UI served from the same origin
-- `KlipperAI local workflows`: diagnostics and proposals, followed by manual-only review
+- `KlipperAI agent`: LLM-led investigation with read-only evidence tools and manual proposal review
 
 Start discovery at [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). Runtime and sequence diagrams live in [docs/architecture.md](docs/architecture.md); tool extension and settings are in [docs/agent-development.md](docs/agent-development.md). Memory and manual proposal review are documented in [docs/investigations.md](docs/investigations.md). See [docs/refactoring.md](docs/refactoring.md) for the layout migration and reinstall instructions. Mainsail integration is covered in [docs/mainsail-shell.md](docs/mainsail-shell.md).
 
@@ -155,7 +157,6 @@ Start discovery at [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). Runtime and seque
 
 Current code support:
 
-- `stub`: no external LLM call, useful for local UI and deterministic workflow development
 - `openai`: iterative Responses API tool calling and hosted web search; optional single-pass compatibility mode
 
 Planned provider support is tracked in [BACKLOG.md](BACKLOG.md).
@@ -164,29 +165,25 @@ Planned provider support is tracked in [BACKLOG.md](BACKLOG.md).
 
 ### Recommended Path On A Klipper Host
 
-Clone the repository onto the Linux host that already runs Moonraker and Mainsail or Fluidd, and make sure the host has `bash`, `systemd`, `nginx`, `git`, and Python `3.10+`.
+Put the repository on the Linux host that already runs Moonraker and Mainsail or Fluidd. The installer detects standard Linux versus rooted Creality/KE hosts and installs missing application prerequisites automatically. Standard hosts use systemd 250+ with encrypted credentials and an unprivileged account. Native Creality hosts use their init scripts with host-key encryption and RAM-only credential delivery; see [native setup and updates](docs/creality-compatibility.md).
 
 Then run:
 
-```bash
-chmod +x deployment/python/install-python310.sh
-./deployment/python/install-python310.sh  # only needed when the host python3 is older than 3.10
-chmod +x install.sh
-./install.sh
+```sh
+sh install.sh
 ```
 
-Detailed host guidance for that helper lives in [docs/python310-install.md](docs/python310-install.md).
+This works from BusyBox `sh`: missing Bash is installed before the Bash phases
+start. Setup detects Entware outside PATH and installs Python 3.10+, its required
+modules, pip/virtualenv, Git HTTPS support, certificates, utilities and nginx when
+missing. Existing vendor nginx is preserved. Fresh supported Creality images
+without a package manager get a checksum-pinned Entware bootstrap; existing
+`/opt` contents are preserved. Root access, network access and a writable checkout
+are required on native hosts. See [prerequisite details](docs/installer-prerequisites.md).
 
-If a rooted printer image only has BusyBox `sh`, `sh install.sh` will not work.
-Install Bash first, then rerun `./install.sh`; the current installer expects a
-normal Klipper host with Bash and systemd. If the image has no `apt-get`, check
-for `opkg`/Entware or use a normal Klipper host instead. If Python `venv`
-support is absent but `pip` works, the installer can fall back to
-`python3 -m virtualenv`. On rooted Creality Nebula Pad-style layouts, the
-installer detects `/usr/data/printer_data` as the printer data root. The default
-host dependency set avoids Rust-backed packages such as `uuid-utils` and
-`ormsgpack`, and pins Pydantic v1 to avoid `pydantic-core` builds on embedded
-printer images.
+The installer detects `/usr/data/printer_data` and numbered vendor data roots.
+Runtime dependencies retain Pydantic v1 and avoid Rust builds. Native MIPS hosts
+receive C build tools when needed for the encryption dependency.
 
 To remove a host install later:
 
@@ -213,20 +210,24 @@ The installer currently guides the user through:
 - confirming the Mainsail config directory, default `/home/<service-user>/printer_data/config`
 - creating a Python virtual environment
 - installing the package
-- writing `/etc/klipperai/klipperai.env` for the config-file path, API key, and hidden install metadata
+- writing `/etc/klipperai/klipperai.env` for non-secret bootstrap/install metadata
+- provisioning an encrypted master credential and AES-256-GCM provider-key storage using the selected host backend; see [credential storage and recovery](docs/credential-storage.md)
 - writing `printer_data/config/klipperai/klipperai.cfg`
 - detecting printer profile data once and persisting it into `[printer_identity]` and `[printer_capabilities]`
 - writing `printer_data/config/klipperai/klipperai-moonraker.cfg`
 - appending an include like `[include klipperai/klipperai-moonraker.cfg]` to `moonraker.conf`
 - adding `klipperai-agent` to `printer_data/moonraker.asvc`
-- generating and enabling a `systemd` service
+- generating and enabling the appropriate systemd or native init service
 - generating an nginx location snippet for `/klipperai/`
 - optionally patching the selected Mainsail nginx server block to include that snippet
 - writing private KlipperAI runtime logs to `<data_dir>/logs/klipperai.log`
 - optionally installing a Mainsail navigation link in `.theme/navi.json`
 - when OctoEverywhere is detected, optionally applying the local OE `/klipperai/` route patch automatically
 
-KlipperAI requires Python `3.10+`. The installer now checks that explicitly and recreates an older `.venv` if a previous attempt bootstrapped one with Python `3.9` or older. For Bullseye-era printer images such as BIGTREETECH CB1, use [deployment/python/install-python310.sh](deployment/python/install-python310.sh) or follow [docs/python310-install.md](docs/python310-install.md) before rerunning `./install.sh`. On embedded images where `python3 -m venv` is unavailable, the installer can use `virtualenv` from pip instead.
+KlipperAI requires Python `3.10+`. On older apt-based hosts, setup invokes the
+[Python helper](docs/python310-install.md) automatically with one build job, beside
+the distro Python. It can recreate an older `.venv` and install a local virtualenv
+helper when the embedded Python lacks `venv` support.
 
 The installer always asks for the service user first. Path defaults are then derived from that user, so a `biqu` host will naturally default to `/home/biqu/...` instead of `/home/pi/...`.
 
@@ -282,23 +283,10 @@ Example navigation entry:
 
 This is the recommended `v1` path because it uses Mainsail's documented custom-navigation support instead of patching or forking Mainsail just to surface the assistant UI.
 
-### Optional Mainsail Source Patch
-
-An experimental native-shell Mainsail integration still lives in [integrations/mainsail/README.md](integrations/mainsail/README.md), but it is not the default `v1` approach.
-
-It currently targets:
-
-- upstream repository `mainsail-crew/mainsail`
-- branch `develop`
-- commit `6130a0aa1776a138feaab691b9e4b1334b676b79`
-- upstream version `2.17.0`
-
-If you are building a custom Mainsail checkout, apply the patch with:
-
-```bash
-chmod +x ./integrations/mainsail/apply-patch.sh
-./integrations/mainsail/apply-patch.sh /path/to/mainsail
-```
+The former optional topbar/drawer source patch has been retired; the left-menu
+link continues to open KlipperAI in a new tab. No custom Mainsail build is needed.
+See [Mainsail routing and page verification](docs/mainsail-shell.md) for nginx
+configuration, existing-installation follow-up and manual checks.
 
 ### Optional OctoEverywhere Host Patch
 
@@ -352,7 +340,7 @@ Then open the standalone UI in a browser:
 KlipperAI now uses two configuration surfaces:
 
 - `printer_data/config/klipperai/klipperai.cfg` for host-editable runtime settings
-- `/etc/klipperai/klipperai.env` for secrets and hidden bootstrap/install metadata such as the config-file path and API key
+- `/etc/klipperai/klipperai.env` for non-secret bootstrap/install metadata; provider keys use [encrypted private storage](docs/credential-storage.md)
 
 The installer also creates Moonraker integration files:
 
@@ -388,7 +376,7 @@ The main `klipperai.cfg` values are:
 - `root_path`: public reverse-proxy path, usually `/klipperai`
 - `port`: local KlipperAI bind port, default `8811`
 - `data_dir`: local KlipperAI data directory
-- `llm_provider`: currently `stub` or `openai`
+- `llm_provider`: `openai`; Chat and Debug require an active API key
 - `openai_model`: default OpenAI model name, editable in `klipperai.cfg`
 - `logs_dir_path`: host log directory path, usually `/home/<service-user>/printer_data/logs` or `/usr/data/printer_data/logs`
 - `agent_log_file_name`, `agent_log_level`: control the KlipperAI runtime log file name and level
@@ -397,6 +385,8 @@ The main `klipperai.cfg` values are:
 - `excluded_logs`: optional denylist for current host log files by name, stem, or glob
 - `collect_systemd_diagnostics`: enable or disable service-status and journal collection
 - `journal_lines`: number of journal lines to include per service when diagnostics are collected
+- `additional_journal_units`: up to six opt-in literal service names, such as `crowsnest.service, nginx.service`
+- `host_flight_recorder_enabled`: opt-in Linux host history (default `false`); interval and sample retention are configurable under `[flight_recorder]`
 - `enable_write_actions`: obsolete compatibility setting, always forced to `false`
 - `memory_cross_chat`: reuse relevant historical observations between chats (default `true`)
 - `memory_retention_days`: storage retention (default `90`); storage is `data_dir/investigations.sqlite3`
@@ -469,12 +459,17 @@ The security stance is:
 
 ## Development Notes
 
+For fixes during real-printer testing, use [the SSH deployment workflow](docs/printer-testing.md):
+build the current workspace, deploy it to the printer and roll back the code with
+one command. Settings, credentials and history stay on the printer. Release checks
+and packaging conventions are in [the release guide](docs/RELEASING.md).
+
 - The FastAPI app exposes `/`, `/healthz`, `/api/ui-sessions`, `/api/bootstrap`, `/api/chat`, `/api/chat/stream`, and `/embed`.
-- The default provider is `stub`, so the app can boot without any external API key.
-- OpenAI requests use an iterative agent that selects tools and follows up on their results. `stub` retains deterministic local workflows. Conversations, dated evidence and explicitly confirmed memory persist in application-owned SQLite storage. Interrupted investigations resume after service restart from public checkpoints with fresh reads; provider reasoning and HTTP calls are not replayed.
+- OpenAI is the provider. Without an API key, the web page offers setup, connection status and saved information; Chat and Debug remain unavailable.
+- Requests use an iterative LLM agent that selects tools and follows up on their results. Deterministic checks and templates supply evidence to the model. Conversations, dated evidence and explicitly confirmed memory persist in application-owned SQLite storage. Interrupted investigations resume only when an LLM provider is ready; provider reasoning and HTTP calls are not replayed.
 - Host log collection currently targets current `.log` files directly under `printer_data/logs` and sends the configured last lines from each file.
 - KlipperAI writes a private rotating runtime log at `<data_dir>/logs/klipperai.log` (normally `/var/lib/klipperai/logs/klipperai.log`). This file is no longer automatically exposed through Mainsail.
-- Systemd diagnostics currently target `systemctl show` plus the last `journalctl` lines for the configured Moonraker and Klipper units.
+- Systemd diagnostics collect `systemctl show` and bounded journals for Moonraker/Klipper, plus journals for explicitly selected additional services. Diagnostics also include fresh core Moonraker state and loaded-config metadata. See [host diagnostics](docs/host-diagnostics.md) for bounds and real-incident replay versus live validation.
 - Config assistant currently inspects `printer_data/config`, follows the active root config include tree, and can return typed config proposals in chat across the main supported feature categories.
 - The runtime does not apply or write those proposals back to printer files.
 - Printer-profile detection currently runs once during install and uses Moonraker `printer`, `machine`, and `update_manager` APIs together with config parsing and Klipper repo-origin hints.

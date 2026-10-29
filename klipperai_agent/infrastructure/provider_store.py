@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 import time
 from contextlib import closing
@@ -13,12 +14,24 @@ from klipperai_agent.domain.provider_settings import (
     ProviderLimitError,
     ProviderPolicy,
 )
+from klipperai_agent.infrastructure.credential_cipher import (
+    PREFIX,
+    CredentialCipher,
+    load_credential_cipher,
+)
 from klipperai_agent.infrastructure.private_files import open_private_file
 
 
 class ProviderStore:
-    def __init__(self, directory: Path, protected_dirs: tuple[Path, ...]):
+    def __init__(
+        self,
+        directory: Path,
+        protected_dirs: tuple[Path, ...],
+        *,
+        cipher: CredentialCipher | None = None,
+    ):
         self.path = directory.absolute() / "providers.sqlite3"
+        self.cipher = cipher or load_credential_cipher()
         self.protected_dirs = tuple(root.resolve() for root in protected_dirs)
         self._check_path()
         self.path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -36,6 +49,14 @@ class ProviderStore:
                 CREATE TABLE IF NOT EXISTS calls (at REAL NOT NULL);
                 CREATE TABLE IF NOT EXISTS cooldown (id INTEGER PRIMARY KEY, until REAL NOT NULL);
             """)
+            row = db.execute("SELECT api_key FROM settings WHERE id=1").fetchone()
+            if row and row[0]:
+                if row[0].startswith(PREFIX):
+                    self.cipher.decrypt(row[0])  # Verify before accepting this database.
+                else:
+                    db.execute(
+                        "UPDATE settings SET api_key=? WHERE id=1", (self.cipher.encrypt(row[0]),)
+                    )
 
     def _check_path(self) -> None:
         paths = [self.path, *(Path(str(self.path) + s) for s in ("-journal", "-wal", "-shm"))]
@@ -58,9 +79,36 @@ class ProviderStore:
     def load(self) -> tuple[int, ProviderPolicy | None, str | None]:
         with closing(self._connect()) as db:
             row = db.execute("SELECT revision, policy, api_key FROM settings WHERE id=1").fetchone()
-        return (int(row[0]), ProviderPolicy.parse_raw(row[1]), row[2]) if row else (0, None, None)
+        if row is None:
+            return 0, None, None
+        policy = json.loads(row[1])
+        enabled = policy.get("provider", "openai") == "openai"
+        policy["provider"] = "openai"
+        return (
+            int(row[0]),
+            ProviderPolicy.parse_obj(policy),
+            self.cipher.decrypt(row[2]) if row[2] and enabled else None,
+        )
+
+    @property
+    def credential_storage_available(self) -> bool:
+        return self.cipher.available
+
+    def migrate_from(self, directory: Path) -> None:
+        """Import an old private store without copying plaintext into the destination."""
+        if (
+            directory.resolve() == self.path.parent.resolve()
+            or not (directory / self.path.name).exists()
+        ):
+            return
+        source = ProviderStore(directory, self.protected_dirs, cipher=self.cipher)
+        if self.load()[0] != 0:
+            return
+        with closing(source._connect()) as old, closing(self._connect()) as new:
+            old.backup(new)  # Source credentials were authenticated/encrypted above.
 
     def save(self, revision: int, policy: ProviderPolicy, key: str | None) -> int:
+        encrypted = self.cipher.encrypt(key) if key else None
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
             row = db.execute("SELECT revision FROM settings WHERE id=1").fetchone()
@@ -68,7 +116,7 @@ class ProviderStore:
                 raise ProviderConflict("Provider settings changed. Reload settings before saving.")
             db.execute(
                 "INSERT OR REPLACE INTO settings VALUES (1, ?, ?, ?)",
-                (revision + 1, policy.json(), key),
+                (revision + 1, policy.json(), encrypted),
             )
         return revision + 1
 

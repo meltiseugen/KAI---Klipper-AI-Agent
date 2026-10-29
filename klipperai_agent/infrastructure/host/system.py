@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shlex
 import subprocess
 import tempfile
@@ -102,6 +103,7 @@ class HostSystemCollector:
         moonraker_service_name: str = "moonraker.service",
         klipper_service_name: str = "klipper.service",
         journal_lines: int = 200,
+        additional_journal_units: tuple[str, ...] = (),
         status_artifact_char_limit: int = 6000,
         journal_artifact_char_limit: int = 16000,
         runner: SystemCommandRunner | None = None,
@@ -110,7 +112,17 @@ class HostSystemCollector:
             ServiceUnit(display_name="Moonraker", unit_name=moonraker_service_name),
             ServiceUnit(display_name="Klipper", unit_name=klipper_service_name),
         )
-        self._journal_lines = journal_lines
+        units = tuple(dict.fromkeys(additional_journal_units))
+        if len(units) > 6 or any(
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.@-]{0,90}\.service", unit) for unit in units
+        ):
+            raise ValueError("Use at most six literal .service unit names.")
+        self._additional_journals = tuple(
+            ServiceUnit(unit, unit)
+            for unit in units
+            if unit not in {service.unit_name for service in self._services}
+        )
+        self._journal_lines = min(max(journal_lines, 1), 1000)
         self._status_artifact_char_limit = status_artifact_char_limit
         self._journal_artifact_char_limit = journal_artifact_char_limit
         self._runner = runner or SystemCommandRunner()
@@ -132,6 +144,12 @@ class HostSystemCollector:
             if journal_note:
                 self._append_unique(notes, journal_note)
 
+        for service in self._additional_journals:
+            artifact, note = self._collect_service_journal(service)
+            if artifact is not None:
+                artifacts.append(artifact)
+            if note:
+                self._append_unique(notes, note)
         return artifacts, notes
 
     def _collect_service_status(
@@ -146,11 +164,13 @@ class HostSystemCollector:
             service.unit_name,
         )
         try:
-            result = self._runner.run(command)
+            result = self._runner.run(command, max_output_bytes=65536)
         except FileNotFoundError:
             return None, "systemctl is not available on this host."
         except subprocess.TimeoutExpired:
             return None, f"Timed out while collecting systemctl status for {service.unit_name}."
+        except OSError:
+            return None, f"systemctl status unavailable for {service.unit_name}."
 
         if result.returncode != 0:
             message = result.stderr or result.stdout or "Unknown systemctl failure."
@@ -166,7 +186,12 @@ class HostSystemCollector:
                 label=f"systemctl show {service.unit_name}",
                 content=self._clip_text(content, 39_000, self._status_artifact_char_limit),
             ),
-            f"Collected systemctl status for {service.unit_name}.",
+            f"Collected systemctl status for {service.unit_name}."
+            + (
+                " Command output byte limit reached; evidence is incomplete."
+                if result.truncated
+                else ""
+            ),
         )
 
     def _collect_service_journal(
@@ -182,11 +207,13 @@ class HostSystemCollector:
             str(self._journal_lines),
         )
         try:
-            result = self._runner.run(command)
+            result = self._runner.run(command, max_output_bytes=262144)
         except FileNotFoundError:
             return None, "journalctl is not available on this host."
         except subprocess.TimeoutExpired:
             return None, f"Timed out while collecting journalctl output for {service.unit_name}."
+        except OSError:
+            return None, f"journalctl unavailable for {service.unit_name}."
 
         if result.returncode != 0:
             message = result.stderr or result.stdout or "Unknown journalctl failure."
@@ -202,7 +229,12 @@ class HostSystemCollector:
                 label=f"journalctl {service.unit_name}",
                 content=self._clip_text(content, 39_000, self._journal_artifact_char_limit),
             ),
-            f"Collected the last {self._journal_lines} journal lines for {service.unit_name}.",
+            f"Collected the last {self._journal_lines} journal lines for {service.unit_name}."
+            + (
+                " Command output byte limit reached; evidence is incomplete."
+                if result.truncated
+                else ""
+            ),
         )
 
     def _render_status_artifact(self, service: ServiceUnit, body: str) -> str:

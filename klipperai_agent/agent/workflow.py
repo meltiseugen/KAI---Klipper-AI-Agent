@@ -6,6 +6,7 @@ from klipperai_agent.agent.models import AgentLimits, AgentModel, WebSearch
 from klipperai_agent.agent.ports import (
     FileMetadataReader,
     KnowledgeReader,
+    LogReader,
     PrinterReader,
     ShutdownReader,
     ToolServices,
@@ -13,9 +14,12 @@ from klipperai_agent.agent.ports import (
 from klipperai_agent.agent.registry import ToolRegistry
 from klipperai_agent.agent.runner import AgentRunner
 from klipperai_agent.agent.tools.base import Tool, ToolContext
+from klipperai_agent.agent.tools.components import ComponentDiagnosticTool
 from klipperai_agent.agent.tools.config import InspectConfigTool, ReadConfigTool
+from klipperai_agent.agent.tools.config_analysis import AnalyzeConfigTool
 from klipperai_agent.agent.tools.config_search import SearchConfigTool
-from klipperai_agent.agent.tools.diagnostics import ReadDiagnosticTool
+from klipperai_agent.agent.tools.config_templates import ConfigTemplateTool
+from klipperai_agent.agent.tools.diagnostics import ReadDiagnosticTool, SearchDiagnosticTool
 from klipperai_agent.agent.tools.file_metadata import FileMetadataTool
 from klipperai_agent.agent.tools.knowledge import (
     EddyCalibrationTool,
@@ -23,6 +27,7 @@ from klipperai_agent.agent.tools.knowledge import (
     PrinterKnowledgeTool,
     SearchKnowledgeTool,
 )
+from klipperai_agent.agent.tools.logs import ListLogsTool, ReadLogTool, SearchLogsTool
 from klipperai_agent.agent.tools.objects import PrinterObjectsTool
 from klipperai_agent.agent.tools.printer import (
     DiagnosticsTool,
@@ -36,7 +41,7 @@ from klipperai_agent.domain.investigation import InvestigationRequest
 
 
 class AgentWorkflow:
-    """Adapts the agent to the same application port as local offline workflows."""
+    """Adapts the tool-using LLM agent to the application workflow port."""
 
     def __init__(
         self,
@@ -47,6 +52,7 @@ class AgentWorkflow:
         shutdown_reader: ShutdownReader | None = None,
         knowledge: KnowledgeReader | None = None,
         file_metadata: FileMetadataReader | None = None,
+        log_reader: LogReader | None = None,
     ) -> None:
         self._runner = AgentRunner(model, limits)
         self._moonraker = moonraker
@@ -55,6 +61,7 @@ class AgentWorkflow:
         self._shutdown_reader = shutdown_reader
         self._knowledge = knowledge
         self._file_metadata = file_metadata
+        self._log_reader = log_reader
 
     @property
     def web_search_enabled(self) -> bool:
@@ -72,11 +79,18 @@ class AgentWorkflow:
             PrinterStatusTool(),
             InspectConfigTool(),
             ReadConfigTool(),
+            AnalyzeConfigTool(),
+            ConfigTemplateTool(),
             DiagnosticsTool(),
             SearchConfigTool(),
             ReadDiagnosticTool(),
+            SearchDiagnosticTool(),
             PrinterObjectsTool(),
         ]
+        if self._log_reader is not None:
+            tools.extend(
+                [ListLogsTool(self._log_reader), SearchLogsTool(self._log_reader), ReadLogTool()]
+            )
         if self._search is not None:
             tools.append(WebSearchTool(self._search))
         if self._file_metadata is not None:
@@ -88,6 +102,7 @@ class AgentWorkflow:
                 [
                     PrinterKnowledgeTool(self._knowledge),
                     SearchKnowledgeTool(self._knowledge),
+                    ComponentDiagnosticTool(self._knowledge),
                     FanPortsTool(self._knowledge),
                     EddyCalibrationTool(self._knowledge),
                 ]

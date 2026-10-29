@@ -153,7 +153,7 @@ start a print or modify metadata.
 
 ## Verification
 
-Offline tests exercise ETX framing, registration, public-only database writes,
+Automated tests exercise ETX framing, registration, public-only database writes,
 method dispatch, session expiry/rate limits, partial notifications, restart races,
 reconnects, shutdown cleanup, metadata filtering and subsequent model observations.
 HTTP and DOM tests cover session-protected snapshots/SSE, live/stale badges,
@@ -164,4 +164,4 @@ On a host, check `server.extensions.list` for `klipperai`, open the UI to verify
 the event badge and inspect the public database item. Confirm updates during
 normal printer activity and recovery following an independently planned service
 restart. Live provider and printer checks must be recorded separately from the
-offline suite; none is performed automatically by these tests.
+automated suite; none is performed automatically by these tests.

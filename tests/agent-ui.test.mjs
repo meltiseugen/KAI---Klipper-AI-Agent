@@ -13,6 +13,7 @@ function element(tag) {
   return { tag, children: [], listeners: {}, appendChild(child) { this.children.push(child); }, setAttribute() {}, addEventListener(name, fn) { this.listeners[name] = fn; } };
 }
 const context = vm.createContext({ TextDecoder, document: { createElement: element } });
+vm.runInContext(await readFile(new URL("../klipperai_agent/web/static/model-usage.js", import.meta.url), "utf8"), context);
 vm.runInContext(`${source}\nglobalThis.Reader = ChatStreamReader; globalThis.Activity = AgentActivity;`, context);
 vm.runInContext(`${investigation}\nglobalThis.messages = investigationMessages; globalThis.Review = ProposalReviewCard; globalThis.Evidence = InvestigationEvidence;`, context);
 
@@ -59,7 +60,7 @@ const reviewed = element("article");
 let rechecked;
 context.Review.append(reviewed, { review: { proposal_id: "p", status: "stale", errors: ["<script>error</script>"], comparison: "-old\n+new" } }, async id => { rechecked = id; });
 const section = reviewed.children[0];
-assert.match(section.children[0].textContent, /Configuration changed/);
+assert.match(section.children[0].textContent, /Configuration or firmware changed/);
 assert.equal(section.children[1].children[0].textContent, "<script>error</script>");
 assert.equal(section.children[2].children[1].textContent, "-old\n+new");
 await section.children[3].listeners.click();

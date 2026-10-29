@@ -56,7 +56,9 @@ async def test_agent_reads_knowledge_before_answer_and_follows_source_evidence(
     assert any("Example Board A" in item["label"] for item in result["source_citations"])
     assert any("cached" in item["label"] for item in result["source_citations"])
     assert any(item["source"] == "get_printer_knowledge" for item in result["context_included"])
-    tool_context.services.collector.collect.assert_not_awaited()
+    tool_context.services.collector.collect.assert_awaited_once_with(
+        [], include_host_logs=True, include_host_system=False
+    )
 
 
 @pytest.mark.asyncio
@@ -87,10 +89,12 @@ async def test_read_only_tools_identity_gaps_arguments_and_eddy_citations(tool_c
     assert live["observed_firmware_version"] == "v0.13.0-500-newcommit"
     assert "differs from the saved version" in str(live["gaps"])
     tool_context.moonraker.get_printer_info.side_effect = ConnectionError("private host")
-    offline = await EddyCalibrationTool(knowledge).execute(
+    disconnected = await EddyCalibrationTool(knowledge).execute(
         EddyArguments(symptom="bed calibration"), tool_context
     )
-    assert offline["observed_firmware_version"] is None and "private host" not in str(offline)
+    assert disconnected["observed_firmware_version"] is None and "private host" not in str(
+        disconnected
+    )
     data = setup()
     data.components[1].mcu = "mcu"
     result = await FanPortsTool(reader(data)).execute(FanPortsArguments(), tool_context)

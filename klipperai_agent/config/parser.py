@@ -9,9 +9,11 @@ from klipperai_agent.config.models import (
 
 
 class ConfigParser:
-    _INCLUDE_PATTERN = re.compile(r"^\s*\[include\s+([^\]]+)\]\s*$", re.IGNORECASE | re.MULTILINE)
+    _INCLUDE_PATTERN = re.compile(
+        r"^[ \t]*\[include\s+([^\]\n]+)\][ \t]*(?:[#;].*)?$", re.IGNORECASE | re.MULTILINE
+    )
 
-    _SECTION_PATTERN = re.compile(r"^\s*\[([^\]]+)\]\s*$", re.MULTILINE)
+    _SECTION_PATTERN = re.compile(r"^[ \t]*\[([^\]\n]+)\][ \t]*(?:[#;].*)?$", re.MULTILINE)
 
     _OPTION_PATTERN = re.compile(r"^\s*([A-Za-z0-9_]+)\s*:\s*(.+?)\s*$")
 

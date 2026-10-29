@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "klipperai"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Moonraker-integrated LLM assistant for Klipper and Kalico printers"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -13,8 +13,10 @@ dependencies = [
   "httpx>=0.28,<1.0",
   "jinja2>=3.1,<4.0",
   "pydantic>=1.10.15,<2.0",
+  "pycryptodomex>=3.20,<4.0",
   "python-dotenv>=1.0,<2.0",
   "python-multipart>=0.0.9,<1.0",
+  "pypdf>=6.0,<7.0",
   "uvicorn>=0.34,<1.0",
 ]
 
@@ -34,7 +36,10 @@ klippyai-agent = "klipperai_agent.cli.legacy:agent_main"
 klippyai-detect-profile = "klipperai_agent.cli.legacy:detect_main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["klipperai_agent"]
+packages = ["klipperai_agent", "deployment"]
+
+[tool.hatch.version]
+path = "klipperai_agent/domain/version.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -44,6 +49,9 @@ include = [
   "/AGENTS.md",
   "/BACKLOG.md",
   "/README.md",
+  "/CHANGELOG.md",
+  "/examples",
+  "/uv.lock",
   "/install.sh",
   "/uninstall.sh",
   "/integrations",

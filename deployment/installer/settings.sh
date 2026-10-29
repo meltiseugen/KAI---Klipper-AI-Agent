@@ -20,7 +20,7 @@ write_env_file() {
     printf 'KLIPPERAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KLIPPERAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT")"
     printf 'KLIPPERAI_JOURNAL_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KLIPPERAI_JOURNAL_ARTIFACT_CHAR_LIMIT")"
     printf 'KLIPPERAI_SYSTEM_COMMAND_TIMEOUT_SECONDS="%s"\n' "$(escape_env_value "$KLIPPERAI_SYSTEM_COMMAND_TIMEOUT_SECONDS")"
-    printf 'KLIPPERAI_OPENAI_API_KEY="%s"\n' "$(escape_env_value "$KLIPPERAI_OPENAI_API_KEY")"
+    printf 'KLIPPERAI_PROVIDER_STORAGE_DIR="%s"\n' "$(escape_env_value "$KLIPPERAI_DATA_DIR/private")"
   } >"$temp_file"
 
   run_root install -d -m 755 /etc/klipperai
@@ -45,7 +45,7 @@ write_cfg_file() {
 # Notes:
 # - Restart klipperai-agent after editing this file.
 # - Hidden install metadata is stored in /etc/klipperai/klipperai.env.
-# - Keep API keys in /etc/klipperai/klipperai.env, not in this file.
+# - API keys use encrypted private storage; never place keys in this file or the environment file.
 
 [install]
 printer_data_root: $KLIPPERAI_PRINTER_DATA_ROOT  # Printer data root. Example: /home/biqu/printer_data
@@ -89,7 +89,7 @@ memory_cross_chat: true  # Reuse dated evidence from other chats about this prin
 memory_retention_days: 90  # Retain application-owned investigation records for this many days.
 
 [llm]
-llm_provider: $KLIPPERAI_LLM_PROVIDER  # Chat backend provider. Examples: stub, openai
+llm_provider: $KLIPPERAI_LLM_PROVIDER  # Chat and Debug require a configured API key.
 openai_model: $KLIPPERAI_OPENAI_MODEL  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
 
 [agent]
@@ -120,6 +120,12 @@ klipperai: 100  # Tail lines for a legacy shared klipperai.log, if present.
 [system]
 collect_systemd_diagnostics: $KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS  # Whether to collect systemctl and journal diagnostics. Examples: true, false
 journal_lines: $KLIPPERAI_JOURNAL_LINES  # Journal lines to include per service. Examples: 100, 200, 400
+additional_journal_units:  # Opt-in, at most six literal .service names. Example: crowsnest.service, nginx.service
+
+[flight_recorder]
+host_flight_recorder_enabled: false  # Opt-in Linux host history; restart the agent after changing.
+host_flight_recorder_interval_seconds: 10  # 5-300 seconds.
+host_flight_recorder_max_samples: 1440  # 12-8640 samples; default approximately four hours, also byte-limited.
 EOF
 
   run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KLIPPERAI_MANAGED_CONFIG_DIR_PATH"

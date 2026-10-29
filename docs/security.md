@@ -1,5 +1,12 @@
 # Security and local deployment
 
+The [SSH deployment command](printer-testing.md) is an operator-only development
+tool. It selects application code and stops/starts KlipperAI through sudo/systemd
+or the root-owned native init backend. Operator bootstrap modules ship in the wheel
+for native updates and have no model tool registration or HTTP endpoint. They do
+not control Klipper, Moonraker, heaters
+or motion; deployment leaves printer files and application secrets/data in place.
+
 KlipperAI is a shared printer assistant. It has no user accounts or built-in
 authentication. Anyone who can reach its HTTP API can create a UI session, read
 printer evidence and saved conversations, change the assistant's knowledge, and
@@ -22,6 +29,11 @@ authentication gateway. An OctoEverywhere integration relies on OctoEverywhere's
 access controls and correct routing. A trusted LAN deployment assumes everyone
 who can reach the printer is allowed to use the assistant. Host root, the service
 account, and processes running as that same account remain trusted.
+
+Native rooted Creality/KE installs use the appliance's root account and private RAM
+credential delivery; see [native host security](creality-compatibility.md). The agent
+retains the same narrow read-only tools. Host root remains trusted, and native
+host-key encryption does not protect a full disk image containing its wrapping key.
 
 The optional Moonraker agent connection uses the local Unix socket and therefore
 relies on host socket permissions. Its extension methods inherit Moonraker's
@@ -79,30 +91,31 @@ responses. Uvicorn trusts forwarding headers only from loopback proxies.
 Request-size policy remains the existing nginx/server configuration; this
 milestone adds no request-size, concurrency or artifact-count limits.
 
-The service retains `NoNewPrivileges=yes` and `PrivateTmp=yes`, adds `UMask=0077`,
-and disables Python bytecode writes. It continues to use the selected printer
+The service retains `NoNewPrivileges=yes` and `PrivateTmp=yes`, uses `UMask=0077`
+and `LimitCORE=0`, and disables Python bytecode writes. It uses the selected unprivileged
 service account and existing host access. It does not install a new filesystem
 sandbox or narrow the available diagnostic sources. Prefer an unprivileged
-printer account where the host supports one; a vendor installation running as
-root retains root access. Do not assume the systemd unit isolates a compromised
+printer account; the secure installer now rejects root as its service account.
+Do not assume the systemd unit isolates a compromised
 service from the printer account. See the upstream
 [systemd execution settings](https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html).
 
 ## Secrets and application storage
 
-Provider settings can now save and rotate keys in private service-user storage
-outside the checkout. See [provider management](providers.md) for permissions,
-precedence, usage controls and manual restart behavior. Storage uses OS access
-controls, not encryption at rest. Anyone admitted by the existing trusted
+Provider settings save and rotate AES-256-GCM encrypted keys in private service-user
+storage outside the checkout. The master is supplied through systemd encrypted
+credentials, using TPM binding where available. See [credential storage](credential-storage.md)
+and [provider management](providers.md) for permissions, recovery, precedence,
+usage controls and manual restart behavior. Anyone admitted by the existing trusted
 deployment boundary can change these shared settings; UI sessions are not admin
 authentication.
 
-Before the first UI save, keep the provider key in `/etc/klipperai/klipperai.env` as
-`KLIPPERAI_OPENAI_API_KEY`. The installer writes this file with mode `0600` and
-tightens an existing file before making its backup. `klipperai.cfg`, which is
-normally editable through Mainsail, rejects `openai_api_key`; move any existing
-entry to the environment file and remove it from the config before restarting.
-The system service reads the environment file; it does not send the key to the UI.
+The installer sends the pasted key through stdin to initialize encrypted storage;
+`/etc/klipperai/klipperai.env` contains non-secret metadata only. Existing key
+assignments and installer backups are sanitized after verified migration.
+`klipperai.cfg`, normally editable through Mainsail, rejects `openai_api_key`.
+Keys must never be added to shared printer configuration. New browser key
+submission requires HTTPS or a localhost/loopback SSH tunnel.
 
 For local development, `.env` is ignored by Git but still requires appropriate
 local file permissions. On Linux use owner-only access; on Windows restrict its

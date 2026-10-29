@@ -6,9 +6,9 @@ function status(revision = 0) {
   const profile = { model: "gpt-5.4-mini", max_output_tokens: 6000, reasoning_effort: "default" };
   return {
     revision, credential_configured: false, credential_source: "none", restart_required: revision > 0,
-    validation: "Offline configuration checked.",
-    active_policy: { provider: "stub" }, usage: { requests: 0, tokens: 0 },
-    policy: { provider: "stub", web_search_enabled: true, agent: profile, search: profile, knowledge: profile, legacy: profile,
+    validation: "API key removal checked.",
+    active_policy: { provider: "openai" }, usage: { requests: 0, tokens: 0 },
+    policy: { provider: "openai", web_search_enabled: true, agent: profile, search: profile, knowledge: profile, legacy: profile,
       requests_per_minute: 20, requests_per_day: 200, tokens_per_day: 2000000, max_concurrent_requests: 2 },
   };
 }
@@ -66,6 +66,15 @@ test("settings and knowledge panels switch without covering each other or retain
   assert.equal(ids["conversation-panel"].inert, true);
 });
 
+test("locked credential storage disables key input and explains recovery", async () => {
+  const { ProviderPanel, ids } = await loadUI();
+  const panel = new ProviderPanel({ request: async () => ({ json: async () => ({ ...status(), credential_storage_available: false }) }) });
+  await panel.show();
+  assert.equal(ids["providers-key"].disabled, true);
+  assert.match(ids["providers-status"].textContent, /locked\. Rerun the secure installer/);
+  assert.equal(ids["providers-key"].value, "");
+});
+
 test("provider panel failures preserve edits, clear keys and prevent duplicate requests", async () => {
   const { ProviderPanel, ids } = await loadUI();
   let reject;
@@ -91,9 +100,9 @@ test("provider panel failures preserve edits, clear keys and prevent duplicate r
   assert.match(ids["providers-status"].textContent, /Settings were not changed/);
   assert.equal(panel.inputs.provider.value, "openai");
   assert.equal(panel.busy, false);
-  const empty = new ProviderPanel({ request: async () => { throw new Error("offline"); } });
+  const empty = new ProviderPanel({ request: async () => { throw new Error("disconnected"); } });
   await empty.load();
   await empty.submit(true);
-  assert.match(ids["providers-status"].textContent, /offline/);
+  assert.match(ids["providers-status"].textContent, /disconnected/);
   assert.equal(ids["providers-save"].disabled, true);
 });

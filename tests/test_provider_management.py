@@ -39,9 +39,9 @@ async def test_setup_validation_rotation_removal_and_restart(tmp_path):
     validator = SimpleNamespace(validate=AsyncMock())
     manager = ProviderManagement(store, ProviderPolicy(), "environment-secret", validator)
     assert manager.status()["credential_source"] == "environment"
-    offline = await manager.update(update(), save=False)
-    assert offline["validation"] == "Offline configuration checked."
-    validator.validate.assert_not_awaited()
+    checked = await manager.update(update(), save=False)
+    assert checked["validation"] == "Model access checked."
+    validator.validate.assert_awaited_once()
     request = update(api_key="replacement-secret")
     request.policy.provider = "openai"
     request.policy.search = ModelProfile(model="search-model", max_output_tokens=500)
@@ -66,9 +66,6 @@ async def test_setup_validation_rotation_removal_and_restart(tmp_path):
     assert store.load()[2] == "replacement-secret"
     request.revision = 2
     request.remove_key = True
-    with pytest.raises(ValueError, match="select Offline"):
-        await restarted.update(request, save=True)
-    request.policy.provider = "stub"
     assert not (await restarted.update(request, save=True))["credential_configured"]
     removed = ProviderManagement(store, ProviderPolicy(), "old-env", validator)
     assert removed.active_key is None and removed.status()["credential_source"] == "none"
@@ -81,6 +78,8 @@ async def test_setup_validation_rotation_removal_and_restart(tmp_path):
 async def test_failed_validation_and_concurrent_edit_preserve_active_settings(tmp_path):
     validator = SimpleNamespace(validate=AsyncMock(side_effect=ValueError("rejected")))
     manager = ProviderManagement(store_at(tmp_path), ProviderPolicy(), None, validator)
+    with pytest.raises(ValueError, match="API key"):
+        await manager.update(update(), save=True)
     request = update(api_key="valid-shape-key")
     with pytest.raises(ValueError, match="rejected"):
         await manager.update(request, save=True)
@@ -317,19 +316,40 @@ def test_bootstrap_loads_private_policy_over_environment_and_blocks_repo_storage
     policy = ProviderPolicy(
         provider="openai", web_search_enabled=False, agent=ModelProfile(model="selected-model")
     )
-    manager.store.save(0, policy, "stored-key")
+    manager.store.save(manager.active_revision, policy, "stored-key")
     restarted, guard = provider_management(settings)
     effective = effective_settings(settings, restarted)
     assert effective.openai_api_key.get_secret_value() == "stored-key"
     assert effective.openai_model == "selected-model" and effective.llm_provider == "openai"
     assert not effective.web_search_enabled and guard.policy == policy
-    restarted.store.save(1, ProviderPolicy(), None)
+    restarted.store.save(restarted.active_revision, ProviderPolicy(), None)
     removed, _ = provider_management(settings)
     assert effective_settings(settings, removed).openai_api_key is None
     with pytest.raises(ValueError):
         provider_management(
             Settings(provider_storage_dir=settings.project_checkout_path / "secrets")
         )
+
+
+def test_retired_provider_settings_never_activate_an_old_key_or_discard_saved_policy(tmp_path):
+    import sqlite3
+    from contextlib import closing
+
+    settings = Settings(llm_provider="retired-provider", openai_api_key="unused-key")
+    assert settings.llm_provider == "openai" and settings.openai_api_key is None
+    store = store_at(tmp_path)
+    store.save(0, ProviderPolicy(requests_per_day=77), "preserved-key")
+    with closing(sqlite3.connect(store.path)) as db, db:
+        policy = json.loads(db.execute("SELECT policy FROM settings").fetchone()[0])
+        policy["provider"] = "retired-provider"
+        db.execute("UPDATE settings SET policy=?", (json.dumps(policy),))
+        original = db.execute("SELECT api_key FROM settings").fetchone()[0]
+    revision, normalized, key = store.load()
+    assert revision == 1 and normalized.provider == "openai"
+    assert normalized.requests_per_day == 77 and key is None
+    with closing(sqlite3.connect(store.path)) as db:
+        assert db.execute("SELECT api_key FROM settings").fetchone()[0] == original
+    assert Settings().llm_provider == "openai"
 
 
 def test_private_store_key_is_added_to_runtime_log_redaction(monkeypatch):

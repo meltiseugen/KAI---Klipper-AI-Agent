@@ -22,9 +22,10 @@ class AgentActivity {
     article.appendChild(details);
   }
 
-  static appendActions(article, actions) {
+  static appendActions(article, actions, followUp) {
     if (!Array.isArray(actions) || !actions.length) return;
     const section = document.createElement("section");
+    section.className = "result-card next-actions-card";
     section.setAttribute("aria-label", "Next actions");
     const heading = document.createElement("h4");
     heading.textContent = "Next actions";
@@ -33,6 +34,8 @@ class AgentActivity {
     for (const action of actions) {
       const item = document.createElement("li");
       item.textContent = String(action);
+      if (followUp) questionButton(item, "Explain this check",
+        `Explain this suggested manual check: ${action}\nWhy is it useful, what should I look for, and what precautions apply?`, followUp);
       list.appendChild(item);
     }
     section.appendChild(list);
@@ -59,7 +62,12 @@ class ChatStreamReader {
           if (!data) continue;
           const payload = JSON.parse(data);
           if (name === "agent") onEvent(payload);
-          if (name === "error") throw new Error(payload.message);
+          if (name === "error") {
+            const error = new Error(payload.message);
+            error.code = payload.code;
+            error.modelUsage = payload.model_usage;
+            throw error;
+          }
           if (name === "result") result = payload;
         }
         if (done) break;

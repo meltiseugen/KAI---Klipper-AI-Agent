@@ -54,7 +54,7 @@ class PrinterMemoryPanel {
     this.panel.hidden = true;
     this.toggle.setAttribute("aria-expanded", "false");
     document.getElementById("conversation-panel").inert = false;
-    this.toggle.focus();
+    focusPanelLauncher(this.toggle);
   }
 
   async load() {

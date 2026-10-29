@@ -91,7 +91,17 @@ class MessageView {
 
       const summary = document.createElement("summary");
       summary.textContent = this.formatSourceCitationLabel(citation);
+      if (citation.pageNumber) summary.textContent += ` · PDF page ${citation.pageNumber}`;
+      if (citation.lineNumber) {
+        const range = citation.endLine && citation.endLine !== citation.lineNumber ? `–${citation.endLine}` : "";
+        summary.textContent += ` · ${citation.lineBasis === "excerpt" ? "excerpt" : citation.lineBasis === "file" ? "file" : "source"} line ${citation.lineNumber}${range}${citation.section ? ` [${citation.section}]` : ""}`;
+      }
       item.appendChild(summary);
+      if (citation.observedAt || citation.configRevision || citation.sourceDigest || citation.firmwareCommit) {
+        const provenance = document.createElement("p");
+        provenance.textContent = [citation.observedAt ? `Collected ${citation.observedAt}` : "", citation.configRevision ? `Config revision ${citation.configRevision}` : "", citation.sourceDigest ? `Source SHA-256 ${citation.sourceDigest}` : "", citation.firmwareCommit ? `Firmware commit ${citation.firmwareCommit}` : ""].filter(Boolean).join(" · ");
+        item.appendChild(provenance);
+      }
       if (citation.url) {
         const link = document.createElement("a");
         link.href = citation.url;
@@ -105,6 +115,8 @@ class MessageView {
       excerpt.className = "source-citation-excerpt";
       excerpt.textContent = citation.excerpt?.trim() || "No section excerpt was available in the collected config.";
       item.appendChild(excerpt);
+      questionButton(item, "Analyze this source",
+        `Analyze this source in more detail: ${this.formatSourceCitationLabel(citation)}\n${citation.excerpt?.slice(0, 2000) || ""}\nExplain how it relates to the problem and what evidence is still missing.`, this.followUp);
 
       list.appendChild(item);
     }
@@ -134,6 +146,7 @@ class MessageView {
     }
 
     article.classList.add(entry.role);
+    article.setAttribute("aria-label", entry.role === "user" ? "Your message" : "Agent response");
     setText(meta, entry.role === "user" ? "You" : "KlipperAI");
     content.classList.toggle("markdown", entry.role === "assistant");
     if (entry.role === "assistant") {
@@ -152,14 +165,40 @@ class MessageView {
     }
 
     if (entry.role === "assistant") {
-      AgentActivity.appendActions(article, entry.nextActions);
+      ModelUsageView.append(article, entry.modelUsage);
+      const findings = normalizeFindings(entry.findings);
+      appendFindingCards(article, findings, this.followUp);
+      appendAnswerDetails(article, entry);
+      const claimCitations = (entry.answerClaims || []).flatMap(item => item.citations || []);
+      if (findings.some(item => item.evidence) || entry.sourceCitations?.length || claimCitations.length) {
+        const evidence = resultCard("Evidence", "evidence-card");
+        appendFindingEvidence(evidence, findings);
+        const sources = normalizeSourceCitations([...(entry.sourceCitations || []), ...findings.flatMap(item => item.citations), ...claimCitations]);
+        const seen = new Set();
+        this.appendSourceCitations(evidence, sources.filter(item => {
+          const key = JSON.stringify([item.path, item.lineNumber, item.endLine, item.section]);
+          if (seen.has(key)) return false;
+          seen.add(key); return true;
+        }));
+        article.appendChild(evidence);
+      }
+      AgentActivity.appendActions(article, [...new Set([...(entry.nextActions || []), ...findings.map(item => item.proposed_fix).filter(Boolean)])], this.followUp);
+      if (entry.agentStatus === "limited" || entry.agentStatus === "error") {
+        const status = document.createElement("p");
+        status.className = "result-status";
+        status.textContent = entry.agentStatus === "limited" ? "Partial result · Some investigation steps could not be completed." : "Investigation error · Review the available evidence before continuing.";
+        article.appendChild(status);
+      }
       AgentActivity.append(article, entry.agentEvents);
       InvestigationEvidence.append(article, entry.memorySources);
       ContextReceipt.append(article, entry.contextIncluded, entry.mode);
     }
 
-    if (entry.role === "assistant" && entry.sourceCitations?.length) {
-      this.appendSourceCitations(article, entry.sourceCitations);
+    if (entry.role === "user" && entry.attachments?.length) {
+      const receipt = document.createElement("p");
+      receipt.className = "attachment-receipt";
+      receipt.textContent = `Attached: ${entry.attachments.join(", ")}`;
+      article.appendChild(receipt);
     }
 
     return article;

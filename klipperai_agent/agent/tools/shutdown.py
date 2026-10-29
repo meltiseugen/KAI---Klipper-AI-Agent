@@ -115,6 +115,14 @@ class ShutdownTool(Tool[ShutdownArguments]):
                         excerpt=f"{event['unix_time']}: {event['message'][:500]}",
                     )
                 )
+        if host.history.get("sample_count"):
+            citations.append(
+                SourceCitation(
+                    label="Recorded host history near estimated shutdown",
+                    path="shutdown:host-history",
+                    excerpt=json.dumps(host.history.get("pre_stop_summary", {}))[:2000],
+                )
+            )
         context.citations.extend(citations)
         report: dict[str, Any] = {
             "incident": incident.model_dump(),
@@ -130,10 +138,11 @@ class ShutdownTool(Tool[ShutdownArguments]):
             "assessments": [item.model_dump() for item in assessments[:8]],
             "configured_transports": transports,
             "current_host": host.current,
+            "historical_host": host.history,
             "context_notes": notes
             + host.notes
             + [
-                "sysload is one-minute load average, not CPU percent; cputime is cumulative Klippy CPU seconds. memavail is KiB. No process history is recorded by this tool.",
+                "sysload is one-minute load average, not CPU percent; cputime is cumulative Klippy CPU seconds. memavail is KiB. Historical process samples require the separately enabled host flight recorder.",
                 "Kernel correlation uses an estimated wall time from the same run's Start printer/Stats or timeout records. Coincidence does not prove causation; current readings cannot explain an earlier stop.",
                 "Do not increase safety timeouts, disable protections or change acceleration solely on the shutdown message. Proposed fixes require manual review and a supervised verification.",
             ],
@@ -141,6 +150,12 @@ class ShutdownTool(Tool[ShutdownArguments]):
             or len(incidents) > 10
             or len(assessments) > 8,
         }
+        history_samples = report["historical_host"].get("samples", [])
+        while len(json.dumps(report, ensure_ascii=False)) > 14000 and history_samples:
+            history_samples.pop(0)
+            report["historical_host"]["truncated"] = True
+            report["truncated"] = True
+        report["truncated"] = report["truncated"] or bool(host.history.get("truncated"))
         # Keep structured evidence usable under the registry's default 16k result budget.
         while (
             len(json.dumps(report, ensure_ascii=False)) > 14000 and len(report["assessments"]) > 1

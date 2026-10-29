@@ -29,7 +29,7 @@ def investigation_routes(get_service: Callable[[Request], ChatService]) -> APIRo
 
     @router.get("")
     async def recent(request: Request, session_id: str) -> list[dict]:
-        records = await memory(request, session_id).recent()
+        records = await memory(request, session_id).summaries()
         return [
             item.model_dump(
                 exclude={"turns": True, "pending": {"artifacts", "history", "evidence"}}

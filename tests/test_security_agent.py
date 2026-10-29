@@ -77,7 +77,7 @@ async def test_redaction_does_not_make_valid_artifacts_exceed_existing_schema(to
 async def test_chat_redacts_compatibility_workflows_and_keeps_session_identity():
     graph = _FakeGraph("diagnostics", {"response_text": "token=output-secret"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=graph,
         config_graph=graph,

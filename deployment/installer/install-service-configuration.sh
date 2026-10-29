@@ -2,6 +2,9 @@
 # Sourced by install.sh; no work is performed on import.
 
 install_service_configuration() {
+  log "Provisioning encrypted provider credentials."
+  install_encrypted_credentials
+
   log "Writing /etc/klipperai/klipperai.env"
   write_env_file
 
@@ -30,25 +33,12 @@ install_service_configuration() {
   log "Adding KlipperAI include to ${KLIPPERAI_MOONRAKER_CONFIG_PATH}"
   ensure_moonraker_include
 
-  log "Allowing Moonraker to manage ${SERVICE_NAME}"
-  ensure_moonraker_allowed_service
-
-  log "Writing systemd service."
-  write_systemd_service
-
-  log "Generating nginx location snippet."
-  write_nginx_snippet
-
-  if [[ "$PATCH_NGINX_INCLUDE" == "yes" ]]; then
-    log "Patching nginx server block."
-    ensure_nginx_include
-    log "Testing and reloading nginx."
-    if ! reload_nginx; then
-      if [[ -f "${KLIPPERAI_NGINX_SERVER_BLOCK_PATH}.bak.${TIMESTAMP}" ]]; then
-        warn "nginx validation failed after patching $KLIPPERAI_NGINX_SERVER_BLOCK_PATH. Restoring the previous file."
-        run_root cp "${KLIPPERAI_NGINX_SERVER_BLOCK_PATH}.bak.${TIMESTAMP}" "$KLIPPERAI_NGINX_SERVER_BLOCK_PATH"
-      fi
-      die "nginx validation failed after patching $KLIPPERAI_NGINX_SERVER_BLOCK_PATH."
-    fi
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == systemd ]]; then
+    log "Allowing Moonraker to manage ${SERVICE_NAME}"
+    ensure_moonraker_allowed_service
+    log "Writing systemd service."
+    write_systemd_service
   fi
+
+  configure_nginx
 }

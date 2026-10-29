@@ -8,9 +8,10 @@ from datetime import datetime, timezone
 from typing import Any, Protocol
 
 from klipperai_agent.domain.redaction import redact_text
+from klipperai_agent.domain.version import __version__
 
 AGENT_NAME = "klipperai"
-AGENT_VERSION = "0.1.0"
+AGENT_VERSION = __version__
 AGENT_URL = "https://github.com/meltiseugen/KAI---Klipper-AI-Agent"
 
 

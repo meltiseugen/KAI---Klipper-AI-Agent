@@ -1,0 +1,3 @@
+# Synthetic regression example, not a real printer incident.
+Starting printer with config file printer.cfg
+Include file '/example/config/extras/probe.cfg' does not exist

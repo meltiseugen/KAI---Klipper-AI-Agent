@@ -40,11 +40,12 @@ def redact_text(text: str, secrets: tuple[str, ...] = ()) -> str:
         lambda match: match[1] + match[2] + _mask(match[3]),
         text,
     )
-    text = re.sub(
-        r"(?i)([a-z][a-z0-9+.-]*://)([^\s/@]+:[^\s/@]+)@",
-        lambda match: match[1] + _mask(match[2]) + "@",
-        text,
-    )
+    if "://" in text:
+        text = re.sub(
+            r"(?i)(?<![a-z0-9+.-])([a-z][a-z0-9+.-]*://)([^\s/@]+:[^\s/@]+)@",
+            lambda match: match[1] + _mask(match[2]) + "@",
+            text,
+        )
     text = re.sub(r"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{12,}\b", REDACTED, text)
     text = re.sub(
         r"(?i)\b((?:Bearer|Basic)[ \t]+)([A-Za-z0-9_+/=.-]+)",

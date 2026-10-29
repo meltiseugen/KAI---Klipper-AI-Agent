@@ -133,7 +133,12 @@ class MoonrakerClient:
         except httpx.HTTPError as exc:
             raise MoonrakerError(f"Moonraker request failed: {exc}") from exc
 
-        payload = response.json()
+        try:
+            payload = response.json()
+        except ValueError:
+            raise MoonrakerError("Moonraker returned invalid JSON.") from None
+        if isinstance(payload, dict) and "error" in payload:
+            raise MoonrakerError(f"Moonraker returned an API error for {path}.")
         if isinstance(payload, dict) and "result" in payload:
             return payload["result"]
         if isinstance(payload, dict):

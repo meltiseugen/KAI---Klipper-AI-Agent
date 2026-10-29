@@ -15,6 +15,11 @@ function investigationMessages(record) {
 function investigationAnswer(result) {
   return {
     role: "assistant", text: result.response_text,
+    modelUsage: normalizeModelUsage(result.model_usage || { status: "unknown" }),
+    findings: result.findings || [], agentStatus: result.agent_status || "completed",
+    answerClaims: result.answer_claims || [], missingEvidence: result.missing_evidence || [],
+    hypotheses: result.hypotheses || [],
+    followUpAvailable: true,
     configProposals: result.config_proposals || [],
     sourceCitations: result.source_citations || [],
     agentEvents: result.agent_events || [], nextActions: result.next_actions || [],
@@ -73,11 +78,13 @@ class ProposalReviewCard {
     heading.textContent = {
       needs_information: "Resolve these issues before editing",
       manual_review: "Static checks complete — manual review required",
-      stale: "Configuration changed — refresh this proposal",
+      stale: "Configuration or firmware changed — refresh this proposal",
     }[review.status] || "Manual review required";
     section.appendChild(heading);
+    if (review.checks || review.manual_steps || review.firmware) appendReviewDetails(section, review);
     const list = document.createElement("ul");
     for (const message of [...(review.errors || []), ...(review.warnings || [])]) {
+      if (review.checks?.some(check => message.endsWith(check.message))) continue;
       const item = document.createElement("li");
       item.textContent = message;
       list.appendChild(item);
@@ -85,7 +92,7 @@ class ProposalReviewCard {
     section.appendChild(list);
     if (review.reviewed_at) {
       const date = document.createElement("p");
-      date.textContent = `Reviewed ${review.reviewed_at}. Recheck after changing configuration.`;
+      date.textContent = `Reviewed ${review.reviewed_at}. Recheck after changing configuration or firmware.`;
       section.appendChild(date);
     }
     if (review.comparison) {

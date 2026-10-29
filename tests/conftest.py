@@ -15,6 +15,12 @@ import pytest
 @pytest.fixture(autouse=True)
 def isolated_provider_storage(monkeypatch, tmp_path):
     monkeypatch.setenv("KLIPPERAI_PROVIDER_STORAGE_DIR", str(tmp_path / "provider-secrets"))
+    credentials = tmp_path / "systemd-credentials"
+    credentials.mkdir()
+    master = credentials / "klipperai-provider-master"
+    master.write_bytes(b"t" * 32)
+    master.chmod(0o600)
+    monkeypatch.setenv("CREDENTIALS_DIRECTORY", str(credentials))
 
 
 @pytest.fixture

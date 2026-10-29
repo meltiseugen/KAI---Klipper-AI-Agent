@@ -39,10 +39,10 @@ excerpt. Private configs, logs, MCU assignments and wiring notes are excluded fr
 these research calls. Use public product names in those identity fields.
 Normal chat/debug context follows its own documented context policy.
 
-With search/the agent disabled or the offline provider selected, users can still
-save details and cache documents from supplied public URLs. Automatic discovery
-and connector extraction are unavailable in that configuration. Cached evidence
-remains readable offline. Model-selected knowledge tools require the tool-using agent.
+Without an active API key, users can view saved details and cached documents.
+Public URLs can still supply document downloads for the webpage, but automatic
+discovery and connector extraction require the configured model provider.
+Model-selected knowledge tools require the tool-using agent.
 
 ## Evidence and recommendations
 
@@ -55,6 +55,7 @@ and dated user facts. Read-only tools retrieve details as needed:
 | `search_printer_knowledge` | Up to three local passages, with source URL, date, hash and line number; any saved component name or `all` |
 | `inspect_fan_ports` | Reviewed connector mappings compared with the active include tree, MCU-qualified pins, aliases, multi-pin outputs and existing owners |
 | `inspect_eddy_calibration` | Eddy-family identity, firmware, probe/temperature/mesh/start configuration, saved calibration markers and local passages |
+| `inspect_component` | Fixed accelerometer, probe, TMC driver, temperature or filament families; current sections, reviewed bus pins, bounded available status objects and manual checks |
 
 Documents are scoped to the component identity and revision. Removing/changing an
 identity excludes its former documents. Search results and extracted mappings are
@@ -85,8 +86,14 @@ thermal drift without running calibration. It checks MCU/transport, matching
 probe/temperature sections, offsets, macros and saved calibration markers. A
 Moonraker read compares reported and saved firmware versions. Local guides are
 not automatically matched to the installed firmware commit: missing compatibility
-evidence requires further research. Other probes use the generic knowledge/config
-tools; a dedicated diagnostic helper is not implied for every component family.
+evidence requires further research. The generic `inspect_component` tool supports
+the additional fixed families above without running calibration, driver commands,
+movement or heaters. Missing live objects are evidence gaps, not healthy findings.
+
+Exact-commit firmware references, source-reviewed bus reservations, dated physical
+connector observations and user-triggered live checks are described in
+[hardware knowledge](hardware-knowledge.md). Firmware default bus names remain
+unresolved until supported by exact source evidence; no board catalog is assumed.
 
 ## Storage, downloads and limits
 
@@ -97,8 +104,11 @@ conversation does not delete this knowledge. Only public outcomes/evidence are
 stored; hidden model reasoning is not persisted.
 
 The UI links source documents and provides **Download cached copy**. PDF, PNG and
-JPEG originals are retained for viewing/download; their text/diagrams are not
-automatically indexed. Readable HTML/text provides local search and extraction.
+JPEG originals are retained for viewing/download. PDF text, page locations, diagram
+captions and image/form/vector counts are indexed by a bounded child process.
+Image-only diagrams require visual review and can receive explicitly confirmed,
+source-digest-bound page notes. OCR and automatic diagram-to-pin inference are not
+performed. HTML/text also provides local search and extraction.
 GitHub file-viewer links are converted to the corresponding raw document URL.
 Candidate extraction examines at most 45,000 characters per readable source and
 does not infer mappings from unprocessed diagrams.
@@ -137,6 +147,8 @@ survive, but interrupted jobs require a new refresh after restart.
 
 Adding a different board does not require editing Python or a catalog. Enter its
 details and research its documentation. Missing or ambiguous evidence remains a
-gap. Remaining work includes PDF/diagram extraction, firmware-commit-specific
-reference selection, more bus/pin formats, physical connector inventories, more
-diagnostic families and live printer/provider validation.
+gap. Further work includes firmware reference selection for additional repository
+layouts, more bus/pin formats,
+automatic OCR/visual interpretation with suitable evidence review, and actual live
+printer/provider acceptance on a configured deployment. See
+[hardware knowledge](hardware-knowledge.md) for implemented scope and limits.

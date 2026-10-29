@@ -5,6 +5,12 @@ turns contain the user's question, the public result, dated tool observations,
 findings, citations and reviewed proposals. Hidden model reasoning and provider
 conversation state are never stored.
 
+Public observations now share typed artifact metadata with model inputs and the
+bounded chat API `evidence_blocks` view. IDs, provenance, freshness, collection
+timestamps and config revisions survive persistence; recalled/recovery evidence
+is labeled historical. Old records default to unknown provenance/freshness and
+remain readable without a schema migration. See the [evidence contract](evidence-contract.md).
+
 ## Memory behavior
 
 - Reopening a chat loads server-side history. The browser's history is accepted
@@ -66,6 +72,13 @@ restores the 30 most recently active investigations. The existing deployment is 
 shared, trusted printer UI, not a multi-user account system. Changing the configured
 Moonraker URL, printer root or root-config setting changes the printer memory scope.
 
+Sidebar polling reads metadata without loading completed-turn evidence. The browser
+fetches full conversations when opened, polls every five seconds while work is
+pending and every thirty seconds otherwise, and pauses history polling in hidden
+tabs. Only one investigation executes at a time per application process; another
+interactive request receives a retryable conflict, while recovery waits with its
+lease maintained. See [resource bounds and hardware acceptance](performance.md).
+
 ## Interrupted investigation recovery
 
 Before routing a request or calling a model, KlipperAI atomically saves its public
@@ -102,7 +115,7 @@ are renewed by the browser; recovery does not depend on the old session.
 
 ```mermaid
 flowchart LR
-    Evidence[Observe configuration revision] --> Draft[Model or offline draft]
+    Evidence[Observe configuration revision] --> Draft[Model draft informed by tools]
     Draft --> Review[Deterministic static review]
     Review --> Missing[Needs information]
     Review --> Manual[Manual review and section comparison]
@@ -123,11 +136,18 @@ snippet and a complete file replacement. SHA-256 revisions include full collecte
 file content, even when the prompt excerpt was clipped.
 
 Every result remains `manual_only`. `manual_review` means the implemented static
-checks found no blocking issue; it does not establish valid firmware options, safe
-wiring, or physical safety. `needs_information` carries blocking issues. `stale`
-means the observed active config revision changed since the draft's evidence.
+checks found no blocking issue; it does not establish full firmware compatibility,
+safe wiring, or physical safety. `needs_information` carries blocking issues. `stale`
+means the observed active config revision or firmware identity changed since the draft's evidence.
 Rechecking cannot make an old proposal current again; request a refreshed draft.
 No firmware validation commands, restarts or writes are performed.
+
+Reviews also carry partial option/type/range checks, exact-release compatibility
+checks, labeled live/saved firmware evidence, and section-specific manual
+verification steps. Partial snippets are checked against retained observed options.
+Unknown extensions, git builds and forks require manual verification. See the
+[configuration review guide](configuration-review.md) for the supported scope,
+source provenance, fallback behavior and UI fields.
 
 ## Interfaces and ownership
 
@@ -158,8 +178,9 @@ All investigation endpoints require a valid UI session:
 | DELETE | `/api/memory/{id}?session_id=...` | Forget a confirmed entry |
 
 Tests: `test_investigations.py`, `test_confirmed_memory.py`,
-`test_investigation_recovery.py`, `test_proposal_review.py`, `test_agent.py`,
-`agent-ui.test.mjs`, and `memory-recovery-ui.test.mjs`. They cover persistence,
+`test_investigation_recovery.py`, `test_proposal_review.py`, `test_review_options.py`,
+`test_agent.py`, `agent-ui.test.mjs`, `proposal-review-ui.test.mjs`, and
+`memory-recovery-ui.test.mjs`. They cover persistence,
 explicit confirmation, historical context, competing recovery workers, checkpoint
 privacy, restart recovery with changed configuration, deletion, revision changes,
 path protection, UI polling/drafts and unchanged printer-config bytes.

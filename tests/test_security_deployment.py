@@ -61,6 +61,7 @@ source "$2"
 COMMANDS="$3"
 TIMESTAMP=test
 KLIPPERAI_OPENAI_API_KEY=new-private-key
+    KLIPPERAI_DATA_DIR=/var/lib/klipperai
 log() { :; }
 run_root() { printf '%s\n' "$*" >> "$COMMANDS"; "$@"; }
 write_env_file
@@ -74,7 +75,8 @@ write_env_file
     assert calls[2] == f"install -m 600 {env_file.as_posix()} {backup.as_posix()}"
     assert calls[3].startswith("install -m 600 ") and calls[3].endswith(env_file.as_posix())
     assert backup.read_text() == "old-private-key"
-    assert "new-private-key" in env_file.read_text()
+    assert "new-private-key" not in env_file.read_text()
+    assert 'KLIPPERAI_PROVIDER_STORAGE_DIR="/var/lib/klipperai/private"' in env_file.read_text()
     assert "private-key" not in result.stdout + result.stderr + commands.read_text()
 
 

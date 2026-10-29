@@ -42,13 +42,17 @@ def test_build_container_wires_optional_collectors(monkeypatch, tmp_path) -> Non
     monkeypatch.setattr(
         container_module,
         "build_diagnosis_provider",
-        lambda _settings: SimpleNamespace(name="diagnosis"),
+        lambda _settings, **_kwargs: SimpleNamespace(name="diagnosis"),
     )
     monkeypatch.setattr(
-        container_module, "build_config_provider", lambda _settings: SimpleNamespace(name="config")
+        container_module,
+        "build_config_provider",
+        lambda _settings, **_kwargs: SimpleNamespace(name="config"),
     )
     monkeypatch.setattr(
-        container_module, "build_intent_router", lambda _settings: SimpleNamespace(name="intent")
+        container_module,
+        "build_intent_router",
+        lambda _settings, **_kwargs: SimpleNamespace(name="intent"),
     )
     monkeypatch.setattr(
         container_module, "build_profile_from_settings", lambda _settings: PrinterProfile()
@@ -88,10 +92,16 @@ def test_build_container_disables_optional_collectors(monkeypatch, tmp_path) -> 
     )
     monkeypatch.setattr(container_module, "RuleEngine", lambda: object())
     monkeypatch.setattr(
-        container_module, "build_diagnosis_provider", lambda _settings: SimpleNamespace(name="stub")
+        container_module,
+        "build_diagnosis_provider",
+        lambda _settings, **_kwargs: SimpleNamespace(name="openai"),
     )
-    monkeypatch.setattr(container_module, "build_config_provider", lambda _settings: object())
-    monkeypatch.setattr(container_module, "build_intent_router", lambda _settings: object())
+    monkeypatch.setattr(
+        container_module, "build_config_provider", lambda _settings, **_kwargs: object()
+    )
+    monkeypatch.setattr(
+        container_module, "build_intent_router", lambda _settings, **_kwargs: object()
+    )
     monkeypatch.setattr(container_module, "ConfigCollector", lambda *args, **kwargs: object())
     monkeypatch.setattr(
         container_module, "build_profile_from_settings", lambda _settings: PrinterProfile()

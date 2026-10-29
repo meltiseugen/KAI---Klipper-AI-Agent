@@ -18,12 +18,14 @@ Type=simple
 User=$INSTALL_USER
 WorkingDirectory=$INSTALL_DIR
 EnvironmentFile=-/etc/klipperai/klipperai.env
+LoadCredentialEncrypted=klipperai-provider-master:/etc/klipperai/credentials/provider-master.cred
 ExecStart=$INSTALL_DIR/.venv/bin/klipperai-agent
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=yes
 PrivateTmp=yes
 UMask=0077
+LimitCORE=0
 Environment=PYTHONDONTWRITEBYTECODE=1
 
 [Install]

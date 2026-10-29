@@ -44,6 +44,40 @@ function isMarkdownFenceLine(line) {
   return /^\s*```/.test(line);
 }
 
+function appendCodeBlock(parent, text, language = "") {
+  const block = document.createElement("div");
+  block.className = "code-block";
+  const toolbar = document.createElement("div");
+  toolbar.className = "code-toolbar";
+  const label = document.createElement("span");
+  label.textContent = { lua: "Lua", ini: "Config", python: "Python", javascript: "JavaScript" }[language.toLowerCase()] || language || "Plain text";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "code-copy";
+  button.textContent = "Copy";
+  button.setAttribute("aria-label", "Copy code");
+  button.addEventListener("click", async () => {
+    try {
+      if (!globalThis.navigator?.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(text);
+      button.textContent = "Copied";
+    } catch {
+      button.textContent = "Select text to copy";
+    }
+  });
+  toolbar.appendChild(label);
+  toolbar.appendChild(button);
+  const pre = document.createElement("pre");
+  pre.className = "markdown-code";
+  const code = document.createElement("code");
+  if (language) code.dataset.language = language;
+  code.textContent = text;
+  pre.appendChild(code);
+  block.appendChild(toolbar);
+  block.appendChild(pre);
+  parent.appendChild(block);
+}
+
 function renderMarkdown(element, text) {
   element.textContent = "";
   const lines = String(text || "").replace(/\r\n/g, "\n").split("\n");
@@ -68,15 +102,7 @@ function renderMarkdown(element, text) {
         index += 1;
       }
 
-      const pre = document.createElement("pre");
-      pre.className = "markdown-code";
-      const code = document.createElement("code");
-      if (fenceMatch[1]) {
-        code.dataset.language = fenceMatch[1];
-      }
-      code.textContent = codeLines.join("\n");
-      pre.appendChild(code);
-      element.appendChild(pre);
+      appendCodeBlock(element, codeLines.join("\n"), fenceMatch[1] || "");
       continue;
     }
 

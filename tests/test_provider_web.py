@@ -31,7 +31,7 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
         lambda: Settings(data_dir=tmp_path / "data", root_path="/klipperai"),
     )
     monkeypatch.setattr(app_module, "build_container", lambda _: container)
-    with TestClient(app_module.create_app()) as client:
+    with TestClient(app_module.create_app(), base_url="https://testserver") as client:
         session = client.post("/api/ui-sessions").json()["session_id"]
         params = {"session_id": session}
         base = "/klipperai/api/providers"
@@ -44,6 +44,10 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
         policy = status.json()["policy"]
         policy["provider"] = "openai"
         body = {**params, "revision": 0, "policy": policy, "api_key": "write-only-secret"}
+        insecure = client.post("http://testserver" + base + "/validate", json=body)
+        assert insecure.status_code == 403 and "HTTPS" in insecure.text
+        assert "write-only-secret" not in insecure.text
+        assert client.post("http://localhost" + base + "/validate", json=body).status_code == 200
         assert client.post(base + "/validate", json=body).status_code == 200
         assert manager.store.load()[0] == 0
         saved = client.put(base, json=body)

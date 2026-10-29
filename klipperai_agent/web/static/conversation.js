@@ -1,6 +1,12 @@
 // Conversation value normalization; no DOM or storage access.
 function normalizeAgentMode(value) { return value === "debug" ? "debug" : "chat"; }
 
+function isWelcomeEntry(entry, introMessage) {
+  if (entry.role !== "assistant" || entry.error || entry.followUpAvailable) return false;
+  return entry.intro || entry.text === introMessage
+    || /^(Describe the problem or what you want to change\. Your LLM agent reads|Your LLM agent investigates printer problems and configuration|Ask about your printer or its configuration\. Chat starts)/.test(entry.text);
+}
+
 function generateId() {
   if (globalThis.crypto?.randomUUID) {
     return globalThis.crypto.randomUUID();
@@ -49,7 +55,16 @@ function normalizeConversationEntries(entries) {
       if (!text.trim()) {
         return null;
       }
-      return { role, text, configProposals, sourceCitations, mode: normalizeAgentMode(entry.mode), contextIncluded: Array.isArray(entry.contextIncluded) ? entry.contextIncluded : [], agentEvents: AgentActivity.normalize(entry.agentEvents), nextActions: Array.isArray(entry.nextActions) ? entry.nextActions : [], memorySources: Array.isArray(entry.memorySources) ? entry.memorySources : [] };
+      return { role, text, configProposals, sourceCitations,
+        intro: Boolean(entry.intro),
+        modelUsage: normalizeModelUsage(entry.modelUsage),
+        answerClaims: Array.isArray(entry.answerClaims) ? entry.answerClaims : [],
+        missingEvidence: Array.isArray(entry.missingEvidence) ? entry.missingEvidence : [],
+        hypotheses: Array.isArray(entry.hypotheses) ? entry.hypotheses : [],
+        findings: normalizeFindings(entry.findings), agentStatus: entry.agentStatus,
+        followUpAvailable: Boolean(entry.followUpAvailable), error: Boolean(entry.error),
+        attachments: Array.isArray(entry.attachments) ? entry.attachments.map(String) : [],
+        mode: normalizeAgentMode(entry.mode), contextIncluded: Array.isArray(entry.contextIncluded) ? entry.contextIncluded : [], agentEvents: AgentActivity.normalize(entry.agentEvents), nextActions: Array.isArray(entry.nextActions) ? entry.nextActions : [], memorySources: Array.isArray(entry.memorySources) ? entry.memorySources : [] };
     })
     .filter(Boolean);
 }
@@ -108,6 +123,14 @@ function normalizeSourceCitations(citations) {
         label,
         path,
         lineNumber,
+        endLine: Number.parseInt(citation.endLine ?? citation.end_line, 10) || null,
+        lineBasis: String(citation.lineBasis || citation.line_basis || "none"),
+        evidenceId: citation.evidenceId || citation.evidence_id || null,
+        observedAt: citation.observedAt || citation.observed_at || null,
+        configRevision: citation.configRevision || citation.config_revision || null,
+        pageNumber: citation.pageNumber || citation.page_number || null,
+        sourceDigest: citation.sourceDigest || citation.source_digest || null,
+        firmwareCommit: citation.firmwareCommit || citation.firmware_commit || null,
         section,
         excerpt,
         url: /^https?:\/\//i.test(String(citation.url || "")) ? String(citation.url) : null,

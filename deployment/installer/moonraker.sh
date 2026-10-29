@@ -3,6 +3,8 @@
 
 write_moonraker_extension_cfg() {
   local temp_file
+  local managed_service="managed_services: klipperai-agent"
+  [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" != appliance ]] || managed_service="# Native service lifecycle is managed by /etc/init.d/S99klipperai."
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
@@ -17,7 +19,7 @@ channel: dev
 path: $INSTALL_DIR
 origin: $KLIPPERAI_GIT_ORIGIN
 primary_branch: $KLIPPERAI_GIT_PRIMARY_BRANCH
-managed_services: klipperai-agent
+$managed_service
 info_tags:
     desc=KlipperAI
 EOF

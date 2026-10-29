@@ -5,9 +5,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal, Protocol
 
-from pydantic import Field, StrictBool, constr, validator
+from pydantic import Field, StrictBool, constr, root_validator, validator
 
 from klipperai_agent.domain.base import BaseModel
+from klipperai_agent.domain.hardware import (
+    BusMapping,
+    ConnectorObservation,
+    DiagramNote,
+    PdfPageIndex,
+)
 
 MCU_PIN_PATTERN = r"(?:P[A-Z][0-9]+|P[0-9]+\.[0-9]+|gpio[0-9]+)"
 
@@ -19,7 +25,7 @@ class ComponentIdentity(BaseModel):
     model: str = Field(default="", max_length=120)
     revision: str = Field(default="", max_length=30)
     mcu: str = Field(default="", max_length=60, regex=r"^[A-Za-z0-9_-]*$")
-    connection: Literal["unknown", "USB", "CAN", "UART", "I2C"] = "unknown"
+    connection: Literal["unknown", "USB", "CAN", "UART", "I2C", "SPI"] = "unknown"
     confirmed: StrictBool = False
     reference_urls: list[constr(max_length=2048)] = Field(default_factory=list, max_items=3)  # type: ignore[valid-type]
 
@@ -47,6 +53,30 @@ class KnowledgeSetup(BaseModel):
     updated_at: str = ""
     revision: int = Field(default=0, ge=0)
     reviewed_fan_mappings: dict[str, str] = Field(default_factory=dict)
+    reviewed_bus_mappings: dict[str, str] = Field(default_factory=dict)
+    connectors: list[ConnectorObservation] = Field(default_factory=list, max_items=64)
+    diagram_notes: list[DiagramNote] = Field(default_factory=list, max_items=64)
+    firmware_repository: str = Field(default="", max_length=200)
+    firmware_commit: str = Field(default="", max_length=40)
+    validation: dict = Field(default_factory=dict)
+
+    @root_validator
+    def pinned_firmware(cls, values: dict) -> dict:
+        import re
+
+        repository, commit = (
+            values.get("firmware_repository", ""),
+            values.get("firmware_commit", ""),
+        )
+        if repository or commit:
+            if not re.fullmatch(
+                r"https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository
+            ) or not re.fullmatch(r"[a-fA-F0-9]{40}", commit):
+                raise ValueError(
+                    "Use a public GitHub repository URL and full 40-character firmware commit."
+                )
+        values["firmware_commit"] = commit.lower()
+        return values
 
     @validator("components")
     def unique_roles(cls, value: list[ComponentIdentity]) -> list[ComponentIdentity]:
@@ -87,6 +117,11 @@ class CachedDocument(BaseModel):
     version: str = ""
     component_key: str = ""
     fan_mappings: list[FanMapping] = Field(default_factory=list, max_items=16)
+    bus_mappings: list[BusMapping] = Field(default_factory=list, max_items=64)
+    firmware_commit: str = ""
+    firmware_repository: str = ""
+    pages: list[PdfPageIndex] = Field(default_factory=list, max_items=80)
+    index_notes: list[str] = Field(default_factory=list, max_items=12)
 
 
 class KnowledgeConflict(ValueError):

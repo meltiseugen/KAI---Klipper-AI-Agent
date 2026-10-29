@@ -3,14 +3,23 @@
 
 configure_paths() {
   DEFAULT_INSTALL_USER="$(detect_default_install_user)"
+  [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" != appliance ]] || DEFAULT_INSTALL_USER=root
   INSTALL_USER="$(prompt_default "Linux user that should run the KlipperAI service" "$DEFAULT_INSTALL_USER")"
   id "$INSTALL_USER" >/dev/null 2>&1 || die "User '$INSTALL_USER' does not exist."
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    [[ "$(id -u "$INSTALL_USER")" -eq 0 ]] || die "The native appliance service uses the host root account."
+  else
+    [[ "$(id -u "$INSTALL_USER")" -ne 0 ]] || die "Secure installation requires an unprivileged service account with read access to the printer evidence."
+  fi
 
   INSTALL_HOME="$(home_for_user "$INSTALL_USER")"
   [[ -n "$INSTALL_HOME" ]] || die "Could not determine the home directory for '$INSTALL_USER'."
   INSTALL_GROUP="$(group_for_user "$INSTALL_USER")"
 
   STANDARD_INSTALL_DIR="$INSTALL_HOME/KlipperAI"
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    STANDARD_INSTALL_DIR="${SCRIPT_DIR:-$STANDARD_INSTALL_DIR}"
+  fi
   INSTALL_DIR="$(prompt_default "Project checkout path to install from" "$STANDARD_INSTALL_DIR")"
   ensure_no_spaces "$INSTALL_DIR" "Project checkout path"
   [[ -f "$INSTALL_DIR/pyproject.toml" ]] || die "No pyproject.toml found in $INSTALL_DIR."
@@ -40,7 +49,11 @@ configure_paths() {
   KLIPPERAI_ROOT_PATH="$(normalize_root_path "$(prompt_default "Reverse-proxy root path" "/klipperai")")"
   KLIPPERAI_PORT="$(prompt_default "Local KlipperAI bind port" "8811")"
   ensure_numeric_port "$KLIPPERAI_PORT"
-  KLIPPERAI_DATA_DIR="$(prompt_default "Local KlipperAI data directory" "/var/lib/klipperai")"
+  local default_data_dir=/var/lib/klipperai
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    default_data_dir=/usr/data/klipperai-data
+  fi
+  KLIPPERAI_DATA_DIR="$(prompt_default "Local KlipperAI data directory" "$default_data_dir")"
   ensure_no_spaces "$KLIPPERAI_DATA_DIR" "Local data directory"
   KLIPPERAI_CHECKPOINT_DB="${KLIPPERAI_DATA_DIR}/checkpoints.sqlite"
   KLIPPERAI_COLLECT_HOST_LOGS="true"
@@ -49,6 +62,9 @@ configure_paths() {
   KLIPPERAI_AGENT_LOG_LEVEL="INFO"
   KLIPPERAI_LOG_TAIL_LINES_DEFAULT="100"
   KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS="true"
+  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS=false
+  fi
   KLIPPERAI_MOONRAKER_SERVICE_NAME="moonraker.service"
   KLIPPERAI_KLIPPER_SERVICE_NAME="klipper.service"
   KLIPPERAI_JOURNAL_LINES="200"

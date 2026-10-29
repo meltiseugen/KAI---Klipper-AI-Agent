@@ -6,12 +6,13 @@ from dataclasses import dataclass, field
 from typing import Any, Generic, TypeVar
 
 from klipperai_agent.agent.ports import PrinterReader, ToolServices
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
+from klipperai_agent.config.models import ConfigDocument, ConfigReadError, ConfigSnapshot
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.domain.base import BaseModel
 from klipperai_agent.domain.context import ContextItem
 from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding, SourceCitation
 from klipperai_agent.domain.investigation import Evidence
+from klipperai_agent.domain.logs import LogInventory, LogWindow
 
 
 class ToolArguments(BaseModel):
@@ -38,6 +39,9 @@ class ToolContext:
     diagnostic_snapshots: dict[tuple[bool, bool], DiagnosticsSnapshot] = field(default_factory=dict)
     diagnostic_artifacts: dict[str, ArtifactInput] = field(default_factory=dict)
     expanded_documents: dict[tuple[bool, str], ConfigDocument] = field(default_factory=dict)
+    log_inventory: LogInventory | None = None
+    log_windows: dict[str, LogWindow] = field(default_factory=dict)
+    log_bytes_reserved: int = 0
 
     async def document(self, path: str, include_unincluded: bool = False) -> ConfigDocument | None:
         snapshot = await self.config(include_unincluded)
@@ -46,9 +50,18 @@ class ToolContext:
             return document
         key = (include_unincluded, path)
         if key not in self.expanded_documents:
-            self.expanded_documents[key] = await asyncio.to_thread(
+            expanded = await asyncio.to_thread(
                 self.services.config_collector.read_collected_document, document
             )
+            if (
+                sum(len(item.content) for item in self.expanded_documents.values())
+                + len(expanded.content)
+                > 4_000_000
+            ):
+                raise ConfigReadError(
+                    "Expanded config evidence budget reached. Narrow the files or start a new investigation."
+                )
+            self.expanded_documents[key] = expanded
         return self.expanded_documents[key]
 
     async def diagnostics(self, logs: bool, system: bool) -> DiagnosticsSnapshot:

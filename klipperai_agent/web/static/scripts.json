@@ -1,5 +1,9 @@
 [
+  "ui-errors.js",
+  "model-usage.js",
   "agent.js",
+  "result-cards.js",
+  "proposal-review-view.js",
   "investigation.js",
   "investigation-sync.js",
   "conversation.js",
@@ -8,6 +12,7 @@
   "markdown.js",
   "message-view.js",
   "shell-view.js",
+  "knowledge-actions.js",
   "knowledge.js",
   "memory.js",
   "providers.js",

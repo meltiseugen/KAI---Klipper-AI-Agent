@@ -2,19 +2,23 @@
 # Sourced by install.sh; no work is performed on import.
 
 write_nginx_snippet() {
+  local path="${1:-/etc/klipperai/nginx-location.conf}"
   local temp_file
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
 location = ${KLIPPERAI_ROOT_PATH} {
+    absolute_redirect off;
     return 308 ${KLIPPERAI_ROOT_PATH}/\$is_args\$args;
 }
 
-location ${KLIPPERAI_ROOT_PATH}/ {
+location ^~ ${KLIPPERAI_ROOT_PATH}/ {
     access_log off;
     proxy_http_version 1.1;
     proxy_buffering off;
+    proxy_cache off;
     proxy_read_timeout 300s;
+    proxy_set_header Connection "";
     proxy_set_header Host \$http_host;
     proxy_set_header X-Forwarded-Host "";
     proxy_set_header Forwarded "";
@@ -24,13 +28,13 @@ location ${KLIPPERAI_ROOT_PATH}/ {
 }
 EOF
 
-  backup_file /etc/klipperai/nginx-location.conf
-  run_root install -m 644 "$temp_file" /etc/klipperai/nginx-location.conf
+  backup_file "$path"
+  run_root install -m 644 "$temp_file" "$path" || { rm -f "$temp_file"; return 1; }
   rm -f "$temp_file"
 }
 
 ensure_nginx_include() {
-  local include_line="include /etc/klipperai/nginx-location.conf;"
+  local include_line="include ${1:-/etc/klipperai/nginx-location.conf};"
   local path="$KLIPPERAI_NGINX_SERVER_BLOCK_PATH"
 
   [[ -n "$path" ]] || die "nginx server block path is not set."
@@ -74,7 +78,7 @@ ensure_nginx_include() {
         next
       }
 
-      if (trim(strip_comments(raw)) == include_line) {
+      if (depth == 1 && trim(strip_comments(raw)) == include_line) {
         server_has_include = 1
       }
 
@@ -93,13 +97,13 @@ ensure_nginx_include() {
       }
     }
     END {
-      if (server_count == 0) {
+      if (server_count == 0 || in_server) {
         exit 1
       }
     }
   ' "$path" >"$temp_file"; then
     rm -f "$temp_file"
-    die "Could not find a server block to patch in $path"
+    die "Could not find a complete multiline server block to patch in $path"
   fi
 
   if cmp -s "$temp_file" "$path"; then
@@ -114,9 +118,33 @@ ensure_nginx_include() {
   owner="$(stat -c '%u' "$path")"
   group="$(stat -c '%g' "$path")"
   backup_file "$path"
-  run_root install -o "$owner" -g "$group" -m "$mode" "$temp_file" "$path"
+  run_root install -o "$owner" -g "$group" -m "$mode" "$temp_file" "$path" || { rm -f "$temp_file"; return 1; }
   rm -f "$temp_file"
   log "Updated $path"
+}
+
+configure_nginx() {
+  local snippet="${1:-/etc/klipperai/nginx-location.conf}"
+  local had_snippet=no
+  [[ ! -f "$snippet" ]] || had_snippet=yes
+  log "Generating nginx location snippet."
+  write_nginx_snippet "$snippet" || die "Could not write nginx snippet: $snippet"
+  [[ "$PATCH_NGINX_INCLUDE" == yes ]] || return 0
+
+  log "Patching, testing and reloading nginx."
+  if ! (ensure_nginx_include "$snippet" && reload_nginx); then
+    local server="$KLIPPERAI_NGINX_SERVER_BLOCK_PATH"
+    warn "nginx configuration failed. Restoring previous proxy files."
+    if [[ -f "${server}.bak.${TIMESTAMP}" ]]; then
+      run_root cp "${server}.bak.${TIMESTAMP}" "$server"
+    fi
+    if [[ "$had_snippet" == yes ]]; then
+      run_root cp "${snippet}.bak.${TIMESTAMP}" "$snippet"
+    else
+      run_root rm -f "$snippet"
+    fi
+    die "nginx configuration failed for $server."
+  fi
 }
 
 reload_nginx() {

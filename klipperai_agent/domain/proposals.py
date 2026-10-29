@@ -31,6 +31,31 @@ class PatchProposal(BaseModel):
     safe_mode: str = "review"
 
 
+class ReviewCheck(BaseModel):
+    code: str
+    severity: Literal["error", "warning", "info"]
+    message: str
+    section: str = ""
+    option: str = ""
+    line: int | None = None
+    source_url: str = ""
+
+
+class ReviewFirmware(BaseModel):
+    flavor: str = ""
+    version: str = ""
+    source: Literal["unavailable", "saved_profile", "live_version_saved_flavor"] = "unavailable"
+    observed_at: str = ""
+    note: str = ""
+
+
+class ConfigFilePatch(BaseModel):
+    target_file: str
+    operation: Literal["create", "update"]
+    baseline_digest: str = ""
+    diff: str
+
+
 class ProposalReview(BaseModel):
     proposal_id: str
     reviewed_at: str
@@ -41,6 +66,13 @@ class ProposalReview(BaseModel):
     errors: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     comparison: str = ""
+    checks: list[ReviewCheck] = Field(default_factory=list)
+    manual_steps: list[str] = Field(default_factory=list)
+    firmware: ReviewFirmware = Field(default_factory=ReviewFirmware)
+    baseline_firmware: ReviewFirmware | None = None
+    file_patches: list[ConfigFilePatch] = Field(default_factory=list)
+    file_baselines: dict[str, str] = Field(default_factory=dict)
+    managed_include: str = ""
 
 
 class ConfigProposal(BaseModel):

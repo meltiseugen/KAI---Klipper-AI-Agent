@@ -28,7 +28,7 @@ This backlog is organized around the current chosen architecture:
 
 ## Reminders After Investigation And Review Work
 
-- [x] Finish simplifying the surrounding product (frontend and installer), including offline Mainsail and OctoEverywhere regression checks
+- [x] Finish simplifying the surrounding product (frontend and installer), including automated Mainsail and OctoEverywhere regression checks
 
 ## Milestone 0: Project Foundation
 
@@ -49,34 +49,33 @@ This backlog is organized around the current chosen architecture:
 - [x] Investigate MCU communication/timing/homing shutdowns using pre-stop statistics and confidence-qualified hypotheses
 - [x] Correlate retained kernel OOM, USB/CAN, storage and throttling events when an incident clock anchor exists
 - [x] Add current Moonraker CPU/memory/thermal observations separately from incident evidence
-- [x] Test shutdown rule families, collection limits, missing evidence, agent handoff and persisted reports offline
-- [ ] Add an opt-in bounded host flight recorder for CPU/process, memory/swap and I/O pressure history
-- [ ] Validate shutdown investigations against real USB/CAN incidents and live provider answers
-- [ ] Add optional `journalctl` collection for broader host services
-- [ ] Query core Moonraker state for server info, printer status, and config metadata
-- [ ] Normalize collected context into typed artifacts before LLM calls
-- [ ] Expand deterministic detections for common Klipper problems
-- [ ] Return richer evidence blocks in API responses
-- [ ] Add severity ranking and confidence hints
-- [ ] Add unit tests for each deterministic diagnostic rule family
+- [x] Test shutdown rule families, collection limits, missing evidence, agent handoff and persisted reports automated
+- [x] Add an opt-in bounded host flight recorder for CPU/process, memory/swap and I/O pressure history
+- [x] Add optional `journalctl` collection for broader host services
+- [x] Query core Moonraker state for server info, printer status, and config metadata
+- [x] Normalize collected context into typed artifacts before LLM calls
+- [x] Expand runtime diagnostic rules for heater, homing/endstop, TMC driver, MCU protocol and motion-limit errors, with source evidence and manual investigation guidance
+- [x] Return richer evidence blocks in API responses
+- [x] Add severity ranking and confidence hints
+- [x] Add unit tests for each deterministic diagnostic rule family, including normal messages and false-positive cases
 
 ## Milestone 2: UI Session And Embedded Experience
 
-- [ ] Improve the embedded chat UI to show findings, evidence, and next actions as distinct cards
-- [ ] Add artifact upload support for pasted files and drag-and-drop log snippets
+- [x] Improve the embedded chat UI to show findings, evidence, and next actions as distinct cards
+- [x] Read printer configuration and recent logs automatically for the agent; the web composer only asks for a question.
 - [x] Persist investigation history independently of ephemeral UI sessions
 - [x] Stream agent action events and the final response for long-running investigations
-- [ ] Add explicit error states for Moonraker unavailable, missing provider config, and invalid session
-- [ ] Add UI affordances for follow-up questions and drill-down analysis
+- [x] Add explicit error states for Moonraker unavailable, missing provider config, and invalid session
+- [x] Add UI affordances for follow-up questions and drill-down analysis
 
 ## Milestone 3: Mainsail Integration
 
 - [x] Add a stable same-origin KlipperAI page at `/klipperai/`
 - [x] Add a low-coupling Mainsail custom-navigation link that opens KlipperAI
 - [x] Add installer support for writing `.theme/navi.json`
-- [ ] Ensure same-origin routing for `/klipperai/` behind nginx
-- [ ] Improve the standalone page so it feels more at home inside the printer UI flow
-- [ ] Decide whether the optional native drawer patch still earns its maintenance cost
+- [x] Ensure same-origin routing for `/klipperai/` behind nginx
+- [x] Improve the standalone page so it feels more at home inside the printer UI flow
+- [x] Retire the optional native drawer patch; keep the left-menu link opening a new tab
 
 ## Milestone 4: Moonraker Integration Depth
 
@@ -86,20 +85,16 @@ This backlog is organized around the current chosen architecture:
 - [x] Add a database namespace for non-secret assistant metadata
 - [x] Define Moonraker-facing methods for session bootstrap and future notifications
 
-Implementation and offline verification are documented in
-[Moonraker integration](docs/moonraker-integration.md). Live printer/provider and
-rendered-browser checks remain separate from the automated suite.
-
 ## Milestone 5: Config Assistant
 
 - [x] Add an initial config assistant workflow for managed include proposals
-- [ ] Create a config analysis workflow for active printer configuration
-- [ ] Detect common config mistakes such as missing includes, invalid pins, and conflicting sections
+- [x] Create a config analysis workflow for active printer configuration
+- [x] Detect common config mistakes such as missing includes, invalid pin descriptions, and conflicting sections (static checks; physical pin/firmware validation remains manual)
 - [x] Build typed proposal objects for generated config changes
-- [ ] Support managed include fragments under a KlipperAI-owned directory
-- [ ] Support patch generation against existing config files
+- [x] Support managed include fragments under a KlipperAI-owned directory through manual create/include plans
+- [x] Support patch generation against existing config files
 - [x] Add conservative static review before proposals are shown; full firmware/hardware validation remains future work
-- [ ] Add deeper feature-specific generation beyond scaffold-level proposals
+- [x] Add deeper feature-specific generation beyond scaffold-level proposals (parameterized probe, mesh and shaper drafts plus a functional status macro)
 - [x] Show proposed-section comparisons in the UI
 
 ## Milestone 6: Manual Configuration Review
@@ -107,8 +102,7 @@ rendered-browser checks remain separate from the automated suite.
 - [x] Keep all printer configuration edits manual; no apply/approval endpoints
 - [x] Associate reviews with config revisions and detect stale proposals
 - [x] Store review results only in application-owned memory
-- [ ] Expand option/version validation and manual verification guidance
-- Printer writes, automatic restarts and rollback execution are outside the current product scope.
+- [x] Expand option/version validation and manual verification guidance
 
 ## Milestone 7: Provider And Credential Management
 
@@ -120,19 +114,19 @@ rendered-browser checks remain separate from the automated suite.
 
 ## Milestone 8: Intelligence Quality
 
-- [ ] Add richer deterministic rules before broadening agent behavior
-- [ ] Add prompt and response schemas per workflow instead of one general assistant path
-- [ ] Add structured citations back to log lines and config sections
-- [ ] Add recovery playbooks for recurring failure modes
+- [x] Add richer deterministic rules before broadening agent behavior
+- [x] Add prompt and response schemas per workflow instead of one general assistant path
+- [x] Add structured citations back to log lines and config sections
+- [x] Add recovery playbooks for recurring failure modes
 - [x] Build component knowledge dynamically from each printer's saved hardware details, without a fixed board catalog
 - [x] Add UI Build/Refresh knowledge, primary-source discovery, versioned documents and local manual downloads
 - [x] Extract source-quoted fan connector candidates and require source/revision review before using their pins
 - [x] Add read-only local documentation retrieval, conservative fan-port checks and Eddy calibration evidence
 - [x] Add fan proposal checks for board revision, MCU identity, alias resolution and pin conflicts
-- [ ] Broaden hardware bus pin resolution and diagnostic tools for more component families
-- [ ] Cache firmware-commit-specific references and index PDF text/diagrams
-- [ ] Add explicit physical connector inventory and live printer/provider validation
-- [ ] Add config generation templates for high-value features such as macros, probes, and shapers
+- [x] Broaden hardware bus pin resolution and diagnostic tools for more component families
+- [x] Cache firmware-commit-specific references and index PDF text/diagrams
+- [x] Add explicit physical connector inventory and live printer/provider validation
+- [x] Add config generation templates for high-value features such as macros, probes, and shapers
 
 ## Milestone 9: Security And Hardening
 
@@ -143,17 +137,22 @@ rendered-browser checks remain separate from the automated suite.
 
 ## Milestone 10: Testing And Release Engineering
 
-- [ ] Add a Linux CI pipeline for lint, type checks, and tests
-- [ ] Add integration tests for installer, env generation, and service boot
-- [ ] Add a smoke test for reverse-proxy routing at `/klipperai/`
-- [ ] Add example artifacts for known printer failures
-- [ ] Add versioning, changelog, and release notes conventions
-- [ ] Add packaging guidance for a one-line remote installer in a future release
+- [x] Add a Linux CI pipeline for lint, type checks, and tests
+- [x] Add integration tests for installer, env generation, and service boot
+- [x] Add a smoke test for reverse-proxy routing at `/klipperai/`
+- [x] Add example artifacts for known printer failures
+- [x] Add versioning, changelog, and release notes conventions
+- [x] Add packaging guidance for a one-line remote installer in a future release
+- [x] Add fast operator SSH deployment of workspace fixes, build readiness and code rollback; preserve settings, credentials and history
+
+Implementation is ready; Linux CI execution and live printer/provider acceptance
+remain to be recorded. See [printer testing](docs/printer-testing.md) and
+[release conventions](docs/RELEASING.md).
 
 ## Open Product Questions
 
 - [x] Printer config changes remain manual; the application only drafts and reviews them.
-- [ ] How much of the assistant should be accessible without any external LLM provider configured?
-- [ ] Should a future native shell integration target Mainsail only, or keep Fluidd parity close behind?
-- [ ] What is the right long-term secret storage method for a local appliance-style install?
-- [ ] Is a true native Mainsail drawer still worth carrying after the low-coupling `/klipperai/` flow is in use?
+- [x] Chat and Debug require an active LLM provider and API key. Without a key, expose setup, connection status and saved information only. Deterministic tools feed the agent; show planned and actual LLM use.
+- [x] Should the same custom-navigation approach also be documented for Fluidd? Mainsail only for now
+- [x] Use authenticated encrypted provider storage with a separate systemd master credential, TPM binding where available, unified installer/UI rotation, legacy cleanup and explicit recovery limxxxxxxxx xits
+                                                                                              

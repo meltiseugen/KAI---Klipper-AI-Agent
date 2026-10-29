@@ -1,4 +1,4 @@
-"""Offline ETX socket peer; all requests still pass through production framing."""
+"""Automated ETX socket peer; all requests still pass through production framing."""
 
 import asyncio
 import json

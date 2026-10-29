@@ -87,20 +87,31 @@ class SqliteInvestigationRepository:
             return self._load(db, row) if row else None
 
     def recent(self, printer_id: str, limit: int = 30) -> list[Investigation]:
+        return self._recent(printer_id, limit, turn_limit=3)
+
+    def summaries(self, printer_id: str, limit: int = 30) -> list[Investigation]:
+        """Sidebar polling must not read/parse evidence that is excluded from HTTP."""
+        return self._recent(printer_id, limit, turn_limit=0)
+
+    def _recent(self, printer_id: str, limit: int, *, turn_limit: int) -> list[Investigation]:
         cutoff = (datetime.now(timezone.utc) - timedelta(days=self._retention_days)).isoformat()
         with closing(self._connect()) as db:
             rows = db.execute(
                 "SELECT * FROM investigations WHERE printer_id = ? AND updated_at >= ? ORDER BY updated_at DESC LIMIT ?",
                 (printer_id, cutoff, min(max(limit, 1), 100)),
             ).fetchall()
-            return [self._load(db, row, turn_limit=3) for row in rows]
+            return [self._load(db, row, turn_limit=turn_limit) for row in rows]
 
     @staticmethod
     def _load(db: sqlite3.Connection, row: sqlite3.Row, turn_limit: int = 50) -> Investigation:
-        turns = db.execute(
-            "SELECT content FROM turns WHERE investigation_id = ? ORDER BY rowid DESC LIMIT ?",
-            (row["id"], turn_limit),
-        ).fetchall()
+        turns = (
+            db.execute(
+                "SELECT content FROM turns WHERE investigation_id = ? ORDER BY rowid DESC LIMIT ?",
+                (row["id"], turn_limit),
+            ).fetchall()
+            if turn_limit
+            else []
+        )
         pending = db.execute(
             "SELECT content FROM pending_runs WHERE investigation_id=?", (row["id"],)
         ).fetchone()

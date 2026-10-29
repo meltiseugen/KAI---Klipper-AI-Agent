@@ -40,6 +40,8 @@ class Workflow(Protocol):
 
 
 class DiagnosisState(TypedDict, total=False):
+    workflow: str
+    evidence: list[dict[str, Any]]
     session_id: str
     thread_id: str
     user_message: str
@@ -58,6 +60,7 @@ class DiagnosisState(TypedDict, total=False):
 
 
 class ConfigState(TypedDict, total=False):
+    evidence: list[dict[str, Any]]
     session_id: str
     thread_id: str
     user_message: str

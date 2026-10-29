@@ -10,6 +10,7 @@ from klipperai_agent.config.targeting import (
 from klipperai_agent.config.vocabulary import ConfigRequestIntent
 from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
 from klipperai_agent.domain.evidence import ArtifactInput
+from klipperai_agent.domain.investigation import Evidence
 from klipperai_agent.domain.proposals import ConfigProposal
 from klipperai_agent.workflows.citations import _build_config_source_citations
 from klipperai_agent.workflows.context import ConfigState, WorkflowRuntime
@@ -111,12 +112,7 @@ async def collect_config_context(
     return {
         "artifacts": [artifact.model_dump() for artifact in input_artifacts],
         "config_snapshot": snapshot.to_state(),
-        "runtime_snapshot": {
-            "moonraker_reachable": runtime_snapshot.moonraker_reachable,
-            "moonraker_info": runtime_snapshot.moonraker_info,
-            "notes": runtime_snapshot.notes,
-            "artifacts": [artifact.model_dump() for artifact in runtime_snapshot.artifacts],
-        },
+        "runtime_snapshot": runtime_snapshot.to_state(),
     }
 
 
@@ -164,11 +160,8 @@ async def call_config_llm(
     runtime_artifacts = [
         ArtifactInput.model_validate(item) for item in runtime_snapshot_data.get("artifacts", [])
     ]
-    runtime_snapshot = DiagnosticsSnapshot(
-        moonraker_reachable=bool(runtime_snapshot_data.get("moonraker_reachable", False)),
-        moonraker_info=runtime_snapshot_data.get("moonraker_info"),
-        artifacts=runtime_artifacts,
-        notes=list(runtime_snapshot_data.get("notes", [])),
+    runtime_snapshot = DiagnosticsSnapshot.from_state(
+        {**runtime_snapshot_data, "artifacts": runtime_artifacts}
     )
     payload = ConfigPromptPayload(
         user_message=state["user_message"],
@@ -179,7 +172,12 @@ async def call_config_llm(
         profile=runtime.context.profile,
     )
     config_output = await runtime.context.config_llm.propose(payload)
-    return {"config_output": config_output.model_dump()}
+    return {
+        "config_output": config_output.model_dump(),
+        "evidence": [
+            Evidence.parse_obj(item.model_dump()).model_dump() for item in payload.context_artifacts
+        ],
+    }
 
 
 def compose_config_response(state: ConfigState) -> ConfigState:

@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 import os
+import sys
 
 import uvicorn
 
+from klipperai_agent.domain.version import __version__
 from klipperai_agent.runtime.logging import configure_runtime_logging
 from klipperai_agent.runtime.settings import get_settings
 
@@ -12,6 +14,9 @@ logger = logging.getLogger("klipperai_agent.bootstrap")
 
 
 def main() -> None:
+    if sys.argv[1:] == ["--version"]:
+        print(__version__)
+        return
     os.umask(0o077)
     settings = get_settings()
     settings.ensure_directories()

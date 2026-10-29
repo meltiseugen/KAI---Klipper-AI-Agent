@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { loadUI, memoryStorage, jsonResponse } from "./ui-harness.mjs";
 
-const { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, ids } = await loadUI();
+const { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, ids, document } = await loadUI();
 for (const [configured, path, expected] of [
   ["/api", "/", "/api"], ["/api", "/embed", "/api"],
   ["/api", "/klipperai/", "/klipperai/api"], ["", "/klipperai/direct", "/klipperai/api"],
@@ -12,13 +12,13 @@ for (const [configured, path, expected] of [
 // All API operations share session renewal and retain the public remote prefix.
 const requests = [];
 const replies = [jsonResponse({ session_id: "old" }), jsonResponse({}, 403),
-  jsonResponse({ session_id: "new session" }), jsonResponse({ provider: "stub" }),
+  jsonResponse({ session_id: "new session" }), jsonResponse({ provider: "openai" }),
   jsonResponse(null, 204), jsonResponse({}, 409)];
 const transport = new ChatTransport("/assistant/printer/api", async (url, options) => {
   requests.push({ url, ...options });
   return replies.shift();
 });
-assert.equal((await transport.bootstrap()).provider, "stub");
+assert.equal((await transport.bootstrap()).provider, "openai");
 assert.ok(requests[3].url.endsWith("/bootstrap?session_id=new%20session"));
 assert.equal(await transport.investigation("/thread", "DELETE"), null);
 await assert.rejects(() => transport.request("/chat/stream", "POST", { message: "Question" }), /409/);
@@ -56,7 +56,7 @@ let chatCalls = 0;
 let lastRequest;
 let failDelete = false;
 const server = {
-  async bootstrap() { return { provider: "stub", conversation_history_pairs: 2, features: ["persistent-investigations"], moonraker_reachable: true }; },
+  async bootstrap() { return { provider: "openai", conversation_history_pairs: 2, features: ["persistent-investigations"], moonraker_reachable: true }; },
   async investigation(path = "", method = "GET") {
     if (method === "DELETE") { if (failDelete) throw new Error("Delete failed"); return null; }
     if (method === "POST") return { question: "Recheck", result: { response_text: "Config changed" } };
@@ -101,15 +101,25 @@ failDelete = false;
 await app.remove(original.id);
 assert.equal(store.getCurrentConversation().threadId, null);
 assert.doesNotMatch(ids.messages.textContent, /Stored answer/);
-ids["message-input"].value = "Offline?";
+ids["message-input"].value = "Automated?";
 server.chat = async () => { throw new Error("Connection lost"); };
 await app.send();
 assert.match(ids.messages.textContent, /Connection lost/);
 assert.equal(ids["send-button"].disabled, false);
+document.defaultView = { matchMedia: () => ({ matches: true }) };
 view.navigation(true);
 assert.equal(ids["shell-menu-toggle"].attributes["aria-expanded"], "true");
 ids["shell-scrim"].listeners.click();
 assert.equal(ids["shell-menu-toggle"].attributes["aria-expanded"], "false");
+view.navigation(true);
+document.listeners.keydown({ key: "Escape" });
+assert.equal(ids["shell-menu-toggle"].attributes["aria-expanded"], "false");
+assert.ok(ids["shell-menu-toggle"].focused);
+for (const id of ["providers-toggle", "knowledge-toggle", "memory-toggle"]) {
+  view.navigation(true);
+  ids[id].click();
+  assert.equal(ids["shell-menu-toggle"].attributes["aria-expanded"], "false");
+}
 
 export const outcome = "Chat composition, DOM rendering, draft migration, restored history, session retry, duplicate sends, errors, reviews and deletion pass.";
 console.log(outcome);

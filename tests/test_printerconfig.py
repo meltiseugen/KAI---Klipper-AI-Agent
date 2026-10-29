@@ -67,7 +67,7 @@ def test_config_collector_respects_ignore_globs(tmp_path: Path) -> None:
     backup_dir.mkdir(parents=True)
 
     (config_dir / "printer.cfg").write_text(
-        "[include extras/**/*.cfg]\n\n[printer]\nkinematics: cartesian\n",
+        "[include extras/*.cfg]\n[include extras/archive/*.cfg]\n\n[printer]\nkinematics: cartesian\n",
         encoding="utf-8",
     )
     (extras_dir / "fan.cfg").write_text(

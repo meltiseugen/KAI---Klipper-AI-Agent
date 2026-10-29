@@ -16,6 +16,24 @@ from klipperai_agent.config.models import (
 from klipperai_agent.config.parser import ConfigParser
 from klipperai_agent.domain.redaction import redact_text
 
+MAX_CONFIG_CHARS = 1_000_000
+
+
+def read_config_text(path: Path) -> str:
+    """Bound allocation before parsing; preserve universal newline/digest semantics."""
+    with path.open(encoding="utf-8", errors="replace") as handle:
+        parts: list[str] = []
+        size = 0
+        while size <= MAX_CONFIG_CHARS:
+            chunk = handle.read(min(65536, MAX_CONFIG_CHARS + 1 - size))
+            if not chunk:
+                break
+            parts.append(chunk)
+            size += len(chunk)
+    if size > MAX_CONFIG_CHARS:
+        raise ConfigReadError("Configuration exceeds the full-read limit.")
+    return "".join(parts)
+
 
 class ConfigCollector:
     def __init__(
@@ -43,13 +61,11 @@ class ConfigCollector:
         path = self._config_dir / document.path
         # Bound expansion independently of model context, and reject mid-run edits.
         try:
-            content = path.read_text(encoding="utf-8", errors="replace")
+            content = read_config_text(path)
         except OSError as exc:
             raise ConfigReadError(
                 "Configuration could not be read. Refresh the evidence and retry."
             ) from exc
-        if len(content) > 1_000_000:
-            raise ConfigReadError("Configuration exceeds the full-read limit.")
         digest = hashlib.sha256(content.encode()).hexdigest()
         if digest != document.content_digest:
             raise ConfigReadError(
@@ -140,6 +156,18 @@ class ConfigCollector:
         return self._config_dir / candidate
 
     def _auto_detect_root_file(self) -> Path | None:
+        # Prefer the conventional active root to reading every archived config.
+        # An explicitly configured root remains authoritative.
+        standard = self._config_dir / "printer.cfg"
+        if standard.is_file() and not self._should_ignore(standard):
+            try:
+                if any(
+                    section.lower() == "printer"
+                    for section in self.parser.extract_sections(read_config_text(standard))
+                ):
+                    return standard
+            except (OSError, ConfigReadError):
+                pass
         candidates = [
             path
             for path in self._config_dir.rglob("*.cfg")
@@ -151,8 +179,8 @@ class ConfigCollector:
         ranked: list[tuple[int, Path]] = []
         for path in candidates:
             try:
-                content = path.read_text(encoding="utf-8", errors="replace")
-            except OSError:
+                content = read_config_text(path)
+            except (OSError, ConfigReadError):
                 continue
             sections = self.parser.extract_sections(content)
             includes = self.parser.extract_include_patterns(content)
@@ -194,8 +222,8 @@ class ConfigCollector:
         visited.add(resolved)
 
         try:
-            raw_content = path.read_text(encoding="utf-8", errors="replace")
-        except OSError as exc:
+            raw_content = read_config_text(path)
+        except (OSError, ConfigReadError) as exc:
             notes.append(f"Could not read config file {self._relative_path_string(path)}: {exc}")
             return
 
@@ -243,6 +271,10 @@ class ConfigCollector:
         placeholders: list[ConfigPlaceholder],
         notes: list[str],
     ) -> None:
+        if self._ignore_globs:
+            notes.append(
+                "File inventory is filtered by config_context.ignore_globs; absence of ignored targets cannot be verified."
+            )
         candidates = [
             path
             for path in sorted(
@@ -252,6 +284,10 @@ class ConfigCollector:
         ]
         added = 0
         for path in candidates:
+            if self._relative_path_string(path) != path.relative_to(self._config_dir).as_posix():
+                notes.append(
+                    "File inventory contains a redirected config path; verify managed targets manually."
+                )
             if self._max_documents is not None and len(documents) >= self._max_documents:
                 return
             try:
@@ -280,7 +316,7 @@ class ConfigCollector:
         expanded_pattern = str((base_dir / pattern).expanduser())
         matches = [
             Path(candidate)
-            for candidate in sorted(glob.glob(expanded_pattern, recursive=True))
+            for candidate in sorted(glob.glob(expanded_pattern))
             if Path(candidate).is_file()
         ]
         return matches

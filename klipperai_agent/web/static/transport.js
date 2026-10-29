@@ -16,8 +16,9 @@ class ChatTransport {
   async session(refresh = false) {
     if (this.sessionId && !refresh) return this.sessionId;
     const response = await this.fetcher(`${this.base}/ui-sessions`, { method: "POST" });
-    if (!response.ok) throw new Error(`Session bootstrap failed (${response.status}).`);
+    if (!response.ok) throw new ChatRequestError(`Session bootstrap failed (${response.status}).`, response.status === 403 ? "invalid_session" : "request_failed", response.status);
     this.sessionId = (await response.json()).session_id;
+    if (!this.sessionId || typeof this.sessionId !== "string") throw new ChatRequestError("Invalid session response.", "invalid_session");
     return this.sessionId;
   }
 
@@ -32,7 +33,14 @@ class ChatTransport {
     };
     let response = await send();
     if (response.status === 403) response = await send(true);
-    if (!response.ok) throw new Error(`Request failed (${response.status}). Please retry.`);
+    if (!response.ok) {
+      let detail;
+      try { detail = (await response.json()).detail; } catch { /* Proxies may return HTML. */ }
+      const invalidSession = response.status === 403 && (!detail || /session/i.test(String(detail)));
+      const code = invalidSession ? "invalid_session" : detail?.code || "request_failed";
+      const message = typeof detail === "string" ? detail : detail?.message;
+      throw new ChatRequestError(message || `Request failed (${response.status}). Please retry.`, code, response.status);
+    }
     return response;
   }
 

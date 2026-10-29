@@ -1,0 +1,5 @@
+# Synthetic negative control, not a real printer incident.
+Starting Klippy...
+webhooks: registering remote method 'shutdown_machine' for connection id: 1
+Stats 10.0: mcu: bytes_retransmit=0 bytes_invalid=0
+Printer is ready

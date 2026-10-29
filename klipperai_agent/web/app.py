@@ -23,7 +23,10 @@ from klipperai_agent.contracts.api import (
 from klipperai_agent.domain.context import ModeUnavailableError
 from klipperai_agent.domain.provider_settings import ProviderLimitError
 from klipperai_agent.domain.repositories import InvestigationConflict
+from klipperai_agent.domain.version import __version__
+from klipperai_agent.runtime.release import release_info
 from klipperai_agent.runtime.settings import get_settings
+from klipperai_agent.web.chat_readiness import provider_configured, require_provider
 from klipperai_agent.web.investigations import investigation_routes
 from klipperai_agent.web.knowledge import knowledge_routes
 from klipperai_agent.web.memory import memory_routes
@@ -64,6 +67,9 @@ def create_app() -> FastAPI:
         integration = getattr(container, "moonraker_agent", None)
         if integration is not None:
             integration.start()
+        recorder = getattr(container, "host_flight_recorder", None)
+        if recorder is not None:
+            recorder.start()
         logger.info("Application startup complete.")
         try:
             yield
@@ -76,7 +82,7 @@ def create_app() -> FastAPI:
 
     app = FastAPI(
         title=settings.app_name,
-        version="0.1.0",
+        version=__version__,
         lifespan=lifespan,
         root_path=settings.root_path.rstrip("/"),
         docs_url=None,
@@ -144,6 +150,11 @@ def create_app() -> FastAPI:
         response.headers["Cache-Control"] = "no-store"
         return response
 
+    @app.get("/readyz")
+    async def readyz() -> dict[str, str]:
+        # No provider/printer I/O: deployments validate the running code itself.
+        return {"status": "ok", "printer_access": "read_only", **release_info()}
+
     @app.get("/healthz")
     async def healthz(request: Request) -> dict[str, object]:
         container = _get_container(request)
@@ -164,6 +175,7 @@ def create_app() -> FastAPI:
             result = await container.chat_service.bootstrap(session_id)
             if getattr(container, "providers", None) is not None:
                 result.features.append("provider-management")
+                result.provider_configured = provider_configured(container)
             if getattr(container, "moonraker_agent", None) is not None:
                 result.features.append("moonraker-events")
             return result
@@ -173,6 +185,7 @@ def create_app() -> FastAPI:
     @app.post("/api/chat", response_model=ChatResponse)
     async def chat(payload: ChatRequest, request: Request) -> ChatResponse:
         container = _get_container(request)
+        require_provider(container, payload.session_id)
         try:
             return await container.chat_service.chat(payload)
         except InvestigationConflict as exc:
@@ -187,6 +200,7 @@ def create_app() -> FastAPI:
         container = _get_container(request)
         if container.sessions.get(payload.session_id) is None:
             raise HTTPException(status_code=403, detail="Invalid or expired session.")
+        require_provider(container, payload.session_id)
         if payload.mode == "debug" and not container.chat_service.agent_workflow:
             raise HTTPException(status_code=400, detail="Debug mode requires the tool-using agent.")
         return StreamingResponse(

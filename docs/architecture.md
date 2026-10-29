@@ -20,7 +20,6 @@ flowchart LR
     Memory --> Storage[infrastructure: application-owned SQLite]
     Chat --> Review[config: manual proposal review]
     Chat --> Agent[agent: bounded tool loop]
-    Chat --> Offline[workflows: deterministic fallback]
     Agent --> Model[AgentModel protocol]
     Model --> Provider[providers: Responses API]
     Agent --> Registry[ToolRegistry: validate + limit + cache]
@@ -44,7 +43,7 @@ rejects cycles between individual modules.
 | `application` | Session validity, investigation memory, routing and proposal review |
 | `domain` | Typed evidence, investigations, proposals, messages and repository ports |
 | `agent` | Iteration, budgets, tool contracts, request-local evidence and events |
-| `providers` | OpenAI protocol, search adapter, single-pass compatibility providers, offline stubs |
+| `providers` | OpenAI protocol, search adapter and single-pass compatibility providers |
 | `config` | Includes, parsing, lookup, request targets, proposal strategies |
 | `profile` | Saved identity, composed host/hardware/capability/addon detection, INI persistence |
 | `diagnostics` | Snapshots and deterministic issue rules |
@@ -53,7 +52,7 @@ rejects cycles between individual modules.
 | `runtime` | Settings and logging |
 | `bootstrap` | Composition root and client shutdown |
 | `cli` | Profile detection and legacy command-name adapters |
-| `workflows` | Offline/config workflow steps and citation helpers |
+| `workflows` | LLM compatibility workflow steps and citation helpers |
 
 ## Tool-using request flow
 
@@ -68,7 +67,7 @@ sequenceDiagram
     User->>UI: Ask a question
     UI->>API: POST /api/chat/stream
     API->>API: Validate session, load saved investigation and dated memory
-    API->>Loop: Request and user-provided artifacts
+    API->>Loop: User question and investigation context
     Loop->>Tool: Prepare mode-specific starting context
     loop Until answer or configured budget
         Loop->>Model: Conversation + tool definitions
@@ -87,23 +86,38 @@ sequenceDiagram
     UI-->>User: Answer + sources + expandable activity
 ```
 
-OpenAI requests default to `AgentWorkflow`. Chat preloads the saved profile and
-active config; Debug also preloads live status and bounded log/service evidence.
+OpenAI requests default to `AgentWorkflow`. Chat preloads the saved profile,
+active config tree and bounded recent host logs; Debug also preloads live status
+and service diagnostics. Users do not need to supply config files or logs.
 Both include relevant dated memory. The model then chooses further tools and
 can revise its next action after observing evidence. There is no preflight LLM
 intent classification in this path. The user sees action summaries, never hidden
 reasoning. Responses output items, including encrypted reasoning, are passed
 unchanged between model turns within one investigation; `store=false` is used.
 
+A local selector chooses general, diagnosis, config-explanation or config-draft
+guidance and a closed response schema per request. Responses requests use that
+schema, and the runner validates answers and evidence references locally.
+Collected diagnostics receive deterministic checks before the first model call.
+Matched findings include manual recovery playbooks. See
+[intelligence quality](intelligence-quality.md) for contracts and citation limits.
+
 Debug also prepares a shutdown report for communication/timing failures through
 the optional `ShutdownReader` port. Filesystem, kernel-journal and Moonraker reads
 live in infrastructure; pure run/statistics parsing and cause assessments live in
 diagnostics. Current host readings stay separate from historical incident evidence.
+An explicitly enabled lifespan-owned Linux flight recorder persists a bounded
+private ring of public CPU/process, memory/swap and pressure samples. Shutdown
+reads use the incident clock window; tools cannot enable sampling or write history.
+General diagnostics also collect fixed Moonraker status fields and loaded-config
+metadata, and optionally journals for explicitly configured additional services.
 See [shutdown investigations](shutdown-investigations.md) for bounds and limitations.
 
-`stub` uses deterministic workflows without credentials or network LLM calls.
-Setting `agent_enabled=false` retains the older single-pass OpenAI path for
-troubleshooting. Neither setting enables writes.
+OpenAI is the provider. Chat and Debug require an active API key; without one,
+the page exposes setup, connection status and saved information. Deterministic
+checks supply evidence to the agent, never a substitute chat response. Setting
+`agent_enabled=false` retains the older single-pass OpenAI path for troubleshooting;
+it also requires an API key. Neither path enables writes.
 
 ## Tools and evidence
 
@@ -117,9 +131,12 @@ troubleshooting. Neither setting enables writes.
 | `investigate_shutdown` | Bounded current/recent rotated Klippy reads, pre-stop statistics and optional kernel correlation; confidence-qualified manual checks |
 | `get_printer_status` | Fixed read-only Moonraker methods and known status objects |
 | `inspect_config` | File/section index or exact excerpts; optional inactive-file lookup |
+| `analyze_config` | Static active-tree analysis of includes, section conflicts and pin references, with bounded evidence and no firmware execution |
 | `read_config_file` | Bounded lines from an exact path in the collected tree |
 | `collect_diagnostics` | Log tails, optional service/journal reads, deterministic findings |
 | `search_config` | Literal pin/option/macro-reference search, active/inactive labels and source lines |
+| `list_logs` / `search_logs` / `read_log_excerpt` | Read-only inventory IDs, bounded current/rotated log windows, literal matches and cached match context; no host paths or commands |
+| `search_diagnostic_artifacts` | Literal matches within previously collected log/service/journal excerpts; no new I/O |
 | `read_diagnostic_artifact` | Bounded lines from collected artifact IDs, not arbitrary host files |
 | `get_printer_objects` | Fixed sensor/fan/motion/bed-mesh/MCU groups, capped at 24 available objects |
 | `search_web` | Public technical query via hosted search, with source URLs |
@@ -128,6 +145,11 @@ troubleshooting. Neither setting enables writes.
 Tool caches and fresh config snapshots belong to one request. Successful identical
 calls reuse observations within that request; failures can be retried. Public
 observations are saved with timestamps and revisions for historical retrieval.
+Collected inputs and tool observations are normalized into typed public artifacts
+before model calls. JSON and SSE chat responses expose bounded `evidence_blocks`
+with source-linked finding excerpts, provenance, dates and partial-state labels.
+Severity ranks impact; observation confidence does not establish a root cause.
+See the [evidence contract](evidence-contract.md) for schemas, limits and compatibility.
 Fresh source cards come from tools and provider annotations, not model-supplied
 source objects. Historical context is labeled separately and must be rechecked.
 
@@ -183,10 +205,22 @@ only a read-only port. Fan proposals receive additional hardware checks. See
 [printer knowledge](printer-knowledge.md) for identity confirmation, source
 versions, local manuals, download limits and firmware compatibility boundaries.
 
+Source-reviewed hardware buses, immutable firmware references, PDF page/diagram
+indexes and explicitly confirmed physical connector observations extend the same
+knowledge store. PDF parsing runs in a bounded child process; model tools only
+read its retained evidence. Fixed component-family diagnostics compose existing
+read-only ports. User-triggered printer/provider checks remain separate from
+physical verification. See [hardware knowledge](hardware-knowledge.md).
+
 Proposals undergo static review and section comparison. Users edit config files
 manually; there are no apply/approval endpoints or write tools. Revalidation reads
 the active config and marks changed revisions stale. See
 [investigations.md](investigations.md) for lifecycle, storage limits and endpoints.
+Active-config audit requests go through the LLM, which can call `analyze_config`.
+`get_config_template` supplies deterministic scaffolds for the model to inspect and refine.
+Managed fragments and option-merge file patches are prepared from observed files;
+individual target digests catch inactive-file changes during revalidation. See
+[Config Assistant](config-assistant.md) for supported generation and patch limits.
 
 The supported host is Python 3.10+, FastAPI, Pydantic v1 and httpx. The new loop
 does not require LangGraph, an agents framework, a search SDK or Rust extensions.

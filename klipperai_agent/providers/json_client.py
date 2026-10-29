@@ -9,6 +9,7 @@ from klipperai_agent.domain.provider_settings import ModelProfile
 from klipperai_agent.domain.redaction import redact_text
 from klipperai_agent.providers.normalization import _parse_json_object
 from klipperai_agent.providers.usage import UsageGuard
+from klipperai_agent.runtime.model_usage import model_request
 
 
 class OpenAIJsonClient:
@@ -50,15 +51,16 @@ class OpenAIJsonClient:
                 if self._guard
                 else nullcontext(None) as reservation
             ):
-                response = await client.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers=headers,
-                    json=payload,
-                )
-                if self._guard and response.status_code == 429:
-                    self._guard.throttle(response.headers.get("retry-after", "60"))
-                response.raise_for_status()
-                data = response.json()
+                async with model_request(self._profile.model):
+                    response = await client.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers=headers,
+                        json=payload,
+                    )
+                    if self._guard and response.status_code == 429:
+                        self._guard.throttle(response.headers.get("retry-after", "60"))
+                    response.raise_for_status()
+                    data = response.json()
                 if self._guard and reservation is not None:
                     self._guard.record(reservation, data)
 

@@ -46,6 +46,8 @@ class AgentModel(Protocol):
         self,
         conversation: list[dict[str, Any]],
         tools: list[dict[str, Any]],
+        *,
+        response_format: dict[str, Any] | None = None,
     ) -> ModelTurn: ...
 
 

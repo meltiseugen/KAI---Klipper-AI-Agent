@@ -104,3 +104,15 @@ async def test_moonraker_request_and_ping_wrap_http_failures() -> None:
     with pytest.raises(MoonrakerError, match="unexpected payload for /scalar"):
         await scalar._request("GET", "/scalar")
     await scalar.aclose()
+
+
+@pytest.mark.asyncio
+async def test_core_moonraker_errors_do_not_become_healthy_observations():
+    client = _client(lambda request: httpx.Response(200, json={"error": {"message": "private"}}))
+    with pytest.raises(MoonrakerError, match="API error") as error:
+        await client.get_server_info()
+    assert "private" not in str(error.value)
+    await client.aclose()
+    client = _client(lambda request: httpx.Response(200, text="not-json"))
+    assert not await client.ping()
+    await client.aclose()

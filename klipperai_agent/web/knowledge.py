@@ -13,6 +13,7 @@ from pydantic import Field
 from klipperai_agent.application.chat import ChatService
 from klipperai_agent.application.knowledge import PrinterKnowledge
 from klipperai_agent.domain.base import BaseModel
+from klipperai_agent.domain.hardware import ConnectorObservation, DiagramNote
 from klipperai_agent.domain.knowledge import KnowledgeConflict, KnowledgeSetup
 
 
@@ -30,6 +31,16 @@ class SaveKnowledgeRequest(KnowledgeRequest):
 class ReviewMappingsRequest(KnowledgeRequest):
     role: str = Field(regex=r"^[a-z][a-z0-9_-]{0,39}$")
     signature: str = Field(regex=r"^[a-f0-9]{64}$")
+    revision: int = Field(ge=0)
+
+
+class ConnectorRequest(KnowledgeRequest):
+    observation: ConnectorObservation
+    revision: int = Field(ge=0)
+
+
+class DiagramRequest(KnowledgeRequest):
+    observation: DiagramNote
     revision: int = Field(ge=0)
 
 
@@ -99,5 +110,31 @@ def knowledge_routes(get_service: Callable[[Request], ChatService]) -> APIRouter
             return await knowledge(request, payload.session_id).review_mappings(
                 payload.role, payload.signature, payload.revision
             )
+
+    @router.post("/review-buses")
+    async def review_buses(payload: ReviewMappingsRequest, request: Request) -> KnowledgeSetup:
+        with storage_errors():
+            return await knowledge(request, payload.session_id).review_buses(
+                payload.role, payload.signature, payload.revision
+            )
+
+    @router.post("/connectors")
+    async def connector(payload: ConnectorRequest, request: Request) -> KnowledgeSetup:
+        with storage_errors():
+            return await knowledge(request, payload.session_id).observe(
+                payload.observation, payload.revision
+            )
+
+    @router.post("/diagram-notes")
+    async def diagram(payload: DiagramRequest, request: Request) -> KnowledgeSetup:
+        with storage_errors():
+            return await knowledge(request, payload.session_id).observe(
+                payload.observation, payload.revision
+            )
+
+    @router.post("/validate")
+    async def validate(payload: KnowledgeRequest, request: Request) -> dict:
+        with storage_errors():
+            return await knowledge(request, payload.session_id).validate_live()
 
     return router

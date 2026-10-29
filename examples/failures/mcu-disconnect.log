@@ -1,0 +1,5 @@
+# Synthetic regression example, not a real printer incident.
+Stats 200.0: toolhead: bytes_retransmit=0 bytes_invalid=0
+Stats 210.0: toolhead: bytes_retransmit=240 bytes_invalid=0
+Lost communication with MCU 'toolhead'
+# No USB/CAN/power/kernel evidence is supplied; the physical cause is unconfirmed.

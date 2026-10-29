@@ -8,10 +8,18 @@ from uuid import uuid4
 
 from pydantic import Field, validator
 
+from klipperai_agent.domain.artifacts import CollectedArtifact
 from klipperai_agent.domain.base import BaseModel
 from klipperai_agent.domain.context import AgentMode, ContextItem
-from klipperai_agent.domain.evidence import AgentEvent, ArtifactInput, IssueFinding, SourceCitation
+from klipperai_agent.domain.evidence import (
+    AgentEvent,
+    ArtifactInput,
+    GroundedClaim,
+    IssueFinding,
+    SourceCitation,
+)
 from klipperai_agent.domain.messages import ChatHistoryMessage
+from klipperai_agent.domain.model_usage import ModelUsage
 from klipperai_agent.domain.proposals import ConfigProposal, PatchProposal
 
 
@@ -19,14 +27,7 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-class Evidence(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid4()))
-    observed_at: str = Field(default_factory=utc_now)
-    source: str
-    content: str = Field(max_length=16000)
-    config_revision: str | None = None
-    citations: list[SourceCitation] = Field(default_factory=list)
-
+class Evidence(CollectedArtifact):
     def historical_context(self) -> dict[str, object]:
         return {
             "evidence_id": self.id,
@@ -35,6 +36,15 @@ class Evidence(BaseModel):
             "content": self.content,
             "config_revision": self.config_revision,
             "freshness": "historical; recheck live state and config before relying on it",
+            "artifact": {
+                **self.prompt_metadata(),
+                "freshness": "historical",
+                "origin": "memory",
+                "content_format": "text",
+                "status": "partial"
+                if self.original_characters > len(self.content)
+                else self.status,
+            },
         }
 
 
@@ -53,7 +63,12 @@ class MemorySource(BaseModel):
 
 
 class InvestigationResult(BaseModel):
+    model_usage: ModelUsage = Field(default_factory=ModelUsage)
     mode: AgentMode = "chat"
+    workflow: Literal["general", "diagnosis", "config_explanation", "config_draft"] = "general"
+    answer_claims: list[GroundedClaim] = Field(default_factory=list)
+    missing_evidence: list[str] = Field(default_factory=list)
+    hypotheses: list[str] = Field(default_factory=list)
     context_included: list[ContextItem] = Field(default_factory=list)
     response_text: str = Field(default="No response generated.", min_length=1)
     next_actions: list[str] = Field(default_factory=list)

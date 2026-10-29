@@ -14,6 +14,8 @@ from klipperai_agent.domain.provider_settings import (
     ProviderLimitError,
     ProviderUpdate,
 )
+from klipperai_agent.providers.probe import probe_provider
+from klipperai_agent.web.knowledge import KnowledgeRequest
 
 
 @contextmanager
@@ -36,6 +38,14 @@ def provider_errors() -> Iterator[None]:
 def provider_routes(get_container: Callable[[Request], AppContainer]) -> APIRouter:
     router = APIRouter(prefix="/api/providers")
 
+    def secret_transport(request: Request, payload: ProviderUpdate) -> None:
+        if (
+            payload.api_key
+            and request.url.scheme != "https"
+            and request.url.hostname not in {"localhost", "127.0.0.1", "::1"}
+        ):
+            raise HTTPException(403, "API key submission requires HTTPS or a localhost SSH tunnel.")
+
     def manager(request: Request, session_id: str):
         container = get_container(request)
         if container.sessions.get(session_id) is None:
@@ -51,11 +61,18 @@ def provider_routes(get_container: Callable[[Request], AppContainer]) -> APIRout
 
     @router.post("/validate")
     async def validate(request: Request, payload: ProviderUpdate) -> dict:
+        secret_transport(request, payload)
         with provider_errors():
             return await manager(request, payload.session_id).update(payload, save=False)
 
+    @router.post("/probe")
+    async def probe(request: Request, payload: KnowledgeRequest) -> dict:
+        manager(request, payload.session_id)
+        return await probe_provider(get_container(request).responses)
+
     @router.put("")
     async def save(request: Request, payload: ProviderUpdate) -> dict:
+        secret_transport(request, payload)
         with provider_errors():
             return await manager(request, payload.session_id).update(payload, save=True)
 

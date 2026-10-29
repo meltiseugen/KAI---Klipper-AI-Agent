@@ -1,7 +1,9 @@
 # Provider and credential management
 
-Open **Provider settings** in KlipperAI. The supported providers remain OpenAI
-and Offline (`stub`). Offline makes no model requests. The panel manages the
+Open **Provider settings** in KlipperAI. OpenAI is the supported provider.
+The agent requires an active API key for every Chat or Debug request, including
+configuration audits. Without a key the page provides setup, connection status
+and saved information; it does not generate assistant replies. The panel manages the
 service's shared provider configuration; access uses the same trusted proxy/LAN
 boundary as the rest of the application, not a separate administrator account.
 Use HTTPS for remote access and protect every `/klipperai/api/` route.
@@ -20,8 +22,8 @@ Use HTTPS for remote access and protect every `/klipperai/api/` route.
 **Check access** validates without saving. The key field clears after either
 operation, on reload, and when closing the panel. Re-enter a replacement key after
 a check or failed save. An empty field keeps the current credential. To remove it,
-select Offline and check **Remove stored key**. Removal also takes effect after
-manual restart and suppresses fallback to an old environment key.
+check **Remove stored key**. The agent becomes unavailable after the next
+manual restart; a removed key is never restored from an old environment value.
 
 Validation sends no printer context and generates no model response. It checks
 authentication and model-read access, not credits, Responses/Chat Completions
@@ -31,15 +33,19 @@ or credential values to the UI. Conflicting edits return 409; reload before savi
 
 ## Private storage and configuration precedence
 
-The default is `~/.config/klipperai/providers.sqlite3` under the **service user's**
-home. `provider_storage_dir` / `KLIPPERAI_PROVIDER_STORAGE_DIR` can select a dedicated
-private directory. The directory is mode 0700 and the file is mode 0600 on POSIX.
+The installer uses `<data_dir>/private/providers.sqlite3`; direct development runs
+default to `~/.config/klipperai/providers.sqlite3`. `provider_storage_dir` /
+`KLIPPERAI_PROVIDER_STORAGE_DIR` can select a dedicated private directory.
+The directory is mode 0700 and the file is mode 0600 on POSIX.
 It must be outside the checkout, printer configuration, G-code and log directories.
 Symlink directories/files, hardlinked files and special files are rejected.
 The directory is dedicated to these settings; its permissions are tightened.
 
-Credentials are protected by OS permissions, **not encrypted at rest**. Root and
-the service account remain trusted. On Windows, restrict the directory's ACL to
+API keys are encrypted with AES-256-GCM using a separate systemd-delivered master
+credential. There is no plaintext fallback; missing or incorrect masters lock
+credential access. See [encrypted credential storage](credential-storage.md) for
+installation, TPM/host-key limitations, migration and recovery. Root and the
+service account remain trusted. On Windows, restrict the directory's ACL to
 the service user and administrators; POSIX modes do not enforce Windows ACLs.
 Exclude this directory and its SQLite auxiliary files from support bundles and
 public backups. SQLite secure deletion is enabled, but snapshots and filesystem
@@ -47,14 +53,32 @@ backups can still retain old keys. There are no credential-read/export endpoints
 
 Before the first save, existing `llm_provider`, `openai_model`,
 `agent_max_output_tokens`, `web_search_enabled`, and the protected
-`KLIPPERAI_OPENAI_API_KEY` environment value supply defaults. The first save stores
-one complete provider policy and the effective key atomically. Subsequently that
+legacy `KLIPPERAI_OPENAI_API_KEY` environment value supply defaults. A legacy key
+is imported into encrypted storage on startup when a master is available. Subsequently that
 saved policy takes precedence over those environment/config defaults, including
 an explicitly removed key. Other runtime settings remain unchanged.
-Saving does not rewrite or remove existing `.env` or installer environment files;
-remove obsolete credentials from those files and their backups during rotation.
+The secure installer removes legacy key assignments from its environment file
+and backups after verified migration. Manually managed `.env` files and external
+backups require administrator cleanup. New browser key submission requires HTTPS
+or localhost/loopback access through an SSH tunnel.
 
 ## Models and usage safety
+
+Before sending, the composer identifies the active provider/model and explains
+that the question and collected printer context go to the LLM. The agent reads
+the configured printer files and recent logs automatically.
+During a run, progress distinguishes evidence collection from provider calls.
+Each result stores a `model_usage` receipt with actual request attempts, successful
+HTTP/JSON responses and the model IDs used, including search/research calls made
+within that investigation. Failed calls still count as attempts. A run stopped
+before any provider request says so explicitly. Older results say that usage
+was not recorded.
+
+Receipts describe this run attempt, not earlier interrupted attempts, billing,
+or proof of answer quality. A provider response can still fail local answer
+validation. Provider setup checks use metadata endpoints and are not LLM
+generation requests. Saving a new provider/model does not change this disclosure
+until the service is manually restarted and the page checks its active setup.
 
 Separate profiles route Chat/Debug agent calls, hosted web search, knowledge
 extraction, and legacy compatibility calls. Each has a model ID, output-token
@@ -88,7 +112,7 @@ provider guard, it stops or reports incomplete evidence using existing error pat
 
 ## Verification
 
-Offline tests cover atomic persistence, stale editors, failed validation, secret
+Automated tests cover atomic persistence, stale editors, failed validation, secret
 omission, restart/removal semantics, task routing, shared budgets, cancellation,
 cooldowns and HTTP session/origin enforcement. Browser/DOM checks are separate
 from live provider and printer checks. No fixture establishes real account model

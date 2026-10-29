@@ -30,7 +30,7 @@ async def test_diagnostics_collector_failure_ping_and_system_context() -> None:
             return False
 
         async def get_server_info(self):
-            raise MoonrakerError("offline")
+            raise MoonrakerError("disconnected")
 
     class System:
         def collect(self):
@@ -40,7 +40,7 @@ async def test_diagnostics_collector_failure_ping_and_system_context() -> None:
     assert await collector.ping() is False
     snapshot = await collector.collect([])
     assert snapshot.moonraker_reachable is False
-    assert snapshot.notes == ["offline", "system note"]
+    assert snapshot.notes == ["disconnected", "system note"]
     assert snapshot.artifacts[0].label == "status"
 
 
@@ -52,7 +52,7 @@ async def test_diagnostics_collector_checks_printer_reachability() -> None:
 
         async def get_printer_info(self):
             if self.fail:
-                raise MoonrakerError("offline")
+                raise MoonrakerError("disconnected")
             return {"state": "ready"}
 
     assert await DiagnosticsCollector(Moonraker(False)).ping_printer() is True

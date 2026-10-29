@@ -13,6 +13,7 @@ from test_investigations import persistent_service as persistent_service
 
 from klipperai_agent.agent.context_budget import fit_result
 from klipperai_agent.agent.models import AgentLimits, ToolCall
+from klipperai_agent.agent.prompts import SYSTEM_PROMPT
 from klipperai_agent.agent.registry import ToolRegistry
 from klipperai_agent.agent.tools.config import InspectConfigTool, ReadConfigTool
 from klipperai_agent.agent.tools.config_search import SearchConfigTool
@@ -55,8 +56,12 @@ async def test_modes_preload_exact_context_and_debug_reuses_its_reads(tool_conte
     assert "G28" in json.dumps(payload) and "OLD" not in json.dumps(payload)
     assert payload["recent_conversation"] == history
     assert payload["historical_evidence"][0]["freshness"].startswith("historical")
-    assert "diagnostics" not in payload and "live_status" not in payload
-    tool_context.services.collector.collect.assert_not_awaited()
+    assert "Timer too close" in json.dumps(payload["diagnostics"])
+    assert "live_status" not in payload
+    tool_context.services.collector.collect.assert_awaited_once_with(
+        [], include_host_logs=True, include_host_system=False
+    )
+    tool_context.services.collector.collect.reset_mock()
     tool_context.moonraker.get_printer_info.assert_not_awaited()
     assert all(
         item["sent_to_model"] for item in result["context_included"] if item["status"] == "included"
@@ -96,11 +101,11 @@ async def test_large_and_truncated_configs_are_indexed_and_missing_files_are_vis
         {"user_message": "Explain config"}, context=tool_context.services
     )
     files = json.loads(model.conversations[0][1]["content"])["active_config"]["files"]
-    assert files[0] == {
-        "path": "large.cfg",
-        "sections": ["gcode_macro BIG"],
-        "content_omitted": True,
-    }
+    assert files[0]["path"] == "large.cfg"
+    assert files[0]["sections"] == ["gcode_macro BIG"]
+    assert files[0]["content_omitted"]
+    assert files[0]["artifact"]["status"] == "partial"
+    assert files[0]["artifact"]["kind"] == "config_file"
     assert files[1]["truncated"] and len(files) == 2
     receipts = {item["source"]: item for item in result["context_included"]}
     assert receipts["large.cfg"]["status"] == receipts["excerpt.cfg"]["status"] == "partial"
@@ -145,11 +150,12 @@ async def test_small_context_and_preflight_timeout_keep_receipts_truthful(tool_c
         to_summary=Mock(return_value={"large": '\\"\u2603' * 10000})
     )
     model = ScriptedModel(answer())
+    context_limit = len(SYSTEM_PROMPT) + 6000
     result = await AgentWorkflow(
-        model, tool_context.moonraker, AgentLimits(max_context_chars=12000)
+        model, tool_context.moonraker, AgentLimits(max_context_chars=context_limit)
     ).ainvoke({"user_message": "help", "mode": "debug"}, context=tool_context.services)
     assert result["agent_status"] == "completed"
-    assert len(json.dumps(model.conversations[0])) < 12000
+    assert len(json.dumps(model.conversations[0])) < context_limit
     assert any(
         item["status"] == "partial" and "budget" in item["detail"]
         for item in result["context_included"]

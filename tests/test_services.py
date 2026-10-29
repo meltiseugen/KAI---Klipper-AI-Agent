@@ -69,7 +69,7 @@ async def test_chat_service_routes_config_request_to_config_graph() -> None:
         },
     )
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -119,7 +119,7 @@ async def test_chat_service_routes_config_lookup_request_to_config_graph() -> No
         },
     )
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -157,7 +157,7 @@ async def test_chat_service_routes_macro_name_correction_to_config_graph() -> No
         "config", {"response_text": "SFS_ENABLE is defined in filament.cfg:1."}
     )
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -190,7 +190,7 @@ async def test_chat_service_routes_problem_language_to_diagnostics_with_logs_ena
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     config_graph = _FakeGraph("config", {"response_text": "config"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -233,7 +233,7 @@ async def test_chat_service_uses_llm_intent_router_for_ambiguous_requests() -> N
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     config_graph = _FakeGraph("config", {"response_text": "config"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -277,7 +277,7 @@ async def test_chat_service_sends_recent_history_to_intent_router_for_followups(
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     config_graph = _FakeGraph("config", {"response_text": "config"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -331,7 +331,7 @@ async def test_chat_service_limits_history_by_configured_pairs() -> None:
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     config_graph = _FakeGraph("config", {"response_text": "config"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -382,7 +382,7 @@ async def test_chat_service_prefers_intent_router_over_deterministic_guess() -> 
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     config_graph = _FakeGraph("config", {"response_text": "config"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=config_graph,
@@ -414,7 +414,7 @@ async def test_chat_service_promotes_structured_question_text_into_artifact() ->
 
     diagnosis_graph = _FakeGraph("diagnostics", {"response_text": "diagnostics"})
     service = ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path="",
         diagnosis_graph=diagnosis_graph,
         config_graph=_FakeGraph("config", {"response_text": "config"}),
@@ -451,8 +451,8 @@ async def test_bootstrap_includes_printer_profile_summary() -> None:
     sessions = InMemorySessionStore(ttl_seconds=60)
     session = sessions.create()
     service = ChatService(
-        provider_name="stub",
-        provider_model="stub-model",
+        provider_name="openai",
+        provider_model="openai-model",
         root_path="",
         diagnosis_graph=_FakeGraph("diagnostics", {}),
         config_graph=_FakeGraph("config", {}),
@@ -467,7 +467,7 @@ async def test_bootstrap_includes_printer_profile_summary() -> None:
 
     assert response.moonraker_reachable is True
     assert response.klipper_reachable is True
-    assert response.provider_model == "stub-model"
+    assert response.provider_model == "openai-model"
     assert response.conversation_history_pairs == 10
     assert response.printer_profile is not None
     assert response.printer_profile.firmware_flavor == "Kalico"
@@ -476,7 +476,7 @@ async def test_bootstrap_includes_printer_profile_summary() -> None:
 
 def _service(sessions, diagnosis_graph=None, root_path="") -> ChatService:
     return ChatService(
-        provider_name="stub",
+        provider_name="openai",
         root_path=root_path,
         diagnosis_graph=diagnosis_graph or _FakeGraph("diagnostics", {}),
         config_graph=_FakeGraph("config", {}),
@@ -557,7 +557,7 @@ def test_inline_artifact_ignores_blank_message() -> None:
 async def test_intent_router_failure_and_zero_confidence_fall_back() -> None:
     class FailingRouter:
         async def classify(self, _message):
-            raise RuntimeError("offline")
+            raise RuntimeError("disconnected")
 
     class UncertainRouter:
         async def classify(self, _message):

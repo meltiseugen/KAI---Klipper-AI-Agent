@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from html.parser import HTMLParser
 from typing import Awaitable, Callable
 from urllib.parse import urljoin, urlsplit
@@ -9,6 +10,7 @@ from urllib.parse import urljoin, urlsplit
 import httpx
 
 from klipperai_agent.domain.knowledge import DocumentSource
+from klipperai_agent.infrastructure.pdf_index import index_pdf
 from klipperai_agent.infrastructure.public_docs import public_target, resolve_addresses
 
 
@@ -93,5 +95,7 @@ class PublicDocumentationFetcher:
                     text, kind = extract_document(
                         original, response.headers.get("content-type", "")
                     )
+                    if kind == "pdf":
+                        text = await asyncio.to_thread(index_pdf, original)
                     return original, text, kind
         raise ValueError("Too many documentation redirects.")

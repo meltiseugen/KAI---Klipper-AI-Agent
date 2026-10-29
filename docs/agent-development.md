@@ -20,6 +20,13 @@ The runner owns time/call/step budgets. The registry owns validation, timeout,
 deduplication and result-size bounds. A tool should not start its own autonomous
 loop. The hosted search adapter makes one bounded search request as a capability.
 
+Log/config search tools demonstrate literal matching, bounded continuation and
+cached excerpt expansion. Log filesystem reads go through the narrow `LogReader`
+port; model inputs select inventory IDs, never host paths. See
+[read-only search contracts and limits](log-and-config-search.md). Keep the
+read-only boundary enforced in schemas, dispatch, ports and adapters; prompt text
+alone is insufficient.
+
 Starting context is built by `agent/starting_context.py` before the first model
 call, under the same run deadline. Mode policy belongs there, not in individual
 tools. New tools automatically receive public receipts through the registry;
@@ -31,6 +38,13 @@ pure incident/statistics analysis, bounded host reads and confidence-qualified
 manual troubleshooting. See [shutdown investigations](shutdown-investigations.md)
 for its evidence semantics, limitations and regression tests.
 
+`inspect_component` composes the same read-only knowledge/config/printer ports for
+fixed accelerometer, probe, driver, temperature and filament families. It caps
+available status objects and returns manual checks with source citations. Physical
+inventory, source review, diagram-note writes and validation triggers belong to
+session-protected user controls, never model tool arguments. See
+[hardware knowledge](hardware-knowledge.md).
+
 `get_gcode_metadata` uses the narrow `FileMetadataReader` port. Filenames must be
 relative to Moonraker's G-code root; omitted filenames query the current job.
 The HTTP adapter filters metadata to bounded scalars, excluding thumbnails and
@@ -39,13 +53,19 @@ configuration or measured print time. See [Moonraker integration](moonraker-inte
 
 ## Add a model or search provider
 
-Implement `AgentModel.respond(conversation, tools) -> ModelTurn` or
+Implement `AgentModel.respond(conversation, tools, *, response_format=None) -> ModelTurn` or
 `WebSearch.search(query) -> SearchResult`. Keep provider-specific wire parsing in
 `providers/`. Inject adapters through `bootstrap/container.py`. Preserve opaque
 reasoning/state items in the provider conversation; do not display them as activity.
 Return validated source URLs from the search adapter. The runner accepts typed
 `InvestigationRequest` and returns `InvestigationResult`; the compatibility
 workflow boundary alone translates legacy dictionaries.
+
+`response_format` is an application-selected strict JSON schema. Adapters should
+forward it through their provider's structured-output protocol; the runner also
+validates locally. Workflow contracts and citation resolution live in
+`agent/response_contracts.py` and `claim_citations.py`. See
+[intelligence quality](intelligence-quality.md) before changing these boundaries.
 
 Use `httpx.MockTransport` in tests; no API key is needed for the test suite. Verify
 tool-call IDs, unknown tools, refused/incomplete responses, malformed final JSON,
@@ -70,9 +90,11 @@ agent_max_output_tokens: 6000
 ```
 
 Disable web search to inspect only local evidence. Disabling the agent selects the
-existing single-pass workflow for compatibility. `stub` always uses offline
-deterministic workflows. Restart the service after editing the config. Keep the
-API key in `KLIPPERAI_OPENAI_API_KEY`, outside this file.
+existing single-pass OpenAI workflow for compatibility. An API key is required
+for both paths. Deterministic checks feed the model. Restart the service after editing the config. Provision
+API keys through the secure installer or Provider settings; see
+[encrypted credentials](credential-storage.md). A systemd master credential is
+required to persist keys; never put them in this config file.
 
 ## HTTP contract
 

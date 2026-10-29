@@ -135,11 +135,11 @@ async def test_optional_collection_and_scalar_helpers(tmp_path: Path) -> None:
     collector = _collector(tmp_path)
 
     async def fail():
-        raise MoonrakerError("offline")
+        raise MoonrakerError("disconnected")
 
     notes = []
     assert await collector._collect_optional("server", fail, notes) is None
-    assert notes == ["Could not collect server: offline"]
+    assert notes == ["Could not collect server: disconnected"]
     assert _first_non_empty(None, "") is None
     assert collector.host.extract_klipper_version_info("bad") == {}
     assert collector.host.extract_klipper_version_info({"version_info": "bad"}) == {}

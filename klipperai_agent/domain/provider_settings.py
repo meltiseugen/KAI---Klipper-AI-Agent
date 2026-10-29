@@ -17,7 +17,7 @@ class ModelProfile(BaseModel):
 
 
 class ProviderPolicy(BaseModel):
-    provider: Literal["stub", "openai"] = "stub"
+    provider: Literal["openai"] = "openai"
     agent: ModelProfile = Field(default_factory=ModelProfile)
     search: ModelProfile = Field(default_factory=ModelProfile)
     knowledge: ModelProfile = Field(default_factory=ModelProfile)
@@ -60,6 +60,8 @@ class ProviderLimitError(RuntimeError):
 
 
 class ProviderRepository(Protocol):
+    @property
+    def credential_storage_available(self) -> bool: ...
     def load(self) -> tuple[int, ProviderPolicy | None, str | None]: ...
     def save(self, revision: int, policy: ProviderPolicy, key: str | None) -> int: ...
     def reserve(self, policy: ProviderPolicy, tokens: int) -> tuple[str, int]: ...

@@ -101,7 +101,7 @@ async def test_detect_root_override_handles_fields_and_connection_errors(
 
     class Failed:
         async def get_printer_info(self):
-            raise MoonrakerError("offline")
+            raise MoonrakerError("disconnected")
 
     assert await detect_profile._detect_root_config_override(Failed(), tmp_path) is None
 

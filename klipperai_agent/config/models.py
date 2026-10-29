@@ -17,6 +17,7 @@ from klipperai_agent.config.vocabulary import (
     ConfigFeature,
     ConfigRequestIntent,
 )
+from klipperai_agent.domain.investigation import utc_now
 
 
 class ConfigReadError(ValueError):
@@ -84,6 +85,7 @@ class ConfigSnapshot:
     section_locations: list[ConfigSectionLocation] = field(default_factory=list)
     placeholders: list[ConfigPlaceholder] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    observed_at: str = field(default_factory=utc_now)
 
     def revision(self) -> str:
         files = [
@@ -178,6 +180,7 @@ class ConfigSnapshot:
     def to_state(self) -> dict[str, Any]:
         return {
             "root_file": self.root_file,
+            "observed_at": self.observed_at,
             "notes": list(self.notes),
             "section_locations": [
                 {
@@ -248,6 +251,7 @@ class ConfigSnapshot:
             section_locations=section_locations,
             placeholders=placeholders,
             notes=[str(note) for note in data.get("notes", [])],
+            observed_at=str(data.get("observed_at") or utc_now()),
         )
 
 

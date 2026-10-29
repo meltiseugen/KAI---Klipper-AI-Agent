@@ -5,14 +5,16 @@ model, read-only tools and manual proposal review.
 
 | Mode | Starting evidence |
 | --- | --- |
-| Chat (default) | Saved printer profile, active config tree, conversation and relevant dated evidence |
-| Debug | Chat context plus live printer status, bounded current log tails and configured service diagnostics |
+| Chat (default) | Saved printer profile, active config tree, bounded current log tails, conversation and relevant dated evidence |
+| Debug | Chat context plus live printer status and configured service diagnostics |
 
-Chat does not automatically collect logs or live status. It can use diagnostic
-tools when the question requires them. Debug prepares evidence before the first
-model call. Host log exclusions, configured tail lengths and systemd collection
-settings still apply. Missing evidence is visible and does not prevent the model
-from answering with other evidence.
+Both modes read the configured printer files and recent host log tails before
+the first model call. Users only need to describe the problem; the composer has
+no file-upload or snippet controls. The agent can expand config sections and
+diagnostic excerpts with its read-only tools. Debug also prepares live status and
+service diagnostics. Host log exclusions, configured tail lengths and collection
+settings still apply. Missing or inaccessible sources are disclosed in context
+receipts; the agent uses available evidence instead of asking for pasted files.
 
 Choose the mode beside the question field. Switching preserves the conversation
 and changes the next request. It does not retract earlier messages or diagnostic
@@ -21,8 +23,8 @@ to Chat. The choice is retained in browser storage, and each saved turn records
 its mode so another browser can restore the last used mode.
 
 The selector is enabled when bootstrap advertises `agent_modes: ["chat", "debug"]`.
-The `stub` and `agent_enabled=false` compatibility workflows retain their existing
-context selection; they do not implement these policies. The UI explains this and
+The `agent_enabled=false` compatibility workflow retains its existing context
+selection and still requires an LLM API key. The UI explains this and
 disables the selector. Explicit Debug requests to these workflows return HTTP 400.
 Omitting `mode` defaults to `chat`; unknown values are rejected. Both JSON and SSE
 chat endpoints accept the mode.
@@ -98,5 +100,5 @@ secret redaction; see [agent-development.md](agent-development.md).
 `test_agent_modes.py` covers preparation, failures, budgets, large files, tool
 validation and saved mode switches. HTTP tests cover both endpoints. JavaScript
 mode tests cover selection, in-flight locking, request history, restoration and
-text-only receipts. These offline checks do not establish live provider answer
+text-only receipts. These automated checks do not establish live provider answer
 quality, real printer behavior or rendered browser layout.

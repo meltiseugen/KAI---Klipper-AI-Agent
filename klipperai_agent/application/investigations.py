@@ -87,6 +87,9 @@ class InvestigationMemory:
     async def recent(self) -> list[Investigation]:
         return await asyncio.to_thread(self._repository.recent, self._printer_id)
 
+    async def summaries(self) -> list[Investigation]:
+        return await asyncio.to_thread(self._repository.summaries, self._printer_id)
+
     async def delete(self, thread_id: str) -> None:
         await asyncio.to_thread(self._repository.delete, self._printer_id, thread_id)
 

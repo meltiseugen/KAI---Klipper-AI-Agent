@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from klipperai_agent.config.models import ConfigSnapshot
+from klipperai_agent.domain.hardware import ConnectorObservation
 from klipperai_agent.domain.knowledge import CachedDocument, ComponentIdentity
+from klipperai_agent.knowledge.buses import connector_identity, resolved_ownership
 from klipperai_agent.knowledge.identity import component_status
-from klipperai_agent.knowledge.pins import pin_ownership
 from klipperai_agent.knowledge.sources import component_documents
 
 
@@ -13,15 +14,17 @@ def inspect_fan_ports(
     changed: bool,
     snapshot: ConfigSnapshot,
     reviewed: str = "",
+    reviewed_buses: str = "",
+    inventory: list[ConnectorObservation] | None = None,
 ) -> dict:
     status = component_status(component, documents, changed, reviewed)
     evidence = status.pop("fan_evidence")
-    pins = pin_ownership(snapshot)
+    pins = resolved_ownership(snapshot, component, documents, reviewed_buses)
     gaps = status["gaps"] + pins["gaps"]
     gaps.extend(
         "Hardware bus pin reservations need review: " + bus["section"] + " / " + bus["option"]
         for bus in pins["buses"]
-        if bus["mcu"] in {None, component.mcu}
+        if bus["mcu"] in {None, component.mcu} and not bus["resolved"]
     )
     if component.category != "board" or not component.revision or component.connection == "unknown":
         gaps.append(
@@ -54,18 +57,38 @@ def inspect_fan_ports(
         ):
             canonical = f"{component.mcu}:{pin}"
             uses = pins["owners"].get(canonical, [])
+            physical = next(
+                (
+                    item
+                    for item in (inventory or [])
+                    if item.role == component.role
+                    and item.connector.casefold() == connector.casefold()
+                ),
+                None,
+            )
+            current = bool(
+                physical and physical.identity_signature == connector_identity(component)
+            )
+            occupied = bool(current and physical and physical.occupancy == "occupied")
             ports.append(
                 {
                     "connector": connector,
                     "pin": canonical if not gaps else None,
                     "status": "in use"
-                    if uses
+                    if uses or occupied
                     else "needs information"
                     if gaps
+                    else "user-confirmed free; verify before wiring"
+                    if current and physical and physical.occupancy == "free"
                     else "unused in configuration; physical occupancy unconfirmed",
+                    "physical_observation": physical.model_dump() if physical else None,
+                    "physical_observation_stale": bool(physical and not current),
+                    "electrical_verified_by_user": bool(
+                        current and physical and physical.electrical_confirmed
+                    ),
                     "uses": uses[:12],
                     "example": f"[fan_generic additional_fan]\npin: {canonical}\n"
-                    if not gaps and not uses
+                    if not gaps and not uses and not occupied
                     else None,
                 }
             )

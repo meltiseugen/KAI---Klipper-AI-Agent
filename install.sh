@@ -1,34 +1,25 @@
 #!/bin/sh
 
 if [ -z "${KLIPPERAI_INSTALL_BASH_REEXEC:-}" ]; then
-  if command -v bash >/dev/null 2>&1; then
-    KLIPPERAI_INSTALL_BASH_REEXEC=1
-    export KLIPPERAI_INSTALL_BASH_REEXEC
-    exec bash "$0" "$@"
-  fi
-
-  if command -v apt-get >/dev/null 2>&1; then
-    bash_install_hint='apt-get update && apt-get install -y bash'
-  elif command -v opkg >/dev/null 2>&1; then
-    bash_install_hint='opkg update && opkg install bash'
-  elif command -v apk >/dev/null 2>&1; then
-    bash_install_hint='apk add bash'
-  else
-    bash_install_hint='no supported package manager was found; install Bash manually or use a normal Klipper host'
-  fi
-
-  printf '%s\n' \
-    '[KlipperAI] error: this installer requires Bash, but bash was not found.' \
-    '[KlipperAI] Install Bash on the printer host, then rerun:' \
-    '[KlipperAI]   chmod +x install.sh' \
-    '[KlipperAI]   ./install.sh' \
-    '[KlipperAI]' \
-    '[KlipperAI] Suggested Bash install command for this host:' \
-    "[KlipperAI]   $bash_install_hint" \
-    '[KlipperAI]' \
-    '[KlipperAI] BusyBox/OpenWrt-style images may not provide apt or systemd.' \
-    '[KlipperAI] This installer expects a normal Klipper host with Bash, Python 3.10+, systemd, and nginx.' >&2
-  exit 127
+  bootstrap_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/deployment/installer"
+  . "$bootstrap_dir/bootstrap.sh"
+  . "$bootstrap_dir/entware.sh"
+  case "${1:-}" in
+    -h|--help)
+      printf '%s\n' 'Usage: sh install.sh [--check|--help]' \
+        'Automatically detect the host and install missing application prerequisites.' \
+        'Then configure KlipperAI, its service, and optional Mainsail/OctoEverywhere access.' \
+        '--help and --check do not install packages or change the host.'
+      exit 0 ;;
+    --check)
+      bootstrap_opt_path
+      bootstrap_command_path bash >/dev/null || { bootstrap_error 'Bash is required for syntax checks; no packages were installed.'; exit 127; } ;;
+    '') bootstrap_bash || exit 1 ;;
+    *) printf 'Unknown option: %s\n' "$1" >&2; exit 2 ;;
+  esac
+  KLIPPERAI_INSTALL_BASH_REEXEC=1
+  export KLIPPERAI_INSTALL_BASH_REEXEC
+  exec bash "$0" "$@"
 fi
 
 set -euo pipefail

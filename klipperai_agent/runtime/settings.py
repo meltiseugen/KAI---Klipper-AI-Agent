@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import configparser
+import json
 import re
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseSettings, Field, SecretStr, root_validator, validator
 
@@ -62,13 +63,17 @@ class Settings(BaseSettings):
     excluded_logs: list[str] = Field(default_factory=list)
     log_artifact_char_limit: int = 18_000
     collect_systemd_diagnostics: bool = True
+    additional_journal_units: list[str] = Field(default_factory=list)
+    host_flight_recorder_enabled: bool = False
+    host_flight_recorder_interval_seconds: float = Field(default=10, ge=5, le=300)
+    host_flight_recorder_max_samples: int = Field(default=1440, ge=12, le=8640)
     moonraker_service_name: str = "moonraker.service"
     klipper_service_name: str = "klipper.service"
     journal_lines: int = 200
     system_status_artifact_char_limit: int = 6_000
     journal_artifact_char_limit: int = 16_000
     system_command_timeout_seconds: float = 6.0
-    llm_provider: str = "stub"
+    llm_provider: Literal["openai"] = "openai"
     openai_model: str = "gpt-5.4-mini"
     openai_api_key: SecretStr | None = None
     provider_storage_dir: Path = Field(
@@ -91,6 +96,27 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         extra = "ignore"
+
+        @classmethod
+        def parse_env_var(cls, field_name: str, raw_val: str) -> Any:
+            if field_name == "additional_journal_units":
+                return raw_val
+            return json.loads(raw_val)
+
+    @validator("additional_journal_units", pre=True)
+    def _journal_units(cls, value: Any) -> list[str]:
+        if isinstance(value, str):
+            value = value.replace(",", "\n").splitlines()
+        if not isinstance(value, (list, tuple)):
+            raise ValueError("Additional journal units must be a list or comma-separated names.")
+        units = list(dict.fromkeys(str(unit).strip() for unit in value if str(unit).strip()))
+        if len(units) > 6 or any(
+            not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.@-]{0,90}\.service", unit) for unit in units
+        ):
+            raise ValueError(
+                "Use at most six literal .service unit names, without paths or wildcards."
+            )
+        return units
 
     @validator("moonraker_socket_path", pre=True)
     def _normalize_moonraker_socket(cls, value: Any) -> Any:
@@ -168,6 +194,14 @@ class Settings(BaseSettings):
             seen.add(item)
             normalized.append(item)
         return normalized
+
+    @root_validator(pre=True)
+    def _normalize_provider(cls, values: dict[str, Any]) -> dict[str, Any]:
+        provider = str(values.get("llm_provider", "openai")).lower().strip()
+        if provider != "openai":
+            # Retired provider settings must never activate a previously unused key.
+            values = {**values, "openai_api_key": None}
+        return {**values, "llm_provider": "openai"}
 
     @root_validator
     def _enforce_read_only_runtime(cls, values: dict[str, Any]) -> dict[str, Any]:

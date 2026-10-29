@@ -5,6 +5,9 @@ from typing import Any
 from pydantic import StrictBool
 
 from klipperai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
+from klipperai_agent.diagnostics.evidence import config_evidence, diagnostic_evidence, link_findings
+from klipperai_agent.domain.artifacts import CollectedArtifact
+from klipperai_agent.domain.investigation import Evidence
 
 
 def diagnostic_preview(content: str, limit: int = 1000) -> str:
@@ -64,10 +67,23 @@ class DiagnosticsTool(Tool[DiagnosticsArguments]):
         context.findings = context.services.rules.analyze(
             snapshot.artifacts, config_snapshot=config
         )
+        observations: list[CollectedArtifact] = [
+            *diagnostic_evidence(snapshot),
+            *(config_evidence(config) if config else []),
+        ]
+        context.findings = link_findings(context.findings, observations)
+        known_ids = {item.id for item in context.evidence}
+        context.evidence.extend(
+            Evidence.parse_obj(item.model_dump())
+            for item in observations
+            if item.id not in known_ids
+        )
         if not snapshot.artifacts:
             return {"error": "No diagnostic artifacts were available.", "notes": snapshot.notes}
         artifacts = []
-        for artifact in snapshot.artifacts[:12]:
+        for artifact, observation in zip(
+            snapshot.artifacts[:12], snapshot.normalized_artifacts[:12]
+        ):
             identifier = f"diagnostic-{len(context.diagnostic_artifacts) + 1}"
             context.diagnostic_artifacts[identifier] = artifact
             artifacts.append(
@@ -75,13 +91,15 @@ class DiagnosticsTool(Tool[DiagnosticsArguments]):
                     "id": identifier,
                     "label": artifact.label,
                     "kind": artifact.kind,
-                    "content": diagnostic_preview(artifact.content),
+                    "content": diagnostic_preview(observation.content, 400),
                     "total_lines": len(artifact.content.splitlines()),
+                    "artifact": observation.prompt_metadata(),
+                    "evidence_id": observation.id,
                 }
             )
         return {
             "truncated": len(snapshot.artifacts) > 12
-            or any(len(artifact.content) > 1000 for artifact in snapshot.artifacts),
+            or any(len(artifact.content) > 400 for artifact in snapshot.artifacts),
             "moonraker_reachable": snapshot.moonraker_reachable,
             "notes": snapshot.notes[:20],
             "findings": [finding.model_dump() for finding in context.findings],

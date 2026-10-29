@@ -1,14 +1,16 @@
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from uuid import uuid4
 
 from klipperai_agent.agent.models import EventSink
 from klipperai_agent.agent.workflow import AgentWorkflow
 from klipperai_agent.application.chat_bootstrap import bootstrap_response
+from klipperai_agent.application.chat_response import chat_response
 from klipperai_agent.application.intent import (
     ChatIntentOutput,
     classify_deterministic_intent,
@@ -31,6 +33,7 @@ from klipperai_agent.contracts.api import (
     MemorySource,
     UiSessionResponse,
 )
+from klipperai_agent.domain.artifacts import normalize_input
 from klipperai_agent.domain.context import ModeUnavailableError
 from klipperai_agent.domain.investigation import (
     Evidence,
@@ -38,7 +41,10 @@ from klipperai_agent.domain.investigation import (
     InvestigationResult,
     PendingInvestigation,
 )
+from klipperai_agent.domain.model_usage import ModelUsage
 from klipperai_agent.domain.redaction import redact_data, redact_text
+from klipperai_agent.domain.repositories import InvestigationConflict
+from klipperai_agent.runtime.model_usage import track_model_usage
 from klipperai_agent.workflows.context import Workflow, WorkflowContext
 
 logger = logging.getLogger("klipperai_agent.chat")
@@ -53,11 +59,13 @@ class ChatService:
     workflow_context: WorkflowContext
     sessions: InMemorySessionStore
     provider_model: str | None = None
+    provider_ready: bool = True
     conversation_history_pairs: int = 10
     agent_workflow: AgentWorkflow | None = None
     investigations: InvestigationMemory | None = None
     proposal_review: ProposalReviewService | None = None
     knowledge: PrinterKnowledge | None = None
+    _run_lock: asyncio.Lock = field(default_factory=asyncio.Lock, init=False, repr=False)
 
     async def create_ui_session(self) -> UiSessionResponse:
         session = self.sessions.create()
@@ -90,10 +98,22 @@ class ChatService:
     async def chat(
         self, payload: ChatRequest, *, on_event: EventSink | None = None
     ) -> ChatResponse:
+        if self._run_lock.locked():
+            raise InvestigationConflict(
+                "Another investigation is already running on this printer host. Wait for it to finish, then retry."
+            )
+        async with self._run_lock:
+            return await self._chat(payload, on_event=on_event)
+
+    async def _chat(
+        self, payload: ChatRequest, *, on_event: EventSink | None = None
+    ) -> ChatResponse:
         session = self.sessions.get(payload.session_id)
         if not session:
             logger.warning("Rejected chat for invalid or expired session")
             raise ValueError("Invalid or expired session.")
+        if not self.provider_ready:
+            raise ModeUnavailableError("Configure an LLM provider and API key to use the agent.")
 
         payload = payload.copy(
             update={
@@ -154,18 +174,23 @@ class ChatService:
             artifacts=pending.artifacts,
             history=pending.history,
         )
-        if pending.attempts <= 3 and (pending.mode != "debug" or self.agent_workflow):
+        if (
+            pending.attempts <= 3
+            and self.provider_ready
+            and (pending.mode != "debug" or self.agent_workflow)
+        ):
             await with_lease(
                 self.investigations,
                 investigation,
                 owner,
-                self._run(payload, investigation, None, owner),
+                self._resume_run(payload, investigation, owner),
             )
         else:
             await self.investigations.remember(
                 investigation,
                 pending.message,
                 InvestigationResult(
+                    model_usage=ModelUsage(status="not_used"),
                     mode=pending.mode,
                     agent_status="limited",
                     evidence=pending.evidence,
@@ -175,12 +200,34 @@ class ChatService:
                 owner,
             )
 
+    async def _resume_run(
+        self, payload: ChatRequest, investigation: Investigation, owner: str
+    ) -> ChatResponse:
+        # Recovery keeps its lease alive while waiting for an interactive run.
+        async with self._run_lock:
+            return await self._run(payload, investigation, None, owner)
+
     async def _run(
         self,
         payload: ChatRequest,
         investigation: Investigation | None,
         on_event: EventSink | None,
         owner: str | None = None,
+    ) -> ChatResponse:
+        with track_model_usage(on_event) as usage:
+            try:
+                return await self._execute(payload, investigation, on_event, owner, usage)
+            except Exception as exc:
+                setattr(exc, "model_usage", usage.copy(deep=True))
+                raise
+
+    async def _execute(
+        self,
+        payload: ChatRequest,
+        investigation: Investigation | None,
+        on_event: EventSink | None,
+        owner: str | None,
+        usage: ModelUsage,
     ) -> ChatResponse:
         thread_id = investigation.id if investigation else payload.thread_id or str(uuid4())
         history = (
@@ -262,10 +309,13 @@ class ChatService:
             raise
 
         outcome = InvestigationResult.parse_obj(result)
+        outcome.model_usage = usage.copy(deep=True)
         if investigation and investigation.pending:
             fresh_ids = {item.id for item in outcome.evidence}
             outcome.evidence.extend(
-                item for item in investigation.pending.evidence if item.id not in fresh_ids
+                item.copy(update={"freshness": "historical", "origin": "memory"})
+                for item in investigation.pending.evidence
+                if item.id not in fresh_ids
             )
         outcome.memory_sources = [
             MemorySource(evidence_id=item.id, source=item.source, observed_at=item.observed_at)
@@ -276,10 +326,13 @@ class ChatService:
                 for entry in outcome.context_included
             )
         ]
-        outcome.evidence.extend(
-            Evidence(source=f"user:{item.label}", content=item.content[:16000])
-            for item in request_artifacts
-        )
+        for item in request_artifacts:
+            observation = normalize_input(item)
+            if not any(
+                existing.source == observation.source and existing.content == observation.content
+                for existing in outcome.evidence
+            ):
+                outcome.evidence.append(Evidence.parse_obj(observation.model_dump()))
         if not self.agent_workflow:
             outcome.evidence.extend(
                 Evidence(source=source.path, content=source.excerpt[:16000], citations=[source])
@@ -294,6 +347,7 @@ class ChatService:
         if self.proposal_review:
             await self.proposal_review.review(outcome)
         outcome = InvestigationResult.parse_obj(redact_data(outcome.model_dump()))
+        outcome.findings.sort(key=lambda item: item.severity_rank, reverse=True)
         if self.investigations and investigation:
             await self.investigations.remember(
                 investigation, payload.message, outcome, payload.history, owner
@@ -308,23 +362,7 @@ class ChatService:
             len(outcome.source_citations),
             result.get("moonraker_reachable", False),
         )
-        return ChatResponse(
-            session_id=payload.session_id,
-            mode=outcome.mode,
-            context_included=outcome.context_included,
-            thread_id=thread_id,
-            response=outcome.response_text,
-            findings=outcome.findings,
-            next_actions=outcome.next_actions,
-            config_proposals=outcome.config_proposals,
-            patch_proposals=outcome.patch_proposals,
-            source_citations=outcome.source_citations,
-            provider=self.provider_name,
-            moonraker_reachable=outcome.moonraker_reachable,
-            agent_events=outcome.agent_events,
-            agent_status=outcome.agent_status,
-            memory_sources=outcome.memory_sources,
-        )
+        return chat_response(payload.session_id, thread_id, self.provider_name, outcome)
 
     async def _classify_chat_intent(
         self, message: str, *, classification_message: str | None = None

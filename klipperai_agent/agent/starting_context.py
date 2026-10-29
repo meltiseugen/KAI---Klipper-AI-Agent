@@ -12,6 +12,8 @@ from klipperai_agent.agent.models import AgentLimits, EventSink, ToolCall
 from klipperai_agent.agent.prompts import SYSTEM_PROMPT
 from klipperai_agent.agent.registry import ToolRegistry
 from klipperai_agent.agent.tools.base import ToolContext
+from klipperai_agent.diagnostics.evidence import config_evidence
+from klipperai_agent.domain.artifacts import normalize_input
 from klipperai_agent.domain.context import ContextItem, ContextStatus
 from klipperai_agent.domain.evidence import AgentEvent, SourceCitation
 from klipperai_agent.domain.investigation import Evidence, InvestigationRequest, utc_now
@@ -24,12 +26,14 @@ async def prepare_context(
     limits: AgentLimits,
     emit: EventSink,
 ) -> dict[str, Any]:
+    supplied = [normalize_input(item) for item in context.artifacts]
+    context.evidence.extend(Evidence.parse_obj(item.model_dump()) for item in supplied)
     payload: dict[str, Any] = {
         "mode": request.mode,
         "request": request.user_message,
         "recent_conversation": request.conversation_context,
         "historical_evidence": [item.historical_context() for item in request.memory],
-        "artifacts": [item.model_dump() for item in context.artifacts],
+        "artifacts": [item.model_dump() for item in supplied],
     }
     for source, content, detail in [
         (
@@ -84,8 +88,9 @@ async def prepare_context(
         result = await registry.execute(
             ToolCall(f"initial:{name}", name, json.dumps(arguments)), context, initial=True
         )
-        fitted = fit_result(result, max(150, budget))
-        if fitted is not result:
+        model_result = registry.model_result(name)
+        fitted = fit_result(model_result, max(150, budget))
+        if fitted is not model_result:
             receipt = context.context_included[-1]
             if receipt.status != "unavailable":
                 receipt.status = "partial"
@@ -110,7 +115,7 @@ async def prepare_context(
         )
         remaining -= len(json.dumps(payload["printer_knowledge"]))
     # Leave a separate allowance for diagnostics. Config never displaces it.
-    config_budget = max(0, remaining // 2 if request.mode == "debug" else remaining)
+    config_budget = max(0, remaining // 2)
     await emit(
         AgentEvent(kind="tool_started", tool="inspect_config", message="Load active configuration")
     )
@@ -125,33 +130,25 @@ async def prepare_context(
             message="Active configuration checked",
         )
     )
-    if request.mode == "debug":
+    debug = request.mode == "debug"
+    if debug:
         payload["live_status"] = await read("get_printer_status", {}, remaining // 3)
         remaining -= len(json.dumps(payload["live_status"]))
-        has_shutdown = any(
-            tool["name"] == "investigate_shutdown" for tool in registry.definitions()
-        )
-        payload["diagnostics"] = await read(
-            "collect_diagnostics",
-            {"include_logs": True, "include_system": True},
-            remaining // 3 if has_shutdown else remaining,
-        )
-        remaining -= len(json.dumps(payload["diagnostics"]))
-        if has_shutdown and re.search(
-            r"communication|timing|timer too close|shutdown|stopped|timeout.*homing|timer in the past",
-            request.user_message + json.dumps(payload["diagnostics"]),
-            re.I,
-        ):
-            payload["shutdown_investigation"] = await read("investigate_shutdown", {}, remaining)
-    else:
-        context.context_included.append(
-            ContextItem(
-                source="Automatic diagnostics",
-                status="omitted",
-                observed_at=utc_now(),
-                detail="Chat does not preload logs, service diagnostics or live status. Tools can read relevant evidence when needed.",
-            )
-        )
+    has_shutdown = debug and any(
+        tool["name"] == "investigate_shutdown" for tool in registry.definitions()
+    )
+    payload["diagnostics"] = await read(
+        "collect_diagnostics",
+        {"include_logs": True, "include_system": debug},
+        remaining // 3 if has_shutdown else remaining,
+    )
+    remaining -= len(json.dumps(payload["diagnostics"]))
+    if has_shutdown and re.search(
+        r"communication|timing|timer too close|shutdown|stopped|timeout.*homing|timer in the past",
+        request.user_message + json.dumps(payload["diagnostics"]),
+        re.I,
+    ):
+        payload["shutdown_investigation"] = await read("investigate_shutdown", {}, remaining)
     return payload
 
 
@@ -185,9 +182,15 @@ async def _config_context(context: ToolContext, budget: int, timeout: float) -> 
     )
     remaining = max(0, budget - len(json.dumps(result)) - 30)
     omitted = 0
-    for document in snapshot.documents:
-        full = {"path": document.path, "content": document.content, "truncated": document.truncated}
-        size = len(json.dumps(full)) + 2
+    normalized_files = config_evidence(snapshot)
+    for document, observation in zip(snapshot.documents, normalized_files):
+        full = {
+            "path": document.path,
+            "content": observation.content,
+            "truncated": observation.status == "partial",
+        }
+        full["artifact"] = observation.prompt_metadata()
+        size = max(len(json.dumps(full)), len(document.content)) + 2
         status: ContextStatus = "partial" if document.truncated else "included"
         detail = (
             "Collected file excerpt; collector truncated this file."
@@ -196,6 +199,7 @@ async def _config_context(context: ToolContext, budget: int, timeout: float) -> 
         )
         if size > remaining:
             full = {"path": document.path, "sections": document.sections, "content_omitted": True}
+            full["artifact"] = {**observation.prompt_metadata(), "status": "partial"}
             size = len(json.dumps(full)) + 2
             status = "partial"
             detail = "Section index only. Use inspect_config or read_config_file for content."
@@ -214,14 +218,7 @@ async def _config_context(context: ToolContext, budget: int, timeout: float) -> 
                     excerpt=document.content[:1000],
                 )
                 context.citations.append(citation)
-                context.evidence.append(
-                    Evidence(
-                        source=f"config:{document.path}",
-                        content=document.content[:16000],
-                        config_revision=snapshot.revision(),
-                        citations=[citation],
-                    )
-                )
+                context.evidence.append(observation)
         context.context_included.append(
             ContextItem(
                 source=document.path,

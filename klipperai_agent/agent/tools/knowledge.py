@@ -12,6 +12,7 @@ from klipperai_agent.config.models import ConfigReadError, ConfigSnapshot
 from klipperai_agent.domain.evidence import SourceCitation
 from klipperai_agent.knowledge.eddy import inspect_eddy
 from klipperai_agent.knowledge.fans import inspect_fan_ports
+from klipperai_agent.knowledge.firmware import firmware_key
 from klipperai_agent.knowledge.identity import component_status
 from klipperai_agent.knowledge.retrieval import search_documents
 from klipperai_agent.knowledge.sources import component_documents
@@ -42,6 +43,10 @@ def cite_passages(passages: list[dict], context: ToolContext) -> None:
                 path=item["url"],
                 url=item["url"],
                 line_number=item["start_line"],
+                line_basis="excerpt",
+                page_number=item.get("page"),
+                source_digest=item["digest"],
+                firmware_commit=item.get("firmware_commit"),
                 excerpt=item["excerpt"][:1000],
             )
         )
@@ -59,7 +64,8 @@ class PrinterKnowledgeTool(Tool[ToolArguments]):
     async def execute(self, arguments: ToolArguments, context: ToolContext) -> dict[str, Any]:
         setup, docs, changed = await self._knowledge.read()
         return {
-            "setup": setup.model_dump(),
+            "setup": setup.model_dump(exclude={"diagram_notes", "connectors", "validation"}),
+            "connector_observations": len(setup.connectors),
             "components": [
                 {
                     key: value
@@ -98,7 +104,31 @@ class SearchKnowledgeTool(Tool[SearchKnowledgeArguments]):
             if arguments.role in {"all", item.role}
             for doc in component_documents(item, docs)
         }
+        if setup.firmware_commit and arguments.role in {"all", "firmware"}:
+            ids.update(doc.id for doc in docs if doc.component_key == firmware_key(setup))
         passages = search_documents(docs, arguments.query, ids)
+        for note in setup.diagram_notes:
+            if (
+                note.document_id in ids
+                and any(term.casefold() in note.text.casefold() for term in arguments.query.split())
+                and any(doc.id == note.document_id and doc.digest == note.digest for doc in docs)
+            ):
+                doc = next(doc for doc in docs if doc.id == note.document_id)
+                passages.append(
+                    {
+                        "document_id": doc.id,
+                        "title": doc.title + " (user-confirmed diagram note)",
+                        "url": doc.url + f"#page={note.page}",
+                        "digest": doc.digest,
+                        "fetched_at": note.observed_at,
+                        "start_line": 1,
+                        "excerpt": note.text,
+                        "page": note.page,
+                        "origin": "user_confirmed_note",
+                        "score": 1,
+                    }
+                )
+        passages = passages[:3]
         cite_passages(passages, context)
         return {
             "passages": passages,
@@ -129,7 +159,13 @@ class FanPortsTool(Tool[FanPortsArguments]):
             }
         snapshot = await complete_config(context)
         report = inspect_fan_ports(
-            component, docs, changed, snapshot, setup.reviewed_fan_mappings.get(component.role, "")
+            component,
+            docs,
+            changed,
+            snapshot,
+            setup.reviewed_fan_mappings.get(component.role, ""),
+            setup.reviewed_bus_mappings.get(component.role, ""),
+            setup.connectors,
         )
         if (
             sum(item.mcu == component.mcu and item.category == "board" for item in setup.components)

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from pydantic import SecretStr
@@ -31,7 +32,6 @@ def provider_management(settings: Settings) -> tuple[ProviderManagement, UsageGu
         model=settings.openai_model, max_output_tokens=settings.agent_max_output_tokens
     )
     policy = ProviderPolicy(
-        provider="openai" if settings.llm_provider.lower().strip() == "openai" else "stub",
         agent=profile,
         search=profile,
         knowledge=profile,
@@ -45,8 +45,14 @@ def provider_management(settings: Settings) -> tuple[ProviderManagement, UsageGu
         settings.openai_api_key.get_secret_value() if settings.openai_api_key else None,
         OpenAICredentialValidator(guard),
     )
+    if manager.active_revision == 0 and manager.active_key:
+        store.save(0, manager.active_policy, manager.active_key)
+        manager = ProviderManagement(store, policy, None, manager.validator)
     guard.policy = manager.active_policy
     register_provider_secret(manager.active_key)
+    manager.environment_key = None
+    for name in ("KLIPPERAI_OPENAI_API_KEY", "OPENAI_API_KEY", "KLIPPYAI_OPENAI_API_KEY"):
+        os.environ.pop(name, None)
     return manager, guard
 
 

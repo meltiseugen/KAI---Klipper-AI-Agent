@@ -8,6 +8,9 @@ from pathlib import Path
 from klipperai_agent.domain.evidence import ArtifactInput, ArtifactKind
 from klipperai_agent.domain.redaction import redact_text
 
+MAX_TAIL_BYTES = 256 * 1024
+MAX_LOG_FILES = 16
+
 
 @dataclass(frozen=True, slots=True)
 class KnownLogKind:
@@ -62,12 +65,24 @@ class HostLogCollector:
             notes.append(f"No current .log files were found in {self._logs_dir}.")
             return artifacts, notes
 
+        if len(log_files) > MAX_LOG_FILES:
+            # Stable sort preserves recency within each priority group.
+            log_files.sort(key=lambda path: path.name.lower() in self._KNOWN_LOGS, reverse=True)
+            log_files = log_files[:MAX_LOG_FILES]
+            notes.append(
+                f"Log collection limited to {MAX_LOG_FILES} files, prioritizing Klippy, Moonraker and KlipperAI; other current logs omitted."
+            )
+
         notes.append(f"Loaded {len(log_files)} current log file(s) from {self._logs_dir}.")
 
         for path in log_files:
             artifact = self._build_artifact(path)
             if artifact is not None:
                 artifacts.append(artifact)
+            else:
+                notes.append(
+                    f"{path.name}: no complete nonempty lines in the final {MAX_TAIL_BYTES} bytes; the log may be empty or byte-limited."
+                )
 
         return artifacts, notes
 
@@ -129,18 +144,14 @@ class HostLogCollector:
         with path.open("rb") as handle:
             handle.seek(0, 2)
             file_size = handle.tell()
-            block_size = 8192
-            remaining = file_size
-            data = b""
-
-            while remaining > 0 and data.count(b"\n") <= max_lines:
-                read_size = min(block_size, remaining)
-                remaining -= read_size
-                handle.seek(remaining)
-                data = handle.read(read_size) + data
-
+            start = max(0, file_size - MAX_TAIL_BYTES)
+            handle.seek(start)
+            data = handle.read(MAX_TAIL_BYTES)
+        if start:
+            # A byte-limited first line is not a complete log record.
+            data = data.partition(b"\n")[2]
         lines = data.decode("utf-8", errors="replace").splitlines()
-        truncated = len(lines) > max_lines or remaining > 0
+        truncated = len(lines) > max_lines or start > 0
         if len(lines) > max_lines:
             lines = lines[-max_lines:]
         return "\n".join(lines).strip(), truncated

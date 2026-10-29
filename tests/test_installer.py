@@ -31,7 +31,8 @@ done
     assert result.stdout == ""
 
 
-def test_nginx_snippet_preserves_prefix_queries_and_streaming(tmp_path, run_shell):
+@pytest.mark.parametrize("prefix", ["/klipperai", "/assistant/printer"])
+def test_nginx_snippet_preserves_prefix_queries_and_streaming(tmp_path, run_shell, prefix):
     target = tmp_path / "nginx.conf"
     bash(
         run_shell,
@@ -39,7 +40,7 @@ def test_nginx_snippet_preserves_prefix_queries_and_streaming(tmp_path, run_shel
 set -euo pipefail
 source "$1/deployment/installer/nginx.sh"
 OUTPUT="$2"
-KLIPPERAI_ROOT_PATH=/assistant/printer
+KLIPPERAI_ROOT_PATH="$3"
 KLIPPERAI_PORT=8899
 backup_file() { :; }
 run_root() { [[ "$1" == install ]] || return 1; cp "${@: -2:1}" "$OUTPUT"; }
@@ -47,19 +48,131 @@ write_nginx_snippet
 """,
         ROOT.as_posix(),
         target.as_posix(),
+        prefix,
     )
     text = target.read_text()
-    assert "location = /assistant/printer" in text
-    assert "return 308 /assistant/printer/$is_args$args;" in text
-    assert "location /assistant/printer/" in text
+    assert f"location = {prefix} " in text
+    assert f"return 308 {prefix}/$is_args$args;" in text
+    assert "absolute_redirect off;" in text
+    assert f"location ^~ {prefix}/ " in text
     assert "proxy_pass http://127.0.0.1:8899/;" in text
     assert "proxy_buffering off;" in text
+    assert "proxy_cache off;" in text
+    assert 'proxy_set_header Connection "";' in text
     assert "proxy_read_timeout 300s;" in text
     assert "proxy_set_header Host $http_host;" in text
     assert 'proxy_set_header X-Forwarded-Host "";' in text
     assert 'proxy_set_header Forwarded "";' in text
     assert "access_log off;" in text
     assert "client_max_body_size" not in text
+
+
+def test_nginx_include_is_at_server_scope_and_idempotent(tmp_path, run_shell):
+    server = tmp_path / "mainsail.conf"
+    include = "include /etc/klipperai/nginx-location.conf;"
+    server.write_text(
+        "# server { ignored }\nserver {\n"
+        f"    location /other {{\n        {include}\n    }}\n"
+        "    location ~* \\.(js|css)$ { expires 1y; }\n"
+        "    location / { try_files $uri $uri/ /index.html; }\n}\n"
+        f"server {{\n    {include}\n}}\n"
+    )
+    script = """
+set -euo pipefail
+source "$1/deployment/installer/common.sh"
+source "$1/deployment/installer/nginx.sh"
+KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
+PROJECT_NAME=test
+TIMESTAMP=test
+run_root() { "$@"; }
+ensure_nginx_include
+"""
+    bash(run_shell, script, ROOT.as_posix(), server.as_posix())
+    result = server.read_text()
+    assert result.count(include) == 3
+    assert f"/index.html; }}\n    {include}\n}}" in result
+    assert "expires 1y;" in result
+    modified = server.stat().st_mtime_ns
+    bash(run_shell, script, ROOT.as_posix(), server.as_posix())
+    assert server.read_text() == result
+    assert server.stat().st_mtime_ns == modified
+
+
+@pytest.mark.parametrize("existing", [True, False])
+@pytest.mark.parametrize("failure", ["validation", "server-block"])
+def test_nginx_failure_restores_both_files(tmp_path, run_shell, existing, failure):
+    server = tmp_path / "mainsail.conf"
+    snippet = tmp_path / "location.conf"
+    original = "server {\n    location / { root /mainsail; }\n}\n"
+    if existing:
+        original = f"server {{\n    include {snippet.as_posix()};\n}}\n"
+    if failure == "server-block":
+        original = "server {\n    # incomplete config\n"
+    server.write_text(original)
+    if existing:
+        snippet.write_text("previous proxy config\n")
+    result = bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1/deployment/installer/common.sh"
+source "$1/deployment/installer/nginx.sh"
+PROJECT_NAME=test
+TIMESTAMP=test
+KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
+KLIPPERAI_ROOT_PATH=/klipperai
+KLIPPERAI_PORT=8811
+PATCH_NGINX_INCLUDE=yes
+run_root() { "$@"; }
+reload_nginx() { return 1; }
+# Keep the test runner alive after die exits the configuration subshell.
+if (configure_nginx "$3"); then exit 99; fi
+""",
+        ROOT.as_posix(),
+        server.as_posix(),
+        snippet.as_posix(),
+    )
+    assert "Restoring previous proxy files" in result.stderr
+    assert server.read_text() == original
+    if existing:
+        assert snippet.read_text() == "previous proxy config\n"
+    else:
+        assert not snippet.exists()
+
+
+@pytest.mark.parametrize("automatic", [True, False])
+def test_nginx_configuration_success_and_manual_install(tmp_path, run_shell, automatic):
+    server = tmp_path / "mainsail.conf"
+    snippet = tmp_path / "location.conf"
+    original = "server {\n    location / { root /mainsail; }\n}\n"
+    server.write_text(original)
+    result = bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1/deployment/installer/common.sh"
+source "$1/deployment/installer/nginx.sh"
+PROJECT_NAME=test
+TIMESTAMP=test
+KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
+KLIPPERAI_ROOT_PATH=/klipperai
+KLIPPERAI_PORT=8811
+PATCH_NGINX_INCLUDE="$4"
+run_root() { "$@"; }
+reload_nginx() { echo reloaded; }
+configure_nginx "$3"
+""",
+        ROOT.as_posix(),
+        server.as_posix(),
+        snippet.as_posix(),
+        "yes" if automatic else "no",
+    )
+    assert "location ^~ /klipperai/" in snippet.read_text()
+    assert ("reloaded" in result.stdout) is automatic
+    if automatic:
+        assert f"include {snippet.as_posix()};" in server.read_text()
+    else:
+        assert server.read_text() == original
 
 
 @pytest.mark.parametrize("valid", [True, False])

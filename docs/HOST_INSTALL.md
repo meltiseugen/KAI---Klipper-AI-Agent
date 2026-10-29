@@ -2,6 +2,9 @@
 
 This guide is the shortest path to getting KlipperAI running on a Klipper or Kalico host that already has Moonraker and Mainsail installed.
 
+After the initial install, use [the fast SSH update workflow](printer-testing.md)
+to deploy development fixes and roll back code without regenerating settings.
+
 Current runtime behavior:
 
 - KlipperAI is `read-only`
@@ -11,48 +14,30 @@ Current runtime behavior:
 
 ## 1. Prerequisites
 
-The host should already have:
+The host should already have Linux, Moonraker and Mainsail/Fluidd, root or sudo
+access, network access, and enough writable storage for the checkout and packages.
+It must use either real systemd 250+ with encrypted credential delivery or native
+Creality init scripts.
 
-- Linux
-- Moonraker
-- Mainsail
-- `bash`
-- `systemd`
-- `nginx`
-- `git`
+Standard systemd installs use an unprivileged service account. Native rooted
+Creality/Ender-3 V3 KE installs use their own init backend and root service account,
+with authenticated host-key encryption and RAM-only master delivery. See
+[native Creality installation](creality-compatibility.md) for setup, updates and
+firmware acceptance checks. The installer distinguishes real systemd from a
+compatibility `systemctl` command.
 
-The installer can help install:
+Run `sh install.sh`; it installs missing Bash before starting the Bash phases.
+It then installs supported Python, required standard-library modules, pip,
+venv/virtualenv, Git HTTPS support, certificates, utilities and missing nginx.
+It preserves existing vendor nginx and prefers a supported `/opt` Python over an
+old vendor interpreter. On old apt-based hosts it invokes the Python helper
+automatically with one build job, beside the system Python.
 
-- `python3` when the distro default is already Python `3.10+`
-- the matching `venv` package for that interpreter, for example `python3-venv`, `python3.10-venv`, or `python3.11-venv`
-- `python3-pip`
-
-KlipperAI requires Python `3.10+`. If `python3 --version` reports `3.9` or older, run [docs/python310-install.md](docs/python310-install.md) or `./deployment/python/install-python310.sh` first, then rerun the installer.
-
-If `bash install.sh` prints `bash: not found`, the host only has a smaller
-`sh` shell. Install Bash first, then rerun `./install.sh`.
-
-```bash
-apt-get update && apt-get install -y bash  # Debian/Ubuntu hosts
-opkg update && opkg install bash           # Entware/OpenWrt-style hosts
-apk add bash                               # Alpine hosts
-```
-
-Some rooted appliance images, including BusyBox/OpenWrt-style environments,
-may also be missing `systemd`, `nginx`, Python `venv`, or a package manager.
-The current installer targets normal Klipper host images that provide those
-services. If the host has no `apt-get`, `opkg`, or `apk`, install Entware or use
-a normal Klipper host instead.
-
-On rooted Creality/Nebula-style images, first check what is actually available:
-
-```sh
-for command_name in bash apt-get opkg apk systemctl nginx python3 pip3 git; do
-  command -v "$command_name" >/dev/null 2>&1 && echo "$command_name: yes" || echo "$command_name: no"
-done
-python3 --version
-python3 -m venv --help >/dev/null 2>&1 && echo "python venv: yes" || echo "python venv: no"
-```
+The installer detects Entware outside PATH. On supported native Creality images
+without a package manager, it can bootstrap Entware with checksum-pinned assets
+while preserving existing `/opt` content. See [automatic prerequisite details](installer-prerequisites.md)
+for supported feeds and bootstrap requirements. A broken existing package manager
+or incompatible package feed is reported for repair rather than replaced.
 
 On rooted Creality Nebula Pad-style layouts, the printer data root is usually:
 
@@ -65,55 +50,27 @@ The installer detects `/usr/data/printer_data` automatically when it exists. If
 you are prompted for the printer data root on one of these pads, use
 `/usr/data/printer_data`.
 
-If `systemctl` is `no`, the guided installer is not currently supported on that
-host even if Bash can be installed.
+The native backend does not require systemd or sudo. It is selected automatically
+for the vendor layout; `KLIPPERAI_SERVICE_MANAGER=appliance sh install.sh` selects it
+explicitly. Standard systemd installs retain their existing encrypted credential path.
 
-If `opkg` is `yes`, `bash` is `no`, and `nginx` is `no`, install the missing
-shell and proxy packages first:
-
-```sh
-opkg update
-opkg install bash
-opkg install nginx-ssl || opkg install nginx
-```
-
-If Python is `3.10+` but `python venv` is `no`, the installer can now fall back
-to the Python `virtualenv` package. If prompted, let it install `virtualenv`
-with pip, or install it manually first:
-
-```sh
-python3 -m pip install --user virtualenv
-```
-
-The default dependency set avoids Rust-backed packages that are awkward on these
-pads. If an earlier install failed while building `uuid-utils`, `ormsgpack`,
-`maturin`, or `pydantic-core`, remove the partial virtual environment and rerun
-the installer after updating the checkout. The installer also asks Python
-packages with optional speedups to use pure-Python fallbacks where possible.
-
-```sh
-cd /root/KlipperAI
-rm -rf .venv
-./install.sh
-```
-
-Some rooted images have `systemctl` but do not pre-create
-`/etc/systemd/system`. The installer creates that directory before writing the
-`klipperai-agent.service` unit.
-
-You also need:
-
-- an OpenAI API key if you want live LLM responses
+The default dependency set avoids Rust builds and disables optional Python
+speedups. Native MIPS setup adds C build tools and Python headers when needed for
+the encryption dependency. An OpenAI API key is required for agent responses;
+the page provides provider setup until one is configured.
 
 ## 2. Clone The Repo
 
 Run on the printer host:
 
+If Git is not yet available, copy or extract the checkout onto the printer through
+SSH first. Once the files are present, the installer installs Git automatically.
+Keep native Creality checkouts on persistent storage, such as `/usr/data/KlipperAI`.
+
 ```bash
 cd /home/<service-user>
 git clone https://github.com/meltiseugen/KlipperAI.git
 cd KlipperAI
-chmod +x install.sh uninstall.sh deployment/python/install-python310.sh
 ```
 
 Example for a common `biqu` host:
@@ -122,21 +79,12 @@ Example for a common `biqu` host:
 cd /home/biqu
 git clone https://github.com/meltiseugen/KlipperAI.git
 cd KlipperAI
-chmod +x install.sh uninstall.sh deployment/python/install-python310.sh
 ```
 
 ## 3. Run The Installer
 
-If the host only has Python `3.9`, install Python `3.10` first:
-
-```bash
-./deployment/python/install-python310.sh
-```
-
-On CB1 and other Bullseye-era printer images, this helper usually builds Python `3.10` from source with `altinstall` so the system `python3` remains untouched.
-
-```bash
-./install.sh
+```sh
+sh install.sh
 ```
 
 If a previous install attempt created `.venv` with Python `3.9` or older, the updated installer will detect that and offer to recreate it.
@@ -158,7 +106,7 @@ The installer will ask for:
 
 Recommended/default values:
 
-- service user: your actual printer user, for example `biqu` or `pi`
+- service user: your actual printer user, for example `biqu` or `pi`; native Creality defaults to `root`
 - checkout path: `/home/<service-user>/KlipperAI`
 - printer data root: `/home/<service-user>/printer_data`
 - Mainsail config dir: `/home/<service-user>/printer_data/config`
@@ -174,13 +122,13 @@ The installer will:
 
 - create a Python virtual environment in the repo
 - install the package into that venv
-- write `/etc/klipperai/klipperai.env` for the config-file path, API key, and hidden install metadata
+- write `/etc/klipperai/klipperai.env` for non-secret bootstrap/install metadata, and provision encrypted provider credentials through the selected backend
 - write `printer_data/config/klipperai/klipperai.cfg`
 - detect the printer profile once and save it into `klipperai.cfg`
 - write `printer_data/config/klipperai/klipperai-moonraker.cfg`
 - append an include like `[include klipperai/klipperai-moonraker.cfg]` to `moonraker.conf` if needed
 - add `klipperai-agent` to `printer_data/moonraker.asvc`
-- install and start `klipperai-agent.service`
+- install and start `klipperai-agent.service` on systemd, or `/etc/init.d/S99klipperai` on native Creality
 - generate `/etc/klipperai/nginx-location.conf`
 - optionally patch the selected Mainsail nginx server block to include that snippet
 - optionally add a Mainsail nav link in `.theme/navi.json`
@@ -388,7 +336,7 @@ integration to update the assistant. Existing macros are not removed by this
 refactor; the separate `integrations/klipper/install-update-macro.sh` helper is
 retained for legacy installations outside the supported guided flow.
 
-For installer modules, access routes and offline verification commands, see
+For installer modules, access routes and automated verification commands, see
 [frontend and installation ownership](frontend-and-installation.md).
 
 ## 12. Runtime Behavior

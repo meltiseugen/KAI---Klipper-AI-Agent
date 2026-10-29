@@ -4,11 +4,13 @@ from typing import Protocol
 
 from klipperai_agent.config.models import ConfigSnapshot
 from klipperai_agent.config.requests import ConfigPromptPayload
+from klipperai_agent.config.templates.advanced import advanced_proposal
 from klipperai_agent.config.templates.calibration import (
     BedMeshProposal,
     InputShaperProposal,
     ProbeProposal,
 )
+from klipperai_agent.config.templates.features import feature_proposal
 from klipperai_agent.config.templates.macros import (
     FilamentProposal,
     GenericProposal,
@@ -53,6 +55,9 @@ class ProposalCatalog:
 
     def build(self, payload: ConfigPromptPayload) -> ConfigProposal:
         warnings = self._common_warnings(payload.snapshot, payload.profile)
+        configured = advanced_proposal(payload, warnings) or feature_proposal(payload, warnings)
+        if configured is not None:
+            return configured
         template = self._templates.get(payload.target.feature, self._templates["generic"])
         return template.build(payload, warnings)
 

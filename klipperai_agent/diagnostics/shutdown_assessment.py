@@ -62,6 +62,37 @@ def assess_shutdown(
                 step,
             )
     stats = incident.statistics
+    history = host.history.get("pre_stop_summary", {})
+    for key, threshold, cause, step in (
+        (
+            "max_cpu_busy_percent",
+            90,
+            "Recorded host CPU saturation before the stop",
+            "Compare the recorded process CPU intervals with the stop. Review competing workloads; sampled saturation is a possible contributor and does not establish a USB/CAN root cause.",
+        ),
+        (
+            "max_io_some_avg10",
+            20,
+            "Recorded host I/O pressure before the stop",
+            "Compare I/O pressure, I/O wait and swap counters with kernel storage events. A stall does not by itself identify failed media.",
+        ),
+        (
+            "max_memory_some_avg10",
+            20,
+            "Recorded host memory pressure before the stop",
+            "Compare available memory, swap counters and recorded process RSS with OOM events. Pressure alone does not prove an OOM kill.",
+        ),
+    ):
+        observation = history.get(key)
+        if observation and observation["value"] >= threshold:
+            add(
+                cause,
+                "possible contributor; sampled historical evidence",
+                [
+                    f"{observation['unix_time']}: {key}={observation['value']:g}% (heuristic threshold {threshold}%)."
+                ],
+                step,
+            )
     memory = stats.get("min_available_memory_kib")
     if memory is not None and memory < 32768:
         add(

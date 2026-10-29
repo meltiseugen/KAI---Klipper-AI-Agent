@@ -19,7 +19,7 @@ flat modules. The already-removed `klippyai_agent` package is not restored.
 | `printerconfig.py` | `config/models.py`, `collector.py`, `parser.py`, `targeting.py`, `lookup.py`, `macro_names.py`, `matching.py`, `vocabulary.py` |
 | `printerprofile.py` | `profile/models.py`, `saved.py`, `persistence.py`, `collector.py`, `host.py`, `hardware.py`, `capabilities.py`, `addons.py` |
 | `llm.py` | `providers/`, feature-owned `requests.py`, `config/templates/` |
-| `workflows.py` | `workflows/` (offline) and new `agent/` (iterative) |
+| `workflows.py` | `workflows/` (single-pass LLM compatibility) and new `agent/` (iterative) |
 | `detect_profile.py` | `cli/detect_profile.py` |
 
 Design choices are intentionally small: dependency injection at the composition

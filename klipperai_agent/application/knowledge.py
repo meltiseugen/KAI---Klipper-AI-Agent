@@ -3,8 +3,16 @@
 from __future__ import annotations
 
 import asyncio
-from hashlib import sha256
 
+from klipperai_agent.agent.ports import ConfigReader, PrinterReader
+from klipperai_agent.application.hardware_validation import validate_hardware
+from klipperai_agent.application.knowledge_observations import (
+    connector_observations,
+    record_connector,
+    record_diagram,
+)
+from klipperai_agent.application.knowledge_refresh import cache_source
+from klipperai_agent.domain.hardware import ConnectorObservation, DiagramNote
 from klipperai_agent.domain.investigation import utc_now
 from klipperai_agent.domain.knowledge import (
     CachedDocument,
@@ -16,11 +24,12 @@ from klipperai_agent.domain.knowledge import (
     KnowledgeSetup,
 )
 from klipperai_agent.domain.redaction import redact_text
+from klipperai_agent.knowledge.buses import bus_evidence
+from klipperai_agent.knowledge.firmware import firmware_key, firmware_sources
 from klipperai_agent.knowledge.identity import component_status, profile_setup
 from klipperai_agent.knowledge.sources import (
     component_key,
     document_source,
-    grounded_mapping,
     mapping_evidence,
 )
 
@@ -32,11 +41,14 @@ class PrinterKnowledge:
         fetcher: DocumentationFetcher,
         profile: dict,
         researcher: KnowledgeResearcher | None = None,
+        printer: PrinterReader | None = None,
+        config: ConfigReader | None = None,
     ):
         self._repository = repository
         self._fetcher = fetcher
         self._seed = profile_setup(profile)
         self.researcher = researcher
+        self._printer, self._config = printer, config
         self._task: asyncio.Task | None = None
         self._lock = asyncio.Lock()
         self.job: dict = {
@@ -51,6 +63,8 @@ class PrinterKnowledge:
         setup = await asyncio.to_thread(self._repository.setup) or self._seed.copy(deep=True)
         setup = setup.copy(update={"facts": redact_text(setup.facts)})
         keys = {component_key(item) for item in setup.components}
+        if setup.firmware_commit:
+            keys.add(firmware_key(setup))
         docs = [
             doc
             for doc in await asyncio.to_thread(self._repository.documents)
@@ -69,7 +83,16 @@ class PrinterKnowledge:
                 )
                 for item in setup.components
             ],
-            "documents": [doc.model_dump(exclude={"content", "fan_mappings"}) for doc in docs],
+            "documents": [
+                doc.model_dump(
+                    exclude={"content": True, "fan_mappings": True, "pages": {"__all__": {"text"}}}
+                )
+                for doc in docs
+            ],
+            "connector_inventory": {
+                item.role: connector_observations(setup, item) for item in setup.components
+            },
+            "bus_evidence": {item.role: bus_evidence(item, docs) for item in setup.components},
             "automatic_research": self.researcher is not None,
             "job": dict(self.job),
         }
@@ -90,12 +113,20 @@ class PrinterKnowledge:
                     "updated_at": utc_now(),
                     "facts": redact_text(setup.facts),
                     "reviewed_fan_mappings": previous.reviewed_fan_mappings,
+                    "reviewed_bus_mappings": previous.reviewed_bus_mappings
+                    if (previous.firmware_repository, previous.firmware_commit)
+                    == (setup.firmware_repository, setup.firmware_commit)
+                    else {},
+                    "connectors": previous.connectors,
+                    "diagram_notes": previous.diagram_notes,
+                    "validation": previous.validation,
                 }
             )
             saved = await asyncio.to_thread(self._repository.save_setup, updated)
             await asyncio.to_thread(
                 self._repository.retain_components,
-                {component_key(item) for item in saved.components},
+                {component_key(item) for item in saved.components}
+                | ({firmware_key(saved)} if saved.firmware_commit else set()),
             )
             return saved
 
@@ -150,6 +181,61 @@ class PrinterKnowledge:
             )
             return dict(self.job)
 
+    async def review_buses(self, role: str, signature: str, revision: int) -> KnowledgeSetup:
+        async with self._lock:
+            self._idle()
+            setup, docs, changed = await self.read()
+            component = next((item for item in setup.components if item.role == role), None)
+            evidence = bus_evidence(component, docs) if component else {}
+            if (
+                setup.revision != revision
+                or changed
+                or not component
+                or not component.confirmed
+                or not component.revision
+                or not signature
+                or evidence.get("signature") != signature
+                or evidence.get("conflicts")
+            ):
+                raise KnowledgeConflict(
+                    "Confirm exact hardware/firmware bus evidence, reload, and review the current non-conflicting pinmux sources."
+                )
+            return await asyncio.to_thread(
+                self._repository.save_setup,
+                setup.copy(
+                    update={
+                        "reviewed_bus_mappings": {**setup.reviewed_bus_mappings, role: signature}
+                    }
+                ),
+            )
+
+    async def observe(
+        self, observation: ConnectorObservation | DiagramNote, revision: int
+    ) -> KnowledgeSetup:
+        async with self._lock:
+            self._idle()
+            setup, docs, changed = await self.read()
+            if revision != setup.revision or changed:
+                raise KnowledgeConflict(
+                    "Printer details changed; reload before confirming an observation."
+                )
+            updated = (
+                record_connector(setup, observation)
+                if isinstance(observation, ConnectorObservation)
+                else record_diagram(setup, observation, docs)
+            )
+            return await asyncio.to_thread(self._repository.save_setup, updated)
+
+    async def validate_live(self) -> dict:
+        async with self._lock:
+            self._idle()
+            setup, _, _ = await self.read()
+            report = await validate_hardware(setup, self._printer, self._config)
+            await asyncio.to_thread(
+                self._repository.save_setup, setup.copy(update={"validation": report})
+            )
+            return report
+
     async def _run(
         self,
         setup: KnowledgeSetup,
@@ -181,6 +267,17 @@ class PrinterKnowledge:
                     f"{component.model}: research incomplete; cached evidence retained. Check public model details, source URLs and provider/search configuration."
                 )
             self.job["completed"] += 1
+        for source in firmware_sources(setup):
+            try:
+                change = await cache_source(
+                    self._repository, self._fetcher, None, source, previous, firmware=setup
+                )
+                self.job["changes"].append(f"{source.title}: {change}.")
+            except Exception:
+                failed = True
+                self.job["changes"].append(
+                    f"{source.title}: exact-commit reference unavailable; no floating-branch fallback was used."
+                )
         self.job.update(
             state="partial" if failed else "completed",
             message="Some component research needs attention."
@@ -211,39 +308,8 @@ class PrinterKnowledge:
             source = document_source(component, source.url, source.title)
             self.job["message"] = f"Reading {component.model}: {source.title}"
             try:
-                original, text, kind = await asyncio.wait_for(
-                    self._fetcher.fetch(source), timeout=30
-                )
-                doc = CachedDocument(
-                    id=source.id,
-                    title=source.title,
-                    url=source.url,
-                    kind=kind,
-                    component_key=component_key(component),
-                    digest=sha256(original).hexdigest(),
-                    fetched_at=utc_now(),
-                    content=text,
-                )
-                doc.version = "Content SHA-256 " + doc.digest
-                old = previous.get(doc.id)
-                if old and old.digest == doc.digest:
-                    doc.fan_mappings = old.fan_mappings
-                # Persist changed documents immediately so prior connector review becomes stale.
-                await asyncio.to_thread(self._repository.save_document, doc, original)
-                if self.researcher and not doc.fan_mappings:
-                    mappings = await asyncio.wait_for(
-                        self.researcher.extract(component, doc), timeout=60
-                    )
-                    doc.fan_mappings = [
-                        item for item in mappings[:16] if grounded_mapping(item, doc)
-                    ]
-                    await asyncio.to_thread(self._repository.save_document, doc, original)
-                change = (
-                    "unchanged"
-                    if old and old.digest == doc.digest
-                    else "updated"
-                    if old
-                    else "added"
+                change = await cache_source(
+                    self._repository, self._fetcher, self.researcher, source, previous, component
                 )
                 self.job["changes"].append(f"{source.title}: {change}.")
             except Exception:

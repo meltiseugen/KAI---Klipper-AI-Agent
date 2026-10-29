@@ -34,6 +34,7 @@ class ProviderManagement:
         revision, saved, key = self.store.load()
         return {
             "revision": revision,
+            "credential_storage_available": self.store.credential_storage_available,
             "policy": (saved or self.defaults).dict(),
             "active_policy": self.active_policy.dict(),
             "credential_configured": bool(key if saved else self.environment_key),
@@ -61,11 +62,9 @@ class ProviderManagement:
                 candidate = update.api_key.get_secret_value()
             if update.remove_key:
                 candidate = None
-            if update.policy.provider == "openai" or update.api_key:
+            if not update.remove_key:
                 if not candidate:
-                    raise ValueError(
-                        "Enter an OpenAI API key, or select Offline before removing it."
-                    )
+                    raise ValueError("Enter an OpenAI API key to enable the agent.")
                 models = sorted(
                     {
                         getattr(update.policy, role).model
@@ -78,6 +77,6 @@ class ProviderManagement:
             return {
                 **self.status(),
                 "validation": "Model access checked."
-                if update.policy.provider == "openai" or update.api_key
-                else "Offline configuration checked.",
+                if not update.remove_key
+                else "API key removal checked. The agent will be unavailable after restart.",
             }

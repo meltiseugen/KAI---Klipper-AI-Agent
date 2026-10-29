@@ -58,7 +58,7 @@ const started = waiting.start();
 waiting.stop();
 resolve("session");
 await started;
-const failure = new MoonrakerStatusFeed({ session: async () => { throw new Error("offline"); } }, view, null, (fn, delay) => { assert.equal(delay, 1000); return 1; }, () => {});
+const failure = new MoonrakerStatusFeed({ session: async () => { throw new Error("disconnected"); } }, view, null, (fn, delay) => { assert.equal(delay, 1000); return 1; }, () => {});
 await failure.start();
 failure.stop();
 

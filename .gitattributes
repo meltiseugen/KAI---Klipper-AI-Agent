@@ -1,3 +1,6 @@
 # Keep Linux entry points and sourced manifests executable after Windows checkouts.
 *.sh text eol=lf
 deployment/installer/modules.txt text eol=lf
+
+# Preserve byte hashes for sourced diagnostic replay excerpts on every checkout.
+tests/fixtures/shutdown/*.log text eol=lf
