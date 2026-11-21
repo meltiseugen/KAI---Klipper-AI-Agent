@@ -49,7 +49,7 @@ def isolated_entware(tmp_path):
         ("/opt", "@OPT@"),
         ("/etc", "@ETC@"),
         ("/bin/sh", "@ELF@"),
-        ("/tmp/klipperai-entware", "@TEMP@"),
+        ("/tmp/kai-entware", "@TEMP@"),
     ):
         source = source.replace(old, marker)
     for marker, path in (
@@ -58,7 +58,7 @@ def isolated_entware(tmp_path):
         ("@OPT@", opt),
         ("@ETC@", etc),
         ("@ELF@", elf),
-        ("@TEMP@", tmp_path / "tmp/klipperai-entware"),
+        ("@TEMP@", tmp_path / "tmp/kai-entware"),
     ):
         source = source.replace(marker, path.as_posix())
     # The generated POSIX executables still need the host shell, not the ELF probe fixture.
@@ -89,7 +89,7 @@ if bootstrap_entware; then exit 99; fi
     assert "preserved" in result.stderr
     assert "unexpected-download" not in result.stdout
     assert keep.read_text() == "preserve exactly"
-    assert not persistent.exists() and not (etc / "init.d/S49klipperai-entware").exists()
+    assert not persistent.exists() and not (etc / "init.d/S49kai-entware").exists()
 
 
 def test_fresh_bootstrap_verifies_packages_over_tls_and_only_creates_owned_paths(
@@ -159,5 +159,5 @@ bootstrap_entware
     assert "opkg:update" in text
     assert "opkg:install entware-opt wget-ssl ca-bundle ca-certificates" in text
     assert "--cacert" in text and "--insecure" not in text and "--no-check-certificate" not in text
-    assert (etc / "init.d/S49klipperai-entware").exists()
+    assert (etc / "init.d/S49kai-entware").exists()
     assert persistent.is_dir()

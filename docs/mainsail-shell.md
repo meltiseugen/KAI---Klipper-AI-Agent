@@ -1,6 +1,6 @@
 # Mainsail integration
 
-KlipperAI opens in a **new tab** from Mainsail's left navigation menu. Mainsail
+KAI opens in a **new tab** from Mainsail's left navigation menu. Mainsail
 stays open for printer controls and manual config edits. The integration uses
 Mainsail's [custom-navigation format](https://github.com/mainsail-crew/docs/blob/zensical/docs/features/custom-themes/custom-navigation.md)
 in `<printer-config>/.theme/navi.json`:
@@ -8,8 +8,8 @@ in `<printer-config>/.theme/navi.json`:
 ```json
 [
   {
-    "title": "KlipperAI",
-    "href": "/klipperai/",
+    "title": "KAI",
+    "href": "/kai/",
     "target": "_blank",
     "position": 85
   }
@@ -22,25 +22,25 @@ startup, after theme changes and every five minutes. See the
 
 ## Same-origin nginx routing
 
-`deployment/installer/nginx.sh` generates `/etc/klipperai/nginx-location.conf`.
+`deployment/installer/nginx.sh` generates `/etc/kai/nginx-location.conf`.
 Include it **inside the Mainsail server block**, alongside its existing locations:
 
 ```nginx
 server {
     # Existing listen, server_name, root, Moonraker and Mainsail locations...
-    include /etc/klipperai/nginx-location.conf;
+    include /etc/kai/nginx-location.conf;
 }
 ```
 
 For the default prefix and port the generated locations are:
 
 ```nginx
-location = /klipperai {
+location = /kai {
     absolute_redirect off;
-    return 308 /klipperai/$is_args$args;
+    return 308 /kai/$is_args$args;
 }
 
-location ^~ /klipperai/ {
+location ^~ /kai/ {
     access_log off;
     proxy_http_version 1.1;
     proxy_buffering off;
@@ -62,7 +62,7 @@ HTTPS and nonstandard ports) and query string. nginx's
 keeps generic Mainsail JavaScript/CSS regex locations from intercepting assistant
 assets. The trailing slash in
 [`proxy_pass`](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass)
-strips `/klipperai/` before forwarding. Streaming responses are unbuffered and
+strips `/kai/` before forwarding. Streaming responses are unbuffered and
 proxy caching is disabled, including inherited cache settings.
 
 Keep the service's `root_path`, the nginx prefix, the navigation `href` and any
@@ -80,11 +80,11 @@ For existing installs, rerun the guided installer with the current paths/options
 to regenerate the snippet, or update the snippet manually to match the example,
 then test and reload nginx. The sidebar repair hook only maintains `navi.json`;
 it does not update proxy configuration. Do not add duplicate locations alongside
-an older manually inlined KlipperAI route.
+an older manually inlined KAI route.
 
 ## Standalone page
 
-The full page uses compact printer/connection badges beneath a clear KlipperAI
+The full page uses compact printer/connection badges beneath a clear KAI
 header. Printer knowledge, printer memory and provider settings sit below chat
 history. On narrow screens the menu opens history and settings; choosing a panel
 closes that menu, and Escape dismisses it. The composer is compact and drafts
@@ -115,9 +115,9 @@ actions. Rendered browser checks use local fixtures, not live printer evidence.
 On the deployed printer:
 
 1. Run `nginx -t` and reload nginx after updating the snippet.
-2. Open `/klipperai?check=1` on the Mainsail origin. Confirm the redirect ends at
-   `/klipperai/?check=1`, preserving scheme, hostname and port.
-3. Click KlipperAI in Mainsail's left menu. Confirm a new tab opens and Mainsail
+2. Open `/kai?check=1` on the Mainsail origin. Confirm the redirect ends at
+   `/kai/?check=1`, preserving scheme, hostname and port.
+3. Click KAI in Mainsail's left menu. Confirm a new tab opens and Mainsail
    stays open. Check desktop and narrow-screen settings/history navigation.
 4. Ask a question and check streamed activity, a follow-up, restored history
    after reload, manual proposal recheck and deletion.

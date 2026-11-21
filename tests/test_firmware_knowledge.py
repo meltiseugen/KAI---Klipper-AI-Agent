@@ -6,12 +6,12 @@ from unittest.mock import AsyncMock
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.application.knowledge import PrinterKnowledge
-from klipperai_agent.application.knowledge_observations import record_diagram
-from klipperai_agent.domain.hardware import DiagramNote, PdfPageIndex
-from klipperai_agent.domain.knowledge import KnowledgeConflict, KnowledgeSetup
-from klipperai_agent.knowledge.buses import bus_evidence
-from klipperai_agent.knowledge.firmware import firmware_key, firmware_scope, firmware_sources
+from kai_agent.application.knowledge import PrinterKnowledge
+from kai_agent.application.knowledge_observations import record_diagram
+from kai_agent.domain.hardware import DiagramNote, PdfPageIndex
+from kai_agent.domain.knowledge import KnowledgeConflict, KnowledgeSetup
+from kai_agent.knowledge.buses import bus_evidence
+from kai_agent.knowledge.firmware import firmware_key, firmware_scope, firmware_sources
 from tests.knowledge_helpers import documents, setup
 from tests.test_hardware_knowledge import bus_documents, observation
 from tests.test_knowledge_storage import repository

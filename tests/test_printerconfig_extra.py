@@ -2,23 +2,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import klipperai_agent.config.lookup as config_lookup
-import klipperai_agent.config.macro_names as config_macro_names
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.lookup import build_config_lookup_response
-from klipperai_agent.config.matching import (
+import kai_agent.config.lookup as config_lookup
+import kai_agent.config.macro_names as config_macro_names
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.lookup import build_config_lookup_response
+from kai_agent.config.matching import (
     _infer_feature_from_section_name,
     _section_matches_prefix,
 )
-from klipperai_agent.config.models import (
+from kai_agent.config.models import (
     ConfigDocument,
     ConfigPlaceholder,
     ConfigRequestTarget,
     ConfigSectionLocation,
     ConfigSnapshot,
 )
-from klipperai_agent.config.parser import ConfigParser
-from klipperai_agent.config.targeting import (
+from kai_agent.config.parser import ConfigParser
+from kai_agent.config.targeting import (
     infer_config_request_target,
     looks_like_config_request,
 )

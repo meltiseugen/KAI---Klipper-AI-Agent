@@ -14,7 +14,7 @@ from graphlib import TopologicalSorter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE = ROOT / "klipperai_agent"
+PACKAGE = ROOT / "kai_agent"
 OUTPUT = ROOT / "docs/generated"
 
 
@@ -32,7 +32,7 @@ class ProjectMap:
                 names.update(f"{node.module}.{alias.name}" for alias in node.names)
             elif isinstance(node, ast.Import):
                 names.update(alias.name for alias in node.names)
-        return {name for name in names if name.startswith("klipperai_agent.")}
+        return {name for name in names if name.startswith("kai_agent.")}
 
     def discover(self) -> None:
         for path in sorted(PACKAGE.rglob("*.py")):
@@ -107,7 +107,7 @@ class ProjectMap:
             )
             tests = ", ".join(f"[{Path(test).stem}](../../{test})" for test in item["tests"])
             table.append(
-                f"| [{name.removeprefix('klipperai_agent.')}](../../{path}) | {item['lines']} | {symbols} | {tests} |"
+                f"| [{name.removeprefix('kai_agent.')}](../../{path}) | {item['lines']} | {symbols} | {tests} |"
             )
             owner = name.split(".")[1]
             for dependency in item["imports"]:

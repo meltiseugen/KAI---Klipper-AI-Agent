@@ -9,9 +9,9 @@ from types import SimpleNamespace
 
 import pytest
 
-import klipperai_agent.infrastructure.host.log_reader as module
-from klipperai_agent.domain.logs import LogReadError
-from klipperai_agent.infrastructure.host.log_reader import ReadOnlyLogReader
+import kai_agent.infrastructure.host.log_reader as module
+from kai_agent.domain.logs import LogReadError
+from kai_agent.infrastructure.host.log_reader import ReadOnlyLogReader
 
 
 def test_inventory_is_bounded_respects_exclusions_and_ignores_nonlogs(tmp_path):

@@ -1,4 +1,4 @@
-# KlipperAI <version> — <YYYY-MM-DD>
+# KAI <version> — <YYYY-MM-DD>
 
 ## Changes
 

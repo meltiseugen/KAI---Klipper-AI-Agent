@@ -14,14 +14,14 @@ const { MoonrakerStatusFeed, ShellView, ChatApplication, ConversationStore, ids 
 });
 const view = new ShellView();
 const sessions = [];
-const transport = { base: "/klipperai/api", session: async refresh => { sessions.push(refresh); return "a b"; } };
+const transport = { base: "/kai/api", session: async refresh => { sessions.push(refresh); return "a b"; } };
 const timers = [];
 const cancelled = [];
 const feed = new MoonrakerStatusFeed(transport, view, url => new Source(url),
   (fn, delay) => { timers.push({ fn, delay }); return timers.length; }, id => cancelled.push(id));
 await Promise.all([feed.start(), feed.start()]);
 assert.equal(sources.length, 1);
-assert.equal(sources[0].url, "/klipperai/api/moonraker/events?session_id=a%20b");
+assert.equal(sources[0].url, "/kai/api/moonraker/events?session_id=a%20b");
 sources[0].status({ connected: true, subscribed: true, stale: false, klippy_state: "ready", status: { print_stats: { state: "printing" } } });
 assert.equal(ids["moonraker-events-badge"].textContent, "Events: live");
 assert.match(ids["klipper-badge"].textContent, /ready.*printing/);

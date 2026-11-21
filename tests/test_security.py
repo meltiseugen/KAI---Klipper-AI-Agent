@@ -9,20 +9,20 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigReadError
-from klipperai_agent.domain.investigation import (
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigReadError
+from kai_agent.domain.investigation import (
     Investigation,
     InvestigationResult,
     InvestigationTurn,
 )
-from klipperai_agent.domain.redaction import REDACTED, redact_data, redact_text
-from klipperai_agent.infrastructure.host.logs import HostLogCollector
-from klipperai_agent.infrastructure.host.system import SystemCommandRunner
-from klipperai_agent.infrastructure.investigations import SqliteInvestigationRepository
-from klipperai_agent.infrastructure.private_files import open_private_file
-from klipperai_agent.runtime.logging import PrivateRotatingFileHandler, RedactingFormatter
-from klipperai_agent.runtime.settings import Settings, _load_klipperai_cfg_values
+from kai_agent.domain.redaction import REDACTED, redact_data, redact_text
+from kai_agent.infrastructure.host.logs import HostLogCollector
+from kai_agent.infrastructure.host.system import SystemCommandRunner
+from kai_agent.infrastructure.investigations import SqliteInvestigationRepository
+from kai_agent.infrastructure.private_files import open_private_file
+from kai_agent.runtime.logging import PrivateRotatingFileHandler, RedactingFormatter
+from kai_agent.runtime.settings import Settings, _load_kai_cfg_values
 
 
 @pytest.mark.parametrize(
@@ -204,17 +204,17 @@ def test_persistence_redacts_new_and_legacy_history(tmp_path):
 
 
 def test_secret_configuration_and_private_log_path(tmp_path, monkeypatch):
-    config = tmp_path / "klipperai.cfg"
-    config.write_text("[klipperai]\nopenai_api_key: never-show-this\n")
+    config = tmp_path / "kai.cfg"
+    config.write_text("[kai]\nopenai_api_key: never-show-this\n")
     with pytest.raises(ValueError, match="protected environment") as error:
-        _load_klipperai_cfg_values(config)
+        _load_kai_cfg_values(config)
     assert "never-show-this" not in str(error.value)
-    monkeypatch.setenv("KLIPPERAI_OPENAI_API_KEY", "environment-key")
+    monkeypatch.setenv("KAI_OPENAI_API_KEY", "environment-key")
     settings = Settings(data_dir=tmp_path / "private", printer_data_root=tmp_path / "printer")
     assert settings.openai_api_key.get_secret_value() == "environment-key"
     assert "environment-key" not in repr(settings)
     settings.ensure_directories()
-    assert settings.agent_log_path() == tmp_path / "private/logs/klipperai.log"
+    assert settings.agent_log_path() == tmp_path / "private/logs/kai.log"
     for name in ("../shared.log", "/tmp/shared.log", "shared.txt"):
         with pytest.raises(ValidationError, match="plain .log"):
             Settings(agent_log_file_name=name)
@@ -223,14 +223,14 @@ def test_secret_configuration_and_private_log_path(tmp_path, monkeypatch):
 def test_command_environment_keeps_diagnostics_and_drops_provider_keys(monkeypatch):
     import sys
 
-    monkeypatch.setenv("KLIPPERAI_OPENAI_API_KEY", "private-key")
+    monkeypatch.setenv("KAI_OPENAI_API_KEY", "private-key")
     monkeypatch.setenv("OPENAI_API_KEY", "other-private-key")
     monkeypatch.setenv("DIAGNOSTIC_VALUE", "retained")
     result = SystemCommandRunner().run(
         (
             sys.executable,
             "-c",
-            "import os; print(os.getenv('KLIPPERAI_OPENAI_API_KEY'), os.getenv('OPENAI_API_KEY'), os.getenv('DIAGNOSTIC_VALUE')); print('password=command-secret')",
+            "import os; print(os.getenv('KAI_OPENAI_API_KEY'), os.getenv('OPENAI_API_KEY'), os.getenv('DIAGNOSTIC_VALUE')); print('password=command-secret')",
         )
     )
     assert "None None retained" in result.stdout

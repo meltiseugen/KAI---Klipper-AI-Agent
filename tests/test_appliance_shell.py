@@ -46,7 +46,7 @@ source "$1"
 id() { echo 0; }
 die() { echo "$*" >&2; exit 1; }
 select_service_manager
-printf '%s' "$KLIPPERAI_SERVICE_MANAGER"
+printf '%s' "$KAI_SERVICE_MANAGER"
 """,
         module.as_posix(),
     )
@@ -60,7 +60,7 @@ def test_native_preflight_does_not_require_any_systemd_command(tmp_path, run_she
         """
 set -euo pipefail
 source "$1/deployment/installer/preflight.sh"
-select_service_manager() { KLIPPERAI_SERVICE_MANAGER=appliance; }
+select_service_manager() { KAI_SERVICE_MANAGER=appliance; }
 require_linux() { :; }
 ensure_prerequisites() { :; }
 require_cmd() { [[ "$1" != systemd* && "$1" != systemctl ]]; }
@@ -81,15 +81,15 @@ def test_native_credential_setup_uses_stdin_and_native_cli_only(run_shell, tmp_p
 set -euo pipefail
 source "$1/deployment/installer/platform.sh"
 source "$1/deployment/installer/credentials.sh"
-KLIPPERAI_SERVICE_MANAGER=appliance
-INSTALL_DIR=/usr/data/KlipperAI
+KAI_SERVICE_MANAGER=appliance
+INSTALL_DIR=/usr/data/KAI
 INSTALL_HOME=/root
-KLIPPERAI_DATA_DIR=/usr/data/klipperai-data
-KLIPPERAI_PRINTER_DATA_ROOT=/usr/data/printer_data
-KLIPPERAI_CFG_PATH=/usr/data/printer_data/config/klipperai/klipperai.cfg
-KLIPPERAI_LLM_PROVIDER=openai
-KLIPPERAI_OPENAI_MODEL=selected-model
-KLIPPERAI_OPENAI_API_KEY=never-print-this-key
+KAI_DATA_DIR=/usr/data/kai-data
+KAI_PRINTER_DATA_ROOT=/usr/data/printer_data
+KAI_CFG_PATH=/usr/data/printer_data/config/kai/kai.cfg
+KAI_LLM_PROVIDER=openai
+KAI_OPENAI_MODEL=selected-model
+KAI_OPENAI_API_KEY=never-print-this-key
 CALLS="$2"
 log() { :; }
 sanitize_legacy_environment_files() { :; }
@@ -101,7 +101,7 @@ run_as_user() {
   printf '%s\\n' "$*" >> "$CALLS"
 }
 install_encrypted_credentials
-[[ -z "${KLIPPERAI_OPENAI_API_KEY+x}" ]]
+[[ -z "${KAI_OPENAI_API_KEY+x}" ]]
 """,
         ROOT.as_posix(),
         calls.as_posix(),
@@ -118,13 +118,14 @@ def test_native_access_setup_starts_only_the_application_init_service(run_shell)
         """
 set -euo pipefail
 source "$1/deployment/installer/install-access-integrations.sh"
-KLIPPERAI_SERVICE_MANAGER=appliance
+KAI_SERVICE_MANAGER=appliance
 INSTALL_MAINSAIL_NAV=no
 INSTALL_OCTOEVERYWHERE_PATCH=no
 INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY=no
 log() { :; }
 run_root() { echo 'unexpected service operation'; exit 1; }
 start_appliance_service() { echo native-start; }
+finish_moonraker_integration() { :; }
 install_access_integrations
 """,
         ROOT.as_posix(),
@@ -140,8 +141,8 @@ def test_native_uninstall_dispatches_without_systemd_or_printer_controls(run_she
         """
 set -euo pipefail
 source "$1/uninstall.sh"
-KLIPPERAI_SERVICE_MANAGER=appliance
-KLIPPERAI_PROJECT_CHECKOUT_PATH="$2"
+KAI_SERVICE_MANAGER=appliance
+KAI_PROJECT_CHECKOUT_PATH="$2"
 PURGE_CREDENTIALS=yes
 run_root() { printf '%s\\n' "$*"; }
 remove_agent_service
@@ -162,7 +163,7 @@ def test_uninstall_reuses_vendor_proxy_reload_instead_of_systemd(run_shell, tmp_
         run_shell,
         """
 source "$1/uninstall.sh"
-KLIPPERAI_PROJECT_CHECKOUT_PATH="$2"
+KAI_PROJECT_CHECKOUT_PATH="$2"
 run_root() { echo unexpected-system-service-command; exit 1; }
 reload_nginx
 """,

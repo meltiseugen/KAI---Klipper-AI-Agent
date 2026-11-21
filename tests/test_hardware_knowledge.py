@@ -6,23 +6,23 @@ from unittest.mock import AsyncMock
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.agent.models import AgentLimits, ToolCall
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.tools.components import ComponentArguments, ComponentDiagnosticTool
-from klipperai_agent.application.knowledge_observations import (
+from kai_agent.agent.models import AgentLimits, ToolCall
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.tools.components import ComponentArguments, ComponentDiagnosticTool
+from kai_agent.application.knowledge_observations import (
     connector_observations,
     record_connector,
 )
-from klipperai_agent.domain.hardware import ConnectorObservation
-from klipperai_agent.domain.knowledge import KnowledgeConflict
-from klipperai_agent.knowledge.buses import (
+from kai_agent.domain.hardware import ConnectorObservation
+from kai_agent.domain.knowledge import KnowledgeConflict
+from kai_agent.knowledge.buses import (
     bus_evidence,
     connector_identity,
     extract_bus_mappings,
     resolved_ownership,
 )
-from klipperai_agent.knowledge.components import inspect_component
-from klipperai_agent.knowledge.fans import inspect_fan_ports
+from kai_agent.knowledge.components import inspect_component
+from kai_agent.knowledge.fans import inspect_fan_ports
 from tests.knowledge_helpers import documents, setup, snapshot
 from tests.test_agent import tool_context as tool_context
 

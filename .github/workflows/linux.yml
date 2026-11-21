@@ -25,7 +25,7 @@ jobs:
     env:
       SKIP_CYTHON: '1'
       MARKUPSAFE_SKIP_SPEEDUPS: '1'
-      KLIPPERAI_REQUIRE_NGINX: '1'
+      KAI_REQUIRE_NGINX: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -44,9 +44,9 @@ jobs:
           sudo apt-get install -y nginx
       - name: Lint and format
         run: |
-          uv run --no-sync ruff check klipperai_agent tests tools deployment integrations
-          uv run --no-sync ruff format --check klipperai_agent tests tools deployment integrations
-      - run: uv run --no-sync mypy klipperai_agent integrations --ignore-missing-imports
+          uv run --no-sync ruff check kai_agent tests tools deployment integrations
+          uv run --no-sync ruff format --check kai_agent tests tools deployment integrations
+      - run: uv run --no-sync mypy kai_agent integrations --ignore-missing-imports
       - run: uv run --no-sync python tools/project_map.py --check
       - name: Tests with mandatory 100 percent coverage
         run: uv run --no-sync python -m pytest --junitxml=.local/reports/pytest.xml --cov-report=xml:.local/reports/coverage.xml
@@ -58,7 +58,7 @@ jobs:
           sh -n deployment/installer/entware.sh
           bash -n uninstall.sh
       - name: Native init lifecycle, boot, code update and rollback
-        run: sudo env KLIPPERAI_REQUIRE_NATIVE=1 .venv/bin/python -m pytest tests/test_native_host_boot.py --no-cov -p no:cacheprovider --basetemp="$RUNNER_TEMP/klipperai-native-root"
+        run: sudo env KAI_REQUIRE_NATIVE=1 .venv/bin/python -m pytest tests/test_native_host_boot.py --no-cov -p no:cacheprovider --basetemp="$RUNNER_TEMP/kai-native-root"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -95,7 +95,7 @@ jobs:
           uv run --no-sync python -m tools.smoke_installed --python "$RUNNER_TEMP/installed/bin/python"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: klipperai-release-artifacts
+          name: kai-release-artifacts
           path: dist/
           retention-days: 14
           if-no-files-found: error

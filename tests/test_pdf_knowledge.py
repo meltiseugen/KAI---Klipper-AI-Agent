@@ -16,13 +16,13 @@ from pypdf.generic import (
     NumberObject,
 )
 
-import klipperai_agent.infrastructure.pdf_index as pdf
-from klipperai_agent.agent.tools.knowledge import SearchKnowledgeArguments, SearchKnowledgeTool
-from klipperai_agent.application.knowledge_refresh import cache_source
-from klipperai_agent.domain.knowledge import CachedDocument
-from klipperai_agent.knowledge.firmware import firmware_key
-from klipperai_agent.knowledge.pdf_pages import pdf_pages
-from klipperai_agent.knowledge.retrieval import search_documents
+import kai_agent.infrastructure.pdf_index as pdf
+from kai_agent.agent.tools.knowledge import SearchKnowledgeArguments, SearchKnowledgeTool
+from kai_agent.application.knowledge_refresh import cache_source
+from kai_agent.domain.knowledge import CachedDocument
+from kai_agent.knowledge.firmware import firmware_key
+from kai_agent.knowledge.pdf_pages import pdf_pages
+from kai_agent.knowledge.retrieval import search_documents
 from tests.test_agent import tool_context as tool_context
 from tests.test_firmware_knowledge import note, pdf_document, pinned
 from tests.test_knowledge_storage import repository
@@ -170,7 +170,7 @@ def test_worker_main_linux_cap_and_bounded_stdin(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_pdf_cache_keeps_pages_and_searchable_user_diagram_notes(tmp_path, tool_context):
-    from klipperai_agent.knowledge.sources import document_source
+    from kai_agent.knowledge.sources import document_source
 
     data = pinned()
     component = data.components[0]
@@ -224,9 +224,9 @@ async def test_pdf_cache_keeps_pages_and_searchable_user_diagram_notes(tmp_path,
 async def test_public_fetcher_indexes_the_pdf_before_caching(monkeypatch):
     import httpx
 
-    import klipperai_agent.infrastructure.documentation as module
-    from klipperai_agent.domain.knowledge import ComponentIdentity
-    from klipperai_agent.knowledge.sources import document_source
+    import kai_agent.infrastructure.documentation as module
+    from kai_agent.domain.knowledge import ComponentIdentity
+    from kai_agent.knowledge.sources import document_source
 
     client_type = httpx.AsyncClient
     raw = pdf_bytes()

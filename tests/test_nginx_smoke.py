@@ -14,10 +14,10 @@ from tests.release_helpers import ROOT, daemon, free_port, http
 from tests.test_installer import bash
 
 
-def test_real_nginx_routes_klipperai_and_preserves_mainsail(tmp_path, run_shell):
+def test_real_nginx_routes_kai_and_preserves_mainsail(tmp_path, run_shell):
     nginx = shutil.which("nginx")
     if not nginx:
-        if os.environ.get("KLIPPERAI_REQUIRE_NGINX") == "1":
+        if os.environ.get("KAI_REQUIRE_NGINX") == "1":
             pytest.fail("CI requires a real nginx binary for the reverse-proxy smoke test.")
         pytest.skip("real nginx is required; Linux CI installs it")
     frontend_port = free_port()
@@ -30,8 +30,8 @@ def test_real_nginx_routes_klipperai_and_preserves_mainsail(tmp_path, run_shell)
 set -euo pipefail
 source "$1/deployment/installer/nginx.sh"
 OUTPUT="$2"
-KLIPPERAI_ROOT_PATH=/klipperai
-KLIPPERAI_PORT="$3"
+KAI_ROOT_PATH=/kai
+KAI_PORT="$3"
 backup_file() { :; }
 run_root() { [[ "$1" == install ]] || return 1; cp "${@: -2:1}" "$OUTPUT"; }
 write_nginx_snippet
@@ -83,24 +83,22 @@ http {{
 
             opener = urllib.request.build_opener(NoRedirect, urllib.request.ProxyHandler({}))
             with pytest.raises(urllib.error.HTTPError) as redirect:
-                opener.open(base + "/klipperai?probe=1", timeout=3)
+                opener.open(base + "/kai?probe=1", timeout=3)
             assert redirect.value.code == 308
-            assert redirect.value.headers["Location"] == "/klipperai/?probe=1"
-            with http(base, "/klipperai/") as response:
-                assert b'data-api-base="/klipperai/api"' in response.read()
-            with http(base, "/klipperai/assets/embed.css") as response:
+            assert redirect.value.headers["Location"] == "/kai/?probe=1"
+            with http(base, "/kai/") as response:
+                assert b'data-api-base="/kai/api"' in response.read()
+            with http(base, "/kai/assets/embed.css") as response:
                 assert b"mainsail-asset" not in response.read()
                 assert "text/css" in response.headers["Content-Type"]
-            with http(base, "/klipperai/readyz") as response:
+            with http(base, "/kai/readyz") as response:
                 assert json.load(response)["printer_access"] == "read_only"
-            with http(base, "/klipperai/api/ui-sessions", {}) as response:
+            with http(base, "/kai/api/ui-sessions", {}) as response:
                 session = json.load(response)["session_id"]
-            with http(base, "/klipperai/api/bootstrap?session_id=" + session) as response:
+            with http(base, "/kai/api/bootstrap?session_id=" + session) as response:
                 assert json.load(response)["provider_configured"] is False
             with pytest.raises(urllib.error.HTTPError) as chat:
-                http(
-                    base, "/klipperai/api/chat", {"session_id": session, "message": "Check printer"}
-                )
+                http(base, "/kai/api/chat", {"session_id": session, "message": "Check printer"})
             assert chat.value.code == 503
         finally:
             process.terminate()

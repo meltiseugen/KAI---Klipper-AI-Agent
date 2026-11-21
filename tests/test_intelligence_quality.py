@@ -6,11 +6,11 @@ import pytest
 from test_agent import ScriptedModel, answer
 from test_agent import tool_context as tool_context
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.diagnostics.playbooks import recovery_playbook
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.evidence import ArtifactInput
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.diagnostics.playbooks import recovery_playbook
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.evidence import ArtifactInput
 
 CASES = [
     ("Extrude below minimum temp", "cold_extrusion", "extrusion-guard"),

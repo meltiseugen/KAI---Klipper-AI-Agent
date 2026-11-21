@@ -2,14 +2,14 @@ import hashlib
 
 import pytest
 
-from klipperai_agent.application.proposal_review import ProposalReviewService
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.include_paths import matches_include
-from klipperai_agent.config.models import ConfigDocument
-from klipperai_agent.config.patches import file_patch, merge_options, valid_target
-from klipperai_agent.config.review import ProposalReviewer
-from klipperai_agent.domain.investigation import InvestigationResult
-from klipperai_agent.domain.proposals import ConfigProposal
+from kai_agent.application.proposal_review import ProposalReviewService
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.include_paths import matches_include
+from kai_agent.config.models import ConfigDocument
+from kai_agent.config.patches import file_patch, merge_options, valid_target
+from kai_agent.config.review import ProposalReviewer
+from kai_agent.domain.investigation import InvestigationResult
+from kai_agent.domain.proposals import ConfigProposal
 from tests.test_config_analysis import snapshot
 
 
@@ -18,15 +18,15 @@ def draft(path="printer.cfg", content="[fan]\nmax_power: 0.7"):
 
 
 def test_include_globs_stay_within_the_named_directory():
-    assert matches_include("klipperai/new.cfg", "nested/printer.cfg", "../klipperai/*.cfg")
-    assert not matches_include("klipperai/new.cfg", "printer.cfg", "*.cfg")
-    assert not matches_include("klipperai/sub/new.cfg", "printer.cfg", "klipperai/*.cfg")
-    assert not matches_include("klipperai/.hidden.cfg", "printer.cfg", "klipperai/*.cfg")
-    assert matches_include("klipperai/.hidden.cfg", "printer.cfg", "klipperai/.*.cfg")
+    assert matches_include("kai/new.cfg", "nested/printer.cfg", "../kai/*.cfg")
+    assert not matches_include("kai/new.cfg", "printer.cfg", "*.cfg")
+    assert not matches_include("kai/sub/new.cfg", "printer.cfg", "kai/*.cfg")
+    assert not matches_include("kai/.hidden.cfg", "printer.cfg", "kai/*.cfg")
+    assert matches_include("kai/.hidden.cfg", "printer.cfg", "kai/.*.cfg")
     tree = snapshot(("printer.cfg", "[printer]\nkinematics: cartesian\n[include *.cfg]"))
-    result = reviewed(tree, draft("klipperai/test.cfg", "[gcode_macro TEST]\ngcode: M117 ok"))
+    result = reviewed(tree, draft("kai/test.cfg", "[gcode_macro TEST]\ngcode: M117 ok"))
     assert len(result.review.file_patches) == 2
-    assert "+[include klipperai/test.cfg]" in result.review.file_patches[1].diff
+    assert "+[include kai/test.cfg]" in result.review.file_patches[1].diff
 
 
 def reviewed(tree, proposal=None, inventory=None, previous=None):
@@ -116,23 +116,21 @@ def test_managed_fragment_creation_include_and_autosave_boundaries():
             "[printer]\nkinematics: cartesian\n#*# SAVE_CONFIG\n#*# [probe]\n#*# z_offset = 1",
         )
     )
-    proposal = reviewed(
-        tree, draft("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready")
-    )
+    proposal = reviewed(tree, draft("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready"))
     review = proposal.review
     assert review.status == "manual_review" and len(review.file_patches) == 2
     fragment, include = review.file_patches
     assert fragment.operation == "create" and "--- /dev/null" in fragment.diff
-    assert "+[include ../klipperai/status.cfg]" in include.diff
+    assert "+[include ../kai/status.cfg]" in include.diff
     assert include.diff.index("+[include") < include.diff.index(" #*# SAVE_CONFIG")
-    assert review.managed_include and review.file_baselines["klipperai/status.cfg"] == "absent"
+    assert review.managed_include and review.file_baselines["kai/status.cfg"] == "absent"
     added = snapshot(
         *[(doc.path, doc.content) for doc in tree.documents],
-        ("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Existing"),
+        ("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Existing"),
     )
     stale = reviewed(
         tree,
-        draft("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready"),
+        draft("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready"),
         inventory=added,
         previous=review,
     )
@@ -140,16 +138,16 @@ def test_managed_fragment_creation_include_and_autosave_boundaries():
     # Inactive files are merged, never silently overwritten or duplicated.
     existing = reviewed(
         tree,
-        draft("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready"),
+        draft("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready"),
         inventory=added,
     )
     assert existing.review.file_patches[0].operation == "update"
     wildcard = snapshot(
-        ("printer.cfg", "[printer]\nkinematics: cartesian\n[include klipperai/*.cfg]"),
-        notes=["Include pattern matched no files: klipperai/*.cfg (from printer.cfg)"],
+        ("printer.cfg", "[printer]\nkinematics: cartesian\n[include kai/*.cfg]"),
+        notes=["Include pattern matched no files: kai/*.cfg (from printer.cfg)"],
     )
     included = reviewed(
-        wildcard, draft("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready")
+        wildcard, draft("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 Ready")
     )
     assert (
         len(included.review.file_patches) == 1
@@ -171,12 +169,12 @@ def test_managed_fragment_creation_include_and_autosave_boundaries():
 def test_patch_plan_refuses_incomplete_evidence(case, reason):
     tree = snapshot(("printer.cfg", "[printer]\nkinematics: cartesian"))
     inventory = snapshot(("printer.cfg", tree.documents[0].content))
-    proposal = draft("klipperai/test.cfg", "[gcode_macro TEST]\ngcode: M117 ok")
+    proposal = draft("kai/test.cfg", "[gcode_macro TEST]\ngcode: M117 ok")
     if case == "unmanaged":
         proposal.target_file = "new.cfg"
     elif case == "truncated":
         inventory.documents.append(
-            ConfigDocument("klipperai/test.cfg", "[gcode_macro TEST]", [], truncated=True)
+            ConfigDocument("kai/test.cfg", "[gcode_macro TEST]", [], truncated=True)
         )
     elif case == "inactive":
         proposal.target_file = "old.cfg"
@@ -238,9 +236,9 @@ async def test_service_expands_only_patch_targets_and_blocks_filtered_absence(
     await ProposalReviewService(reader).review(result)
     assert result.config_proposals[0].review.file_patches
     assert "+max_power: 0.7" in result.config_proposals[0].review.file_patches[0].diff
-    ignored = ConfigCollector(tmp_path, ignore_globs="klipperai/*")
+    ignored = ConfigCollector(tmp_path, ignore_globs="kai/*")
     result = InvestigationResult(
-        config_proposals=[draft("klipperai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 ok")]
+        config_proposals=[draft("kai/status.cfg", "[gcode_macro STATUS]\ngcode: M117 ok")]
     )
     await ProposalReviewService(ignored).review(result)
     assert "Incomplete file inventory" in str(result.config_proposals[0].review.errors)

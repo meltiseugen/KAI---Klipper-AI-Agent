@@ -42,9 +42,9 @@ def build_wheel(directory: Path) -> Path:
         ]
     )
     run(command, cwd=ROOT)
-    wheels = list(directory.glob("klipperai-*-py3-none-any.whl"))
+    wheels = list(directory.glob("kai-*-py3-none-any.whl"))
     if len(wheels) != 1:
-        raise ValueError("Build must produce exactly one universal KlipperAI wheel.")
+        raise ValueError("Build must produce exactly one universal KAI wheel.")
     return wheels[0]
 
 
@@ -63,7 +63,7 @@ def deploy(
             "Use an SSH config alias or user@hostname; configure ports/keys in SSH config."
         )
     if not re.fullmatch(r"/[A-Za-z0-9_./-]+", install) or ".." in Path(install).parts:
-        raise ValueError("Use the printer's plain absolute KlipperAI checkout path.")
+        raise ValueError("Use the printer's plain absolute KAI checkout path.")
     endpoint = urlsplit(url)
     if (
         endpoint.scheme != "http"
@@ -77,25 +77,25 @@ def deploy(
         raise ValueError("Use the printer's direct loopback http://127.0.0.1:PORT/readyz URL.")
     if rollback and wheel is not None:
         raise ValueError("Choose a wheel deployment or rollback.")
-    with tempfile.TemporaryDirectory(prefix="klipperai-deploy-") as directory:
+    with tempfile.TemporaryDirectory(prefix="kai-deploy-") as directory:
         if not rollback:
             wheel = wheel.resolve() if wheel else build_wheel(Path(directory))
             if wheel.stat().st_size > 32 * 1024 * 1024:
                 raise ValueError("Wheel exceeds the transfer size limit.")
             digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
             identity = inspect_wheel(wheel, digest)
-            print(f"Deploying KlipperAI {identity['version']} build {identity['build']} to {host}")
+            print(f"Deploying KAI {identity['version']} build {identity['build']} to {host}")
         if dry_run:
             print(
                 f"Target: {host}:{install}; readiness: {url}; action: {'rollback' if rollback else 'stage code, verify, activate'}"
             )
             return
         remote = run(
-            ["ssh", host, "umask 077; mktemp -d /tmp/klipperai-deploy.XXXXXXXX"],
+            ["ssh", host, "umask 077; mktemp -d /tmp/kai-deploy.XXXXXXXX"],
             capture_output=True,
             text=True,
         ).stdout.strip()
-        if not re.fullmatch(r"/tmp/klipperai-deploy\.[A-Za-z0-9]+", remote):
+        if not re.fullmatch(r"/tmp/kai-deploy\.[A-Za-z0-9]+", remote):
             raise ValueError("SSH returned an unexpected temporary staging path.")
         try:
             run(["ssh", host, "mkdir -m 700 -- " + shlex.quote(remote + "/deployment")])

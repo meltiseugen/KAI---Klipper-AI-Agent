@@ -2,7 +2,7 @@
 
 ## Add a tool
 
-1. Add a class in `klipperai_agent/agent/tools/` implementing `Tool[Arguments]`.
+1. Add a class in `kai_agent/agent/tools/` implementing `Tool[Arguments]`.
    Define `name`, `label`, `description`, and a `ToolArguments` subclass. Extra
    arguments are forbidden. Use bounded fields and narrow, read-only operations.
 2. Implement `execute(arguments, context)`. Receive dependencies through

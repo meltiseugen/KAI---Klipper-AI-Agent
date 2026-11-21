@@ -12,15 +12,15 @@ import hashlib
 import json
 from pathlib import Path
 
-from klipperai_agent.bootstrap.providers import effective_settings, provider_management
-from klipperai_agent.diagnostics.shutdown import parse_shutdowns
-from klipperai_agent.diagnostics.shutdown_assessment import assess_shutdown
-from klipperai_agent.domain.investigation import utc_now
-from klipperai_agent.domain.redaction import redact_text
-from klipperai_agent.domain.shutdown import HostObservation, LogExcerpt
-from klipperai_agent.infrastructure.private_files import open_private_file
-from klipperai_agent.providers.responses import OpenAIAgentModel, ResponsesClient
-from klipperai_agent.runtime.settings import get_settings
+from kai_agent.bootstrap.providers import effective_settings, provider_management
+from kai_agent.diagnostics.shutdown import parse_shutdowns
+from kai_agent.diagnostics.shutdown_assessment import assess_shutdown
+from kai_agent.domain.investigation import utc_now
+from kai_agent.domain.redaction import redact_text
+from kai_agent.domain.shutdown import HostObservation, LogExcerpt
+from kai_agent.infrastructure.private_files import open_private_file
+from kai_agent.providers.responses import OpenAIAgentModel, ResponsesClient
+from kai_agent.runtime.settings import get_settings
 
 CASES = Path(__file__).resolve().parents[1] / "tests/fixtures/shutdown/cases.json"
 

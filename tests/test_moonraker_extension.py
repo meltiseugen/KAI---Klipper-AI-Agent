@@ -6,8 +6,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.application import moonraker as methods_module
-from klipperai_agent.domain.moonraker import (
+from kai_agent.application import moonraker as methods_module
+from kai_agent.domain.moonraker import (
     SUBSCRIPTIONS,
     MoonrakerObservation,
     RemoteMethodError,
@@ -15,8 +15,8 @@ from klipperai_agent.domain.moonraker import (
     gcode_filename,
     public_scalar,
 )
-from klipperai_agent.infrastructure.moonraker_agent import MoonrakerAgent, open_moonraker_socket
-from klipperai_agent.infrastructure.moonraker_rpc import RpcError
+from kai_agent.infrastructure.moonraker_agent import MoonrakerAgent, open_moonraker_socket
+from kai_agent.infrastructure.moonraker_rpc import RpcError
 from tests.moonraker_helpers import SocketPeer, methods, until
 
 
@@ -66,18 +66,18 @@ async def test_session_bootstrap_is_ephemeral_bounded_and_rate_limited(monkeypat
     api = methods()
     now = [100.0]
     monkeypatch.setattr(methods_module.time, "monotonic", lambda: now[0])
-    assert await api.dispatch("klipperai.status", None) == api.state.snapshot()
+    assert await api.dispatch("kai.status", None) == api.state.snapshot()
     for _ in range(10):
-        session = await api.dispatch("klipperai.create_ui_session", {})
+        session = await api.dispatch("kai.create_ui_session", {})
         assert api.sessions.exists(session["session_id"])
         assert session["session_id"] not in json.dumps(capabilities())
     with pytest.raises(RemoteMethodError, match="rate limit"):
-        await api.dispatch("klipperai.create_ui_session", {})
+        await api.dispatch("kai.create_ui_session", {})
     now[0] += 60
-    assert (await api.dispatch("klipperai.create_ui_session", {}))["expires_at"]
+    assert (await api.dispatch("kai.create_ui_session", {}))["expires_at"]
     for params in ([1], "", {"url": "private"}):
         with pytest.raises(RemoteMethodError) as error:
-            await api.dispatch("klipperai.capabilities", params)
+            await api.dispatch("kai.capabilities", params)
         assert error.value.code == -32602
 
 
@@ -99,7 +99,7 @@ async def test_registration_events_restart_resubscribe_and_reconnect():
             sockets[-1].feed(
                 {"method": "notify_status_update", "params": [{"extruder": {"temperature": 25}}, 2]}
             )
-            sockets[-1].feed({"id": 100, "method": "klipperai.create_ui_session", "params": {}})
+            sockets[-1].feed({"id": 100, "method": "kai.create_ui_session", "params": {}})
             return {
                 "result": {"status": {"extruder": {"temperature": 20, "target": 0}}, "eventtime": 1}
             }
@@ -124,16 +124,13 @@ async def test_registration_events_restart_resubscribe_and_reconnect():
         assert api.state.status["extruder"] == {"temperature": 25, "target": 0}
         assert api.state.registered and api.state.metadata_registered
         identify, database, event = remote.sent[:3]
-        assert (
-            identify["params"]["type"] == "agent"
-            and identify["params"]["client_name"] == "klipperai"
-        )
+        assert identify["params"]["type"] == "agent" and identify["params"]["client_name"] == "kai"
         assert database["params"] == {
-            "namespace": "klipperai",
+            "namespace": "kai",
             "key": "integration",
             "value": capabilities(),
         }
-        assert event["params"] == {"event": "klipperai_ready", "data": capabilities()}
+        assert event["params"] == {"event": "kai_ready", "data": capabilities()}
         assert "session_id" not in json.dumps(database)
         remote.feed(
             {

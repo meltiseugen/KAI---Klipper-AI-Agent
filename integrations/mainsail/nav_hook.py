@@ -12,7 +12,7 @@ from pathlib import Path
 from navigation import NavigationEntry
 from navigation_file import atomic_write
 
-NAME = "klipperai-mainsail-reapply"
+NAME = "kai-mainsail-reapply"
 
 
 def systemctl(*args: str) -> None:
@@ -41,7 +41,7 @@ def render_units(config: Path, state: Path, user: str, interval: str) -> dict[st
     helper = Path(__file__).resolve().with_name("run-nav.sh")
     return {
         "service": f"""[Unit]
-Description=Maintain the KlipperAI Mainsail sidebar link
+Description=Maintain the KAI Mainsail sidebar link
 After=local-fs.target
 StartLimitIntervalSec=60
 StartLimitBurst=5
@@ -53,7 +53,7 @@ ExecStart=/bin/sh {unit_path(helper, True)} --settings-file {unit_path(state / "
 TimeoutStartSec=60
 """,
         "timer": f"""[Unit]
-Description=Check the KlipperAI Mainsail sidebar at boot and periodically
+Description=Check the KAI Mainsail sidebar at boot and periodically
 
 [Timer]
 OnBootSec=30s
@@ -102,9 +102,7 @@ def start_hook() -> None:
     try:
         systemctl("start", f"{NAME}.service")
     except subprocess.SubprocessError as exc:
-        print(
-            f"[KlipperAI Mainsail] Initial check failed; startup/timer retries remain enabled: {exc}"
-        )
+        print(f"[KAI Mainsail] Initial check failed; startup/timer retries remain enabled: {exc}")
 
 
 def remove_hook(units: Path) -> None:

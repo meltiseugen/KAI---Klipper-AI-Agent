@@ -9,8 +9,8 @@ test("audit requires provider and agent proposals survive saved chat rendering",
   let request;
   const review = {
     status: "manual_review", checks: [],
-    managed_include: "Manually create klipperai/status.cfg and add its include.",
-    file_patches: [{target_file:"klipperai/status.cfg",operation:"create",diff:"--- /dev/null\n+++ b/klipperai/status.cfg\n+<script>text only</script>"}],
+    managed_include: "Manually create kai/status.cfg and add its include.",
+    file_patches: [{target_file:"kai/status.cfg",operation:"create",diff:"--- /dev/null\n+++ b/kai/status.cfg\n+<script>text only</script>"}],
   };
   const server = {
     async bootstrap() { return {provider:"openai",provider_configured:false}; },
@@ -27,7 +27,7 @@ test("audit requires provider and agent proposals survive saved chat rendering",
   ids["message-input"].value = "Analyze active config";
   await app.send();
   assert.equal(request.message, "Analyze active config");
-  assert.match(ids.messages.textContent, /Manual file patch: klipperai\/status.cfg/);
+  assert.match(ids.messages.textContent, /Manual file patch: kai\/status.cfg/);
   assert.match(ids.messages.textContent, /<script>text only<\/script>/);
   assert.match(ids.messages.textContent, /Manually create/);
   const all = node => [node, ...node.children.flatMap(all)];

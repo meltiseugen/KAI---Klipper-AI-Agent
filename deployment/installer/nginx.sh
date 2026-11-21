@@ -2,17 +2,17 @@
 # Sourced by install.sh; no work is performed on import.
 
 write_nginx_snippet() {
-  local path="${1:-/etc/klipperai/nginx-location.conf}"
+  local path="${1:-/etc/kai/nginx-location.conf}"
   local temp_file
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
-location = ${KLIPPERAI_ROOT_PATH} {
+location = ${KAI_ROOT_PATH} {
     absolute_redirect off;
-    return 308 ${KLIPPERAI_ROOT_PATH}/\$is_args\$args;
+    return 308 ${KAI_ROOT_PATH}/\$is_args\$args;
 }
 
-location ^~ ${KLIPPERAI_ROOT_PATH}/ {
+location ^~ ${KAI_ROOT_PATH}/ {
     access_log off;
     proxy_http_version 1.1;
     proxy_buffering off;
@@ -24,7 +24,7 @@ location ^~ ${KLIPPERAI_ROOT_PATH}/ {
     proxy_set_header Forwarded "";
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
-    proxy_pass http://127.0.0.1:${KLIPPERAI_PORT}/;
+    proxy_pass http://127.0.0.1:${KAI_PORT}/;
 }
 EOF
 
@@ -34,8 +34,8 @@ EOF
 }
 
 ensure_nginx_include() {
-  local include_line="include ${1:-/etc/klipperai/nginx-location.conf};"
-  local path="$KLIPPERAI_NGINX_SERVER_BLOCK_PATH"
+  local include_line="include ${1:-/etc/kai/nginx-location.conf};"
+  local path="$KAI_NGINX_SERVER_BLOCK_PATH"
 
   [[ -n "$path" ]] || die "nginx server block path is not set."
   [[ -f "$path" ]] || die "nginx server block file not found: $path"
@@ -124,7 +124,7 @@ ensure_nginx_include() {
 }
 
 configure_nginx() {
-  local snippet="${1:-/etc/klipperai/nginx-location.conf}"
+  local snippet="${1:-/etc/kai/nginx-location.conf}"
   local had_snippet=no
   [[ ! -f "$snippet" ]] || had_snippet=yes
   log "Generating nginx location snippet."
@@ -133,7 +133,7 @@ configure_nginx() {
 
   log "Patching, testing and reloading nginx."
   if ! (ensure_nginx_include "$snippet" && reload_nginx); then
-    local server="$KLIPPERAI_NGINX_SERVER_BLOCK_PATH"
+    local server="$KAI_NGINX_SERVER_BLOCK_PATH"
     warn "nginx configuration failed. Restoring previous proxy files."
     if [[ -f "${server}.bak.${TIMESTAMP}" ]]; then
       run_root cp "${server}.bak.${TIMESTAMP}" "$server"

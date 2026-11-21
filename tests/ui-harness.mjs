@@ -64,9 +64,9 @@ export async function loadUI(globals = {}) {
     createTextNode: value => { const node = element("text"); node.textContent = value; return node; },
   };
   const context = vm.createContext({ TextDecoder, document, console, setTimeout, clearTimeout, URL, ...globals });
-  const manifest = JSON.parse(await readFile(new URL("../klipperai_agent/web/static/scripts.json", import.meta.url), "utf8"));
+  const manifest = JSON.parse(await readFile(new URL("../kai_agent/web/static/scripts.json", import.meta.url), "utf8"));
   for (const name of manifest.filter(name => name !== "embed.js")) {
-    vm.runInContext(await readFile(new URL(`../klipperai_agent/web/static/${name}`, import.meta.url), "utf8"), context);
+    vm.runInContext(await readFile(new URL(`../kai_agent/web/static/${name}`, import.meta.url), "utf8"), context);
   }
   vm.runInContext("globalThis.UI = { ConversationStore, ChatTransport, ChatStreamReader, ChatApplication, ShellView, resolveApiBase, PrinterKnowledgePanel, PrinterMemoryPanel, InvestigationSync, ProviderPanel, MoonrakerStatusFeed };", context);
   return { ...context.UI, document, ids };

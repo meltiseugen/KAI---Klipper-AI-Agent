@@ -3,23 +3,23 @@ from __future__ import annotations
 import pytest
 from pydantic import SecretStr
 
-import klipperai_agent.providers.factory as providers_factory
-import klipperai_agent.providers.json_client as providers_json_client
-import klipperai_agent.providers.models as providers_models
-import klipperai_agent.providers.normalization as providers_normalization
-import klipperai_agent.providers.openai as providers_openai
-from klipperai_agent.config.lookup import build_config_lookup_response
-from klipperai_agent.config.models import (
+import kai_agent.providers.factory as providers_factory
+import kai_agent.providers.json_client as providers_json_client
+import kai_agent.providers.models as providers_models
+import kai_agent.providers.normalization as providers_normalization
+import kai_agent.providers.openai as providers_openai
+from kai_agent.config.lookup import build_config_lookup_response
+from kai_agent.config.models import (
     ConfigDocument,
     ConfigRequestTarget,
     ConfigSnapshot,
 )
-from klipperai_agent.config.requests import ConfigPromptPayload
-from klipperai_agent.config.templates.catalog import ProposalCatalog
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.diagnostics.requests import DiagnosisPromptPayload
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.config.requests import ConfigPromptPayload
+from kai_agent.config.templates.catalog import ProposalCatalog
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.diagnostics.requests import DiagnosisPromptPayload
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.runtime.settings import Settings
 
 
 def _snapshot_with(*sections: str) -> ConfigSnapshot:
@@ -33,7 +33,7 @@ def _snapshot_with(*sections: str) -> ConfigSnapshot:
 
 def test_template_profile_specific_warnings() -> None:
     catalog = ProposalCatalog()
-    snapshot = _snapshot_with("fan", "klippyai managed")
+    snapshot = _snapshot_with("fan", "kai managed")
 
     def propose(feature: str, profile: PrinterProfile):
         return catalog.build(
@@ -106,7 +106,7 @@ async def test_openai_providers_build_prompts_and_normalize_results() -> None:
             "proposals": {
                 "feature": "config-file",
                 "title": "Config",
-                "target_file": "klipperai/config.cfg",
+                "target_file": "kai/config.cfg",
                 "config": "[include config.cfg]",
                 "rationale": "test",
             },

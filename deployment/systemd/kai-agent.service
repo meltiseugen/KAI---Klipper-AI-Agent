@@ -1,0 +1,22 @@
+[Unit]
+Description=KAI agent
+After=network-online.target moonraker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/KAI
+EnvironmentFile=-/etc/kai/kai.env
+LoadCredentialEncrypted=kai-provider-master:/etc/kai/credentials/provider-master.cred
+ExecStart=/home/pi/KAI/.venv/bin/kai-agent
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=yes
+PrivateTmp=yes
+UMask=0077
+LimitCORE=0
+Environment=PYTHONDONTWRITEBYTECODE=1
+
+[Install]
+WantedBy=multi-user.target

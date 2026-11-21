@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KAI</title>
+    <link rel="stylesheet" href="{{ request.url_for('assets', path='standalone.css') }}" />
+  </head>
+  <body>
+    <main class="standalone-app">
+      <header class="standalone-bar">
+        <div>
+          <p class="standalone-eyebrow">KAI</p>
+          <h1>Diagnostics and config help for Klipper printers.</h1>
+        </div>
+        <div class="standalone-actions">
+          <a class="standalone-link strong" href="{{ embed_path }}" target="_blank" rel="noopener">Open Direct</a>
+        </div>
+      </header>
+
+      <section class="standalone-frame-shell">
+        <iframe
+          src="{{ embed_path }}"
+          title="KAI"
+          class="standalone-frame"
+          sandbox="allow-downloads allow-forms allow-same-origin allow-scripts"></iframe>
+      </section>
+    </main>
+  </body>
+</html>

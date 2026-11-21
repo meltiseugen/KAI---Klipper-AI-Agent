@@ -3,15 +3,15 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.base import ToolArguments
-from klipperai_agent.agent.tools.config_analysis import AnalyzeConfigTool, collect_analysis
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.analysis import analyze_config
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.config.parser import ConfigParser
-from klipperai_agent.contracts.api import ChatRequest
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.base import ToolArguments
+from kai_agent.agent.tools.config_analysis import AnalyzeConfigTool, collect_analysis
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.analysis import analyze_config
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.config.parser import ConfigParser
+from kai_agent.contracts.api import ChatRequest
 from tests.test_agent import ScriptedModel, answer, call
 from tests.test_agent import tool_context as tool_context
 from tests.test_agent_integration import agent_service as agent_service

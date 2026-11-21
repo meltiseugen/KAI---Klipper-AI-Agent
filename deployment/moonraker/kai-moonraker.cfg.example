@@ -1,0 +1,17 @@
+# KAI Moonraker integration
+#
+# Include this file from moonraker.conf with:
+#   [include kai/kai-moonraker.cfg]
+#
+# Moonraker also needs kai-agent added to printer_data/moonraker.asvc
+# so the service can be restarted through Moonraker/Mainsail.
+
+[update_manager kai-agent]
+type: git_repo
+channel: dev
+path: /home/pi/KAI
+origin: https://github.com/meltiseugen/KlippyAI.git
+primary_branch: main
+managed_services: kai-agent
+info_tags:
+    desc=KAI

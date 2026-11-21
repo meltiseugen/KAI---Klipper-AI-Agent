@@ -22,7 +22,7 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
         sys.platform.startswith("linux") and os.geteuid() == 0 and ram_backed(Path("/dev/shm"))
     )
     if not supported:
-        if os.environ.get("KLIPPERAI_REQUIRE_NATIVE") == "1":
+        if os.environ.get("KAI_REQUIRE_NATIVE") == "1":
             pytest.fail("Native integration requires Linux root and a verified RAM filesystem.")
         pytest.skip("Linux root process integration runs separately in CI")
     install = tmp_path / "checkout"
@@ -46,14 +46,14 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
         "MAINSAIL_CONFIG_DIR": str(tmp_path / "printer/config"),
         "HOST": "127.0.0.1",
         "PORT": str(port),
-        "ROOT_PATH": "/klipperai",
+        "ROOT_PATH": "/kai",
         "MOONRAKER_URL": "http://127.0.0.1:1",
         "MOONRAKER_AGENT_ENABLED": "false",
         "COLLECT_SYSTEMD_DIAGNOSTICS": "false",
         "COLLECT_HOST_LOGS": "false",
     }
     environment.write_text(
-        "".join(f"KLIPPERAI_{name}={json.dumps(value)}\n" for name, value in values.items())
+        "".join(f"KAI_{name}={json.dumps(value)}\n" for name, value in values.items())
     )
     printer = tmp_path / "printer/config/printer.cfg"
     printer.parent.mkdir(parents=True)
@@ -61,7 +61,7 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
     sentinel = tmp_path / "data/keep-history"
     sentinel.parent.mkdir()
     sentinel.write_bytes(b"saved application information")
-    with tempfile.TemporaryDirectory(prefix="klipperai-native-test-", dir="/dev/shm") as directory:
+    with tempfile.TemporaryDirectory(prefix="kai-native-test-", dir="/dev/shm") as directory:
         config = ApplianceConfig(
             install,
             environment,
@@ -91,8 +91,8 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
             release = updater.root / ("a" * 16)
             release.mkdir()
             shutil.copytree(
-                ROOT / "klipperai_agent",
-                release / "klipperai_agent",
+                ROOT / "kai_agent",
+                release / "kai_agent",
                 ignore=shutil.ignore_patterns("__pycache__"),
             )
             shutil.copytree(
@@ -100,17 +100,13 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
                 release / "deployment",
                 ignore=shutil.ignore_patterns("__pycache__"),
             )
-            (release / "klipperai_agent/build-info.json").write_text(
-                json.dumps({"build": release.name})
-            )
+            (release / "kai_agent/build-info.json").write_text(json.dumps({"build": release.name}))
             updater.activate(release)
             assert updater.selected() == release and service.running() != pid
             broken = updater.root / ("b" * 16)
             shutil.copytree(release, broken)
-            (broken / "klipperai_agent/build-info.json").write_text(
-                json.dumps({"build": broken.name})
-            )
-            (broken / "klipperai_agent/__main__.py").write_text(
+            (broken / "kai_agent/build-info.json").write_text(json.dumps({"build": broken.name}))
+            (broken / "kai_agent/__main__.py").write_text(
                 'raise RuntimeError("simulated bad build")\n'
             )
             with pytest.raises(RuntimeError, match="restored"):
@@ -140,4 +136,4 @@ def test_native_process_boot_update_rollback_and_preserved_data(tmp_path):
         finally:
             service.stop()
         assert service.running() is None
-        assert not (config.runtime / "klipperai-provider-master").exists()
+        assert not (config.runtime / "kai-provider-master").exists()

@@ -6,10 +6,10 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.file_metadata import FileMetadataArguments, FileMetadataTool
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.infrastructure.moonraker import MoonrakerError
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.file_metadata import FileMetadataArguments, FileMetadataTool
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.infrastructure.moonraker import MoonrakerError
 from tests.test_agent import ScriptedModel, answer, call
 from tests.test_agent import tool_context as tool_context
 from tests.test_moonraker import _client

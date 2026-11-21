@@ -4,20 +4,20 @@ from types import SimpleNamespace
 
 import pytest
 
-import klipperai_agent.workflows.citations as workflows_citations
-import klipperai_agent.workflows.configuration as workflows_configuration
-import klipperai_agent.workflows.diagnosis as workflows_diagnosis
-import klipperai_agent.workflows.engine as workflows_engine
-import klipperai_agent.workflows.text as workflows_text
-from klipperai_agent.config.models import (
+import kai_agent.workflows.citations as workflows_citations
+import kai_agent.workflows.configuration as workflows_configuration
+import kai_agent.workflows.diagnosis as workflows_diagnosis
+import kai_agent.workflows.engine as workflows_engine
+import kai_agent.workflows.text as workflows_text
+from kai_agent.config.models import (
     ConfigDocument,
     ConfigSectionLocation,
     ConfigSnapshot,
 )
-from klipperai_agent.contracts.api import ArtifactInput, ConfigProposal, IssueFinding
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.providers.models import ConfigAssistantOutput, DiagnosisLLMOutput
+from kai_agent.contracts.api import ArtifactInput, ConfigProposal, IssueFinding
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.providers.models import ConfigAssistantOutput, DiagnosisLLMOutput
 
 
 def _runtime(**overrides):

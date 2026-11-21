@@ -84,7 +84,7 @@ bootstrap_command_path() {{
   if [ "$1" = bash ]; then [ -x "{bindir.as_posix()}/bash" ]; else command -v "$1"; fi
 }}
 uname() {{ echo Linux; }}
-bootstrap_manager() {{ KLIPPERAI_PACKAGE_MANAGER=opkg; }}
+bootstrap_manager() {{ KAI_PACKAGE_MANAGER=opkg; }}
 bootstrap_run_root() {{
   printf '%s\\n' "$*" >> "{calls.as_posix()}"
   case "$*" in 'opkg install bash') cp "{template.as_posix()}" "{bindir.as_posix()}/bash";; esac
@@ -141,7 +141,7 @@ bootstrap_command_path() {
 }
 bootstrap_entware() { echo bootstrapped; }
 bootstrap_manager
-printf '%s' "$KLIPPERAI_PACKAGE_MANAGER"
+printf '%s' "$KAI_PACKAGE_MANAGER"
 """,
         "test",
         module.as_posix(),
@@ -163,10 +163,10 @@ SCRIPT_DIR="$1"
 CALLS="$2"
 MANAGER="$3"
 READY=no
-select_service_manager() { KLIPPERAI_SERVICE_MANAGER=appliance; }
+select_service_manager() { KAI_SERVICE_MANAGER=appliance; }
 require_linux() { :; }
 bootstrap_opt_path() { :; }
-bootstrap_manager() { KLIPPERAI_PACKAGE_MANAGER="$MANAGER"; }
+bootstrap_manager() { KAI_PACKAGE_MANAGER="$MANAGER"; }
 bootstrap_command_path() { [[ "$READY" == yes || "$1" != git && "$1" != install && "$1" != stat ]]; }
 prerequisite_git_https() { return 0; }
 prerequisite_nginx_available() { return 0; }
@@ -236,7 +236,7 @@ prerequisite_git_https() { return 0; }
 prerequisite_nginx_available() { return 0; }
 prerequisite_python() { PREREQUISITE_PYTHON=fixture_python; }
 fixture_python() { [[ "$READY" == yes ]]; }
-bootstrap_manager() { KLIPPERAI_PACKAGE_MANAGER=opkg; }
+bootstrap_manager() { KAI_PACKAGE_MANAGER=opkg; }
 bootstrap_packages() { printf '%s' "$*" > "$CALLS"; READY=yes; }
 ensure_prerequisites
 """,
@@ -264,7 +264,7 @@ prerequisite_nginx_available() { return 0; }
 prerequisite_git_https() { [[ "$MISSING" != git-https || "$READY" == yes ]]; }
 prerequisite_python() { PREREQUISITE_PYTHON=fixture_python; }
 fixture_python() { [[ "$MISSING" != certificates || "$*" != *get_ca_certs* || "$READY" == yes ]]; }
-bootstrap_manager() { KLIPPERAI_PACKAGE_MANAGER=opkg; }
+bootstrap_manager() { KAI_PACKAGE_MANAGER=opkg; }
 bootstrap_packages() { printf '%s' "$*" > "$CALLS"; READY=yes; }
 ensure_prerequisites
 """,
@@ -343,15 +343,15 @@ def test_mips_crypto_build_tools_are_added_only_when_needed(tmp_path, run_shell,
         """
 set -euo pipefail
 source "$1/deployment/installer/prerequisites.sh"
-KLIPPERAI_SERVICE_MANAGER=appliance
-INSTALL_DIR=/usr/data/KlipperAI
+KAI_SERVICE_MANAGER=appliance
+INSTALL_DIR=/usr/data/KAI
 PYTHON_BIN=/opt/bin/python3
 READY="$2"
 CALLS="$3"
 uname() { echo mips; }
 run_as_user() { [[ "$READY" == yes ]]; }
 bootstrap_command_path() { return 1; }
-bootstrap_manager() { KLIPPERAI_PACKAGE_MANAGER=opkg; }
+bootstrap_manager() { KAI_PACKAGE_MANAGER=opkg; }
 bootstrap_packages() { printf '%s' "$*" > "$CALLS"; }
 ensure_crypto_build_prerequisites
 """,

@@ -81,7 +81,7 @@ lease maintained. See [resource bounds and hardware acceptance](performance.md).
 
 ## Interrupted investigation recovery
 
-Before routing a request or calling a model, KlipperAI atomically saves its public
+Before routing a request or calling a model, KAI atomically saves its public
 question, mode, user artifacts and imported history. After each initial or follow-up
 tool completes, it checkpoints up to 24 public observations (including their dates
 and revisions). Hidden reasoning, encrypted provider state, API keys and UI session
@@ -124,8 +124,8 @@ flowchart LR
     Recheck --> Stale[Changed revision: request a refreshed proposal]
 ```
 
-There is no apply, approve, restart or printer-control operation. KlipperAI writes
-only its own runtime records/logs. Its profile CLI manages KlipperAI's own settings;
+There is no apply, approve, restart or printer-control operation. KAI writes
+only its own runtime records/logs. Its profile CLI manages KAI's own settings;
 printer configuration proposals always require manual editing.
 
 `ProposalReviewer` checks relative `.cfg` target paths, duplicate sections,

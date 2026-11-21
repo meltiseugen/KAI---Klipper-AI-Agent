@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from klipperai_agent.application.sessions import InMemorySessionStore
+from kai_agent.application.sessions import InMemorySessionStore
 
 
 def test_session_roundtrip() -> None:

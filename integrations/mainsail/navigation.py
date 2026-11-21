@@ -9,8 +9,8 @@ from urllib.parse import urlsplit
 
 @dataclass(frozen=True)
 class NavigationEntry:
-    title: str = "KlipperAI"
-    href: str = "/klipperai/"
+    title: str = "KAI"
+    href: str = "/kai/"
     target: str = "_blank"
     position: int = 85
     icon: str = ""

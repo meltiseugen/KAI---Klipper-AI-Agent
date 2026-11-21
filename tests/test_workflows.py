@@ -3,17 +3,17 @@ from types import SimpleNamespace
 
 import pytest
 
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigSnapshot
-from klipperai_agent.config.targeting import infer_config_request_target
-from klipperai_agent.infrastructure.host.logs import HostLogCollector
-from klipperai_agent.workflows.configuration import (
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigSnapshot
+from kai_agent.config.targeting import infer_config_request_target
+from kai_agent.infrastructure.host.logs import HostLogCollector
+from kai_agent.workflows.configuration import (
     collect_config_context,
     compose_config_response,
     detect_config_target,
     resolve_config_lookup,
 )
-from klipperai_agent.workflows.diagnosis import compose_response
+from kai_agent.workflows.diagnosis import compose_response
 
 
 def test_compose_response_prefers_findings_and_keeps_output_compact() -> None:
@@ -60,7 +60,7 @@ def test_compose_config_response_keeps_text_short_and_avoids_code_duplication() 
                     {
                         "feature": "fan",
                         "title": "Generic PWM fan section",
-                        "target_file": "klipperai/fan.cfg",
+                        "target_file": "kai/fan.cfg",
                         "config": "[fan]\npin: <FAN_PIN>\n",
                         "rationale": "test",
                         "assumptions": ["A"],
@@ -80,7 +80,7 @@ def test_compose_config_response_keeps_text_short_and_avoids_code_duplication() 
     )
 
     assert "Proposal:" in result["response_text"]
-    assert "Generic PWM fan section -> klipperai/fan.cfg" in result["response_text"]
+    assert "Generic PWM fan section -> kai/fan.cfg" in result["response_text"]
     assert "```ini" not in result["response_text"]
     assert "Assumptions:" not in result["response_text"]
     assert "Warnings:" not in result["response_text"]

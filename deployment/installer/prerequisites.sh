@@ -37,7 +37,7 @@ ensure_prerequisites() {
   # A usable host needs no package-manager transaction or package-index polling.
   for command in awk find git grep install stat tar; do
     if ! bootstrap_command_path "$command" >/dev/null; then
-      [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KLIPPERAI_PACKAGE_MANAGER"; }
+      [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
       package="$command"
       case "$manager:$command" in
         opkg:awk) package=gawk;; opkg:find) package=findutils;;
@@ -52,22 +52,22 @@ ensure_prerequisites() {
     fi
   done
   if bootstrap_command_path git >/dev/null && ! prerequisite_git_https; then
-    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KLIPPERAI_PACKAGE_MANAGER"; }
+    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
     if [[ "$manager" == opkg ]]; then packages+=(git-http ca-bundle); else packages+=(git); fi
   fi
   if ! prerequisite_nginx_available; then
-    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KLIPPERAI_PACKAGE_MANAGER"; }
+    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
     if [[ "$manager" == opkg ]]; then packages+=(nginx-ssl); else packages+=(nginx); fi
   fi
   if ! prerequisite_python || ! "$PREREQUISITE_PYTHON" -c 'import ssl, sqlite3, ctypes, asyncio, logging, email, urllib.request, zlib, multiprocessing' >/dev/null 2>&1 || ! "$PREREQUISITE_PYTHON" -m pip --version >/dev/null 2>&1; then
-    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KLIPPERAI_PACKAGE_MANAGER"; }
+    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
     case "$manager" in
       opkg) packages+=(python3 python3-pip python3-openssl python3-sqlite3 python3-ctypes ca-bundle ca-certificates);;
       apt-get) packages+=(python3 python3-venv python3-pip ca-certificates);;
       apk) packages+=(python3 py3-pip py3-virtualenv ca-certificates);;
     esac
   elif ! "$PREREQUISITE_PYTHON" -c 'import ssl; raise SystemExit(not ssl.create_default_context().get_ca_certs())' >/dev/null 2>&1; then
-    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KLIPPERAI_PACKAGE_MANAGER"; }
+    [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
     packages+=(ca-certificates)
     [[ "$manager" != opkg ]] || packages+=(ca-bundle)
   fi
@@ -89,12 +89,12 @@ ensure_prerequisites() {
 }
 
 ensure_crypto_build_prerequisites() {
-  [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]] || return 0
+  [[ "${KAI_SERVICE_MANAGER:-systemd}" == appliance ]] || return 0
   case "$(uname -m)" in mips|mipsel) ;; *) return 0;; esac
   run_as_user "$INSTALL_DIR/.venv/bin/python" -c 'from Cryptodome.Cipher import AES' >/dev/null 2>&1 && return 0
   if ! bootstrap_command_path gcc >/dev/null || ! bootstrap_command_path make >/dev/null || ! "$PYTHON_BIN" -c 'import pathlib,sysconfig; raise SystemExit(not (pathlib.Path(sysconfig.get_path("include"))/"Python.h").is_file())'; then
     bootstrap_manager || die "C build prerequisites require a package manager."
-    case "$KLIPPERAI_PACKAGE_MANAGER" in
+    case "$KAI_PACKAGE_MANAGER" in
       opkg) bootstrap_packages gcc make python3-dev || die "C build prerequisite installation failed." ;;
       apt-get) bootstrap_packages build-essential python3-dev || die "C build prerequisite installation failed." ;;
       apk) bootstrap_packages build-base python3-dev || die "C build prerequisite installation failed." ;;

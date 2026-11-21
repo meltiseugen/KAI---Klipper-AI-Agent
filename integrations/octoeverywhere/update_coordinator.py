@@ -68,7 +68,7 @@ class OctoEverywhereService:
     def restart(self) -> None:
         # The fixed shell adapter also permits the fixture systemctl on Windows.
         subprocess.run(
-            ["sh", "-c", 'exec systemctl restart "$1"', "klipperai-oe", self.name],
+            ["sh", "-c", 'exec systemctl restart "$1"', "kai-oe", self.name],
             check=True,
             timeout=60,
         )
@@ -90,7 +90,7 @@ class UpdateCoordinator:
     def reconcile(self) -> None:
         status = self.updates.status()
         if status.busy or self.files.git_busy():
-            print("[KlipperAI OE] Update in progress; checkout unchanged.")
+            print("[KAI OE] Update in progress; checkout unchanged.")
             return
         restore = status.commits_behind > 0
         plan = self.files.plan(restore)
@@ -98,7 +98,7 @@ class UpdateCoordinator:
         if plan.changes or self.state.has("restart-pending") or self.state.has("refresh-pending"):
             latest = self.updates.status()
             if latest.busy or (latest.commits_behind > 0) != restore or self.files.git_busy():
-                print("[KlipperAI OE] Update state changed; deferring maintenance.")
+                print("[KAI OE] Update state changed; deferring maintenance.")
                 return
         if restore and plan.changes:
             self.state.mark("refresh-pending")
@@ -110,7 +110,7 @@ class UpdateCoordinator:
             self.updates.refresh()
             self.state.clear("refresh-pending")
         print(
-            "[KlipperAI OE] "
+            "[KAI OE] "
             + (
                 "Checkout prepared for the pending update."
                 if restore

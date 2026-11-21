@@ -6,8 +6,8 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.runtime.settings import Settings
 
 
 class _FakeMoonraker:

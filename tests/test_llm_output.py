@@ -1,5 +1,5 @@
-from klipperai_agent.application.intent import ChatIntentOutput
-from klipperai_agent.providers.models import DiagnosisLLMOutput
+from kai_agent.application.intent import ChatIntentOutput
+from kai_agent.providers.models import DiagnosisLLMOutput
 
 
 def test_diagnosis_output_accepts_structured_list_items() -> None:

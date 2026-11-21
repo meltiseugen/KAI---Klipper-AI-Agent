@@ -2,9 +2,9 @@ from dataclasses import replace
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.config_templates import ConfigTemplateTool, TemplateArguments
-from klipperai_agent.agent.workflow import AgentWorkflow
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.config_templates import ConfigTemplateTool, TemplateArguments
+from kai_agent.agent.workflow import AgentWorkflow
 from tests.test_agent import ScriptedModel, answer, call
 from tests.test_agent import tool_context as tool_context
 

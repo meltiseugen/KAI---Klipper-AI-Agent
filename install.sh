@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [ -z "${KLIPPERAI_INSTALL_BASH_REEXEC:-}" ]; then
+if [ -z "${KAI_INSTALL_BASH_REEXEC:-}" ]; then
   bootstrap_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/deployment/installer"
   . "$bootstrap_dir/bootstrap.sh"
   . "$bootstrap_dir/entware.sh"
@@ -8,7 +8,7 @@ if [ -z "${KLIPPERAI_INSTALL_BASH_REEXEC:-}" ]; then
     -h|--help)
       printf '%s\n' 'Usage: sh install.sh [--check|--help]' \
         'Automatically detect the host and install missing application prerequisites.' \
-        'Then configure KlipperAI, its service, and optional Mainsail/OctoEverywhere access.' \
+        'Then configure KAI, its service, and optional Mainsail/OctoEverywhere access.' \
         '--help and --check do not install packages or change the host.'
       exit 0 ;;
     --check)
@@ -17,15 +17,15 @@ if [ -z "${KLIPPERAI_INSTALL_BASH_REEXEC:-}" ]; then
     '') bootstrap_bash || exit 1 ;;
     *) printf 'Unknown option: %s\n' "$1" >&2; exit 2 ;;
   esac
-  KLIPPERAI_INSTALL_BASH_REEXEC=1
-  export KLIPPERAI_INSTALL_BASH_REEXEC
+  KAI_INSTALL_BASH_REEXEC=1
+  export KAI_INSTALL_BASH_REEXEC
   exec bash "$0" "$@"
 fi
 
 set -euo pipefail
 
-PROJECT_NAME="KlipperAI"
-SERVICE_NAME="klipperai-agent"
+PROJECT_NAME="KAI"
+SERVICE_NAME="kai-agent"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TIMESTAMP="$(date +%Y%m%d%H%M%S)"
 MIN_PYTHON_VERSION="3.10"

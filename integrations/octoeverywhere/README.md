@@ -4,16 +4,16 @@ This integration is an unsupported local patch for an existing Klipper
 OctoEverywhere checkout. It is intended for hosts where:
 
 - the main OctoEverywhere printer portal still serves Mainsail or Fluidd
-- `Shared Connection` URLs are not desired for KlipperAI
-- KlipperAI is already installed locally and reachable behind nginx at `/klipperai/`
+- `Shared Connection` URLs are not desired for KAI
+- KAI is already installed locally and reachable behind nginx at `/kai/`
 
 What the patch does:
 
 - extends OctoEverywhere's Moonraker-side relative-path router so requests for
-  `/klipperai` and `/klipperai/...` are forwarded directly to the local KlipperAI
+  `/kai` and `/kai/...` are forwarded directly to the local KAI
   backend on `127.0.0.1:8811`
-- patches OctoEverywhere's injected frontend helper so the `KlipperAI` nav item
-  bypasses the Mainsail SPA/router and can open KlipperAI in either the current
+- patches OctoEverywhere's injected frontend helper so the `KAI` nav item
+  bypasses the Mainsail SPA/router and can open KAI in either the current
   tab or a new tab
 
 What it does not do:
@@ -21,15 +21,15 @@ What it does not do:
 - it does not patch Mainsail itself
 - it does not add a second officially supported frontend to OctoEverywhere
 - it does not keep the OctoEverywhere checkout clean while the route is active;
-  the optional update hook temporarily removes only KlipperAI's marked blocks
+  the optional update hook temporarily removes only KAI's marked blocks
   when Moonraker reports a pending OE update
 
 ## Assumptions
 
 - OctoEverywhere checkout path: `/home/<service-user>/octoeverywhere`
   or, on rooted Creality Nebula Pad-style layouts, `/usr/data/octoeverywhere`
-- KlipperAI backend port: `8811`
-- KlipperAI public prefix: `/klipperai`
+- KAI backend port: `8811`
+- KAI public prefix: `/kai`
 
 If your host differs, pass explicit arguments to the helper script.
 
@@ -38,11 +38,11 @@ helper automatically.
 
 ## Apply
 
-From the KlipperAI checkout on the host:
+From the KAI checkout on the host:
 
 ```bash
-chmod +x integrations/octoeverywhere/apply-local-klipperai-route-patch.sh
-./integrations/octoeverywhere/apply-local-klipperai-route-patch.sh \
+chmod +x integrations/octoeverywhere/apply-local-kai-route-patch.sh
+./integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --oe-root /home/<service-user>/octoeverywhere \
   --restart-service
 ```
@@ -50,22 +50,22 @@ chmod +x integrations/octoeverywhere/apply-local-klipperai-route-patch.sh
 Rooted Creality Nebula Pad example:
 
 ```bash
-./integrations/octoeverywhere/apply-local-klipperai-route-patch.sh \
+./integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --oe-root /usr/data/octoeverywhere \
   --restart-service
 ```
 
 Optional flags:
 
-- `--klipperai-prefix /klipperai`
-- `--klipperai-port 8811`
+- `--kai-prefix /kai`
+- `--kai-port 8811`
 - `--nav-target _blank`
 - `--service octoeverywhere`
-- `--state-dir /etc/klipperai`
+- `--state-dir /etc/kai`
 
 Before changing either target, the helper validates both outputs and saves both
 original files in a unique `change-*` directory under
-`/etc/klipperai/octoeverywhere-backups`. Each replacement is atomic and preserves
+`/etc/kai/octoeverywhere-backups`. Each replacement is atomic and preserves
 the original mode and owner. Unchanged files keep their contents and timestamps;
 an already current patch creates no backup and requires no restart.
 
@@ -76,8 +76,8 @@ Install the systemd path/timer hook to coordinate Moonraker-managed OE updates:
 ```bash
 sh integrations/octoeverywhere/install-auto-reapply.sh \
   --oe-root /home/biqu/octoeverywhere \
-  --klipperai-prefix /klipperai \
-  --klipperai-port 8811 \
+  --kai-prefix /kai \
+  --kai-port 8811 \
   --nav-target _blank \
   --service octoeverywhere
 ```
@@ -87,21 +87,21 @@ The hook:
 - checks Moonraker's `octoeverywhere` update-manager state
 - leaves the checkout and suspension marker untouched while an update is busy,
   or when the request fails or required update fields are missing/invalid
-- removes only KlipperAI's marked blocks when OE has pending commits
+- removes only KAI's marked blocks when OE has pending commits
 - leaves unrelated local changes in the two OE files intact
 - refreshes Moonraker so the checkout can become updateable
 - compares both files with the configured patch contents, repairing missing,
   partial or outdated patches after the OE update
-- watches the patched files and KlipperAI templates for changes
+- watches the patched files and KAI templates for changes
 - runs a five-minute fallback timer after a check completes, including failures
 - schedules a check at every system startup, about 30 seconds after boot once
   service/network dependencies are ready
 - retries failed service restarts and Moonraker refreshes using persistent markers
 - enables future retries even if the initial Moonraker query fails
-- moves legacy `*.klippyai-backup-*` files out of the OE checkout and into
-  `/etc/klipperai/octoeverywhere-backups/legacy`
+- moves legacy `*.kai-backup-*` files out of the OE checkout and into
+  `/etc/kai/octoeverywhere-backups/legacy`
 
-The runner retains a custom `KLIPPERAI_STATE_DIR` supplied during installation,
+The runner retains a custom `KAI_STATE_DIR` supplied during installation,
 including under systemd where `HOME` and interactive environment variables may
 be absent. Status validation follows Moonraker's
 [update-manager API](https://moonraker.readthedocs.io/en/latest/external_api/update_manager/).
@@ -130,18 +130,18 @@ Recovery state under the configured directory:
 | `octoeverywhere-refresh-pending` | Patch removed; retry Moonraker update refresh until it succeeds |
 | `octoeverywhere-maintenance.lock` | Shared process lock, not an indication that a process is still running |
 
-After upgrading KlipperAI, rerun the hook installation command with your existing
+After upgrading KAI, rerun the hook installation command with your existing
 paths, prefix, port and service options to refresh the systemd units. Existing
 generated runners remain compatible and keep their saved settings. No separate
 maintenance daemon or additional Python dependency is required; the helper uses
-KlipperAI's virtual environment when available.
+KAI's virtual environment when available.
 
 Installed artifacts:
 
-- `/usr/local/bin/klipperai-octoeverywhere-reapply`
-- `/etc/systemd/system/klipperai-octoeverywhere-reapply.service`
-- `/etc/systemd/system/klipperai-octoeverywhere-reapply.timer`
-- `/etc/systemd/system/klipperai-octoeverywhere-reapply.path`
+- `/usr/local/bin/kai-octoeverywhere-reapply`
+- `/etc/systemd/system/kai-octoeverywhere-reapply.service`
+- `/etc/systemd/system/kai-octoeverywhere-reapply.timer`
+- `/etc/systemd/system/kai-octoeverywhere-reapply.path`
 
 ## Updating OctoEverywhere
 
@@ -150,22 +150,22 @@ hook to remove the patch before clicking `Update`. Manual preparation remains
 available:
 
 ```bash
-sh integrations/octoeverywhere/apply-local-klipperai-route-patch.sh \
+sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --oe-root /home/biqu/octoeverywhere \
   --restore-original \
   --restart-service \
   --service octoeverywhere
 ```
 
-The restore operation removes the marked KlipperAI blocks rather than resetting
+The restore operation removes the marked KAI blocks rather than resetting
 the whole files from git. After the OE update, the path/timer hook reapplies the
 patch. Manual reapplication remains available:
 
 ```bash
-sh integrations/octoeverywhere/apply-local-klipperai-route-patch.sh \
+sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --oe-root /home/biqu/octoeverywhere \
-  --klipperai-prefix /klipperai \
-  --klipperai-port 8811 \
+  --kai-prefix /kai \
+  --kai-port 8811 \
   --nav-target _blank \
   --restart-service \
   --service octoeverywhere
@@ -180,7 +180,7 @@ Check the on-disk patch without changing OE files, service state or recovery
 markers (exit code `0` means current, `1` means absent, outdated or an error):
 
 ```bash
-sh integrations/octoeverywhere/apply-local-klipperai-route-patch.sh \
+sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --oe-root /home/biqu/octoeverywhere --check
 ```
 
@@ -189,15 +189,15 @@ installation. This checks file contents, not whether the service has loaded them
 Inspect automatic maintenance with:
 
 ```bash
-systemctl status klipperai-octoeverywhere-reapply.timer klipperai-octoeverywhere-reapply.path
-journalctl -u klipperai-octoeverywhere-reapply.service -n 50 --no-pager
+systemctl status kai-octoeverywhere-reapply.timer kai-octoeverywhere-reapply.path
+journalctl -u kai-octoeverywhere-reapply.service -n 50 --no-pager
 ```
 
 After the script restarts OctoEverywhere:
 
 1. hard-refresh the OctoEverywhere printer portal
-2. open `https://<printer>.octoeverywhere.com/klipperai/`
-3. click the `KlipperAI` navigation entry from the OE-hosted Mainsail sidebar
+2. open `https://<printer>.octoeverywhere.com/kai/`
+3. click the `KAI` navigation entry from the OE-hosted Mainsail sidebar
 
 If the browser still serves cached Mainsail shell content on the first try,
 repeat the test in an incognito window.
@@ -205,14 +205,14 @@ repeat the test in an incognito window.
 ## Rollback
 
 Run the patch helper with `--restore-original --restart-service`. The script
-also saves the pre-restore files under `/etc/klipperai/octoeverywhere-backups`.
+also saves the pre-restore files under `/etc/kai/octoeverywhere-backups`.
 
 For a lasting rollback, first stop and disable the auto-reapply timer/path if
 installed; otherwise they intentionally restore the patch once OE is current:
 
 ```bash
-sudo systemctl disable --now klipperai-octoeverywhere-reapply.timer klipperai-octoeverywhere-reapply.path
-sudo systemctl stop klipperai-octoeverywhere-reapply.service
+sudo systemctl disable --now kai-octoeverywhere-reapply.timer kai-octoeverywhere-reapply.path
+sudo systemctl stop kai-octoeverywhere-reapply.service
 ```
 
 ## Maintenance
@@ -242,7 +242,7 @@ coordination:
 | `install-auto-reapply.sh` | Install the systemd runner, watcher and timer |
 
 These administrative helpers are not exposed as model tools or application API
-endpoints. Routes include `/klipperai?query`, `/direct`, assets, streaming chat,
+endpoints. Routes include `/kai?query`, `/direct`, assets, streaming chat,
 investigation history and manual proposal rechecks. Custom prefixes use the same
 mapping. The rescued page stays self-contained; blocked popups fall back to a
 normal navigation. See [frontend and installer ownership](../../docs/frontend-and-installation.md)

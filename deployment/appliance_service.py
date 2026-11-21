@@ -1,4 +1,4 @@
-"""Native init service lifecycle. Controls only the recorded KlipperAI process."""
+"""Native init service lifecycle. Controls only the recorded KAI process."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ def process_identity(pid: int, instance: str) -> str | None:
     try:
         root = Path("/proc") / str(pid)
         environment = (root / "environ").read_bytes().split(b"\0")
-        if ("KLIPPERAI_NATIVE_INSTANCE=" + instance).encode() not in environment:
+        if ("KAI_NATIVE_INSTANCE=" + instance).encode() not in environment:
             return None
         # Field 22 follows the parenthesized comm field (which may contain spaces).
         return (root / "stat").read_text().rsplit(")", 1)[1].split()[19]
@@ -35,7 +35,7 @@ class ApplianceService:
         self.pidfile = config.runtime / "process.json"
 
     def configure(self, current: Path) -> None:
-        if current != self.config.install / ".klipperai-releases/current":
+        if current != self.config.install / ".kai-releases/current":
             raise ValueError("Native release pointer does not match this installation.")
         self.config.credentials.master()
 
@@ -78,11 +78,10 @@ class ApplianceService:
         environment = {
             key: value
             for key, value in os.environ.items()
-            if not key.startswith("KLIPPERAI_")
-            and key not in {"PYTHONPATH", "CREDENTIALS_DIRECTORY"}
+            if not key.startswith("KAI_") and key not in {"PYTHONPATH", "CREDENTIALS_DIRECTORY"}
         }
-        environment["KLIPPERAI_NATIVE_INSTANCE"] = self.config.instance
-        release = self.config.install / ".klipperai-releases/current"
+        environment["KAI_NATIVE_INSTANCE"] = self.config.instance
+        release = self.config.install / ".kai-releases/current"
         working = release if release.is_symlink() else self.config.install
         process = subprocess.Popen(
             [
@@ -109,7 +108,7 @@ class ApplianceService:
                     return
                 if process.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError(
-                        "Native KlipperAI launcher failed. Inspect the application runtime log."
+                        "Native KAI launcher failed. Inspect the application runtime log."
                     )
                 time.sleep(0.05)
         except BaseException:
@@ -132,7 +131,7 @@ class ApplianceService:
                     break
                 time.sleep(0.1)
         self.pidfile.unlink(missing_ok=True)
-        (self.config.runtime / "klipperai-provider-master").unlink(missing_ok=True)
+        (self.config.runtime / "kai-provider-master").unlink(missing_ok=True)
 
 
 def main() -> None:

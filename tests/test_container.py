@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import klipperai_agent.bootstrap.container as container_module
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.bootstrap.container as container_module
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.runtime.settings import Settings
 
 
 class _Moonraker:
@@ -66,7 +66,7 @@ def test_build_container_wires_optional_collectors(monkeypatch, tmp_path) -> Non
         printer_data_root=tmp_path / "printer_data",
         collect_host_logs=True,
         collect_systemd_diagnostics=True,
-        root_path="/klippyai/",
+        root_path="/kai/",
     )
     result = container_module.build_container(settings)
 
@@ -74,7 +74,7 @@ def test_build_container_wires_optional_collectors(monkeypatch, tmp_path) -> Non
     assert result.moonraker.url == settings.moonraker_url
     assert created["HostLogCollector"].kwargs["excluded_logs"] == []
     assert created["HostSystemCollector"].kwargs["runner"].name == "SystemCommandRunner"
-    assert created["ChatService"].kwargs["root_path"] == "/klippyai"
+    assert created["ChatService"].kwargs["root_path"] == "/kai"
     awaitable = result.aclose()
     import asyncio
 

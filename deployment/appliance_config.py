@@ -8,8 +8,8 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-RECEIPT = ".klipperai-appliance.json"
-INIT_SCRIPT = Path("/etc/init.d/S99klipperai")
+RECEIPT = ".kai-appliance.json"
+INIT_SCRIPT = Path("/etc/init.d/S99kai")
 
 
 @dataclass(frozen=True)
@@ -86,7 +86,7 @@ def environment_file(path: Path) -> dict[str, str]:
         if len(words) != 1 or "=" not in words[0]:
             raise ValueError("Invalid appliance environment metadata.")
         name, value = words[0].split("=", 1)
-        if not re.fullmatch(r"KLIPPERAI_[A-Z0-9_]+", name) or name.endswith("API_KEY"):
+        if not re.fullmatch(r"KAI_[A-Z0-9_]+", name) or name.endswith("API_KEY"):
             raise ValueError(
                 "Environment metadata must contain only non-secret application settings."
             )

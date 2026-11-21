@@ -9,5 +9,5 @@ htmlcov/
 __pycache__/
 *.pyc
 dist/
-.klipperai-releases/
-.klipperai-appliance.json
+.kai-releases/
+.kai-appliance.json

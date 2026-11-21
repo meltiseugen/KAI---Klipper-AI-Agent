@@ -6,9 +6,9 @@ from unittest.mock import AsyncMock
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.base import ToolArguments
-from klipperai_agent.agent.tools.knowledge import (
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.base import ToolArguments
+from kai_agent.agent.tools.knowledge import (
     EddyArguments,
     EddyCalibrationTool,
     FanPortsArguments,
@@ -18,11 +18,11 @@ from klipperai_agent.agent.tools.knowledge import (
     SearchKnowledgeTool,
     complete_config,
 )
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.proposal_review import ProposalReviewService
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigReadError
-from klipperai_agent.domain.investigation import Evidence, InvestigationResult
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.proposal_review import ProposalReviewService
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigReadError
+from kai_agent.domain.investigation import Evidence, InvestigationResult
 from tests.knowledge_helpers import documents, setup, snapshot
 from tests.test_agent import ScriptedModel, answer, call
 from tests.test_agent import tool_context as tool_context

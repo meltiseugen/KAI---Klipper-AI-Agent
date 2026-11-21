@@ -21,7 +21,7 @@ def test_hook_retains_settings_checks_at_boot_and_removes_cleanly(
     units = tmp_path / "systemd"
     ownership = []
     monkeypatch.setattr(os, "chown", lambda *args: ownership.append(args), raising=False)
-    monkeypatch.setenv("KLIPPERAI_SYSTEMD_DIR", str(units))
+    monkeypatch.setenv("KAI_SYSTEMD_DIR", str(units))
     monkeypatch.setitem(
         sys.modules, "pwd", SimpleNamespace(getpwuid=lambda uid: SimpleNamespace(pw_name="printer"))
     )
@@ -46,23 +46,23 @@ def test_hook_retains_settings_checks_at_boot_and_removes_cleanly(
         )
         == 0
     )
-    timer = (units / "klipperai-mainsail-reapply.timer").read_text()
+    timer = (units / "kai-mainsail-reapply.timer").read_text()
     assert "OnBootSec=30s" in timer and "WantedBy=timers.target" in timer
     assert "OnUnitInactiveSec=7min" in timer
-    service = (units / "klipperai-mainsail-reapply.service").read_text()
+    service = (units / "kai-mainsail-reapply.service").read_text()
     assert "User=printer" in service and "--reconcile" in service
     assert "settings.json" in service and "TimeoutStartSec=60" in service
     assert (
         f"PathChanged={m.files.path.as_posix()}\n"
-        in (units / "klipperai-mainsail-reapply.path").read_text()
+        in (units / "kai-mainsail-reapply.path").read_text()
     )
     assert (
         "enable",
         "--now",
-        "klipperai-mainsail-reapply.timer",
-        "klipperai-mainsail-reapply.path",
+        "kai-mainsail-reapply.timer",
+        "kai-mainsail-reapply.path",
     ) in commands
-    assert commands[-1] == ("start", "klipperai-mainsail-reapply.service")
+    assert commands[-1] == ("start", "kai-mainsail-reapply.service")
     assert (m.state, m.config.stat().st_uid, m.config.stat().st_gid) in ownership
     assert (
         m.state / "maintenance.lock",
@@ -106,17 +106,17 @@ def test_hook_validation_and_initial_failure_keep_retry_units(mainsail_maintenan
             raise subprocess.CalledProcessError(1, "systemctl")
 
     monkeypatch.setattr(m.hook, "systemctl", systemctl)
-    monkeypatch.setenv("KLIPPERAI_SYSTEMD_DIR", str(m.config.parent / "units"))
+    monkeypatch.setenv("KAI_SYSTEMD_DIR", str(m.config.parent / "units"))
     assert m.cli.main(m.args + ["--install-hook", "--user", "printer"]) == 0
     assert any(args[0] == "enable" for args in commands)
-    assert (m.config.parent / "units/klipperai-mainsail-reapply.timer").exists()
+    assert (m.config.parent / "units/kai-mainsail-reapply.timer").exists()
 
 
 def test_fixed_bounded_systemctl_adapter(mainsail_maintenance, monkeypatch):
     run = Mock()
     monkeypatch.setattr(mainsail_maintenance.hook.subprocess, "run", run)
-    mainsail_maintenance.hook.systemctl("start", "klipperai-mainsail-reapply.service")
-    assert run.call_args.args[0][-2:] == ["start", "klipperai-mainsail-reapply.service"]
+    mainsail_maintenance.hook.systemctl("start", "kai-mainsail-reapply.service")
+    assert run.call_args.args[0][-2:] == ["start", "kai-mainsail-reapply.service"]
     assert run.call_args.kwargs == {"check": True, "timeout": 60}
 
 
@@ -125,7 +125,7 @@ def test_shell_install_and_remove_keep_settings_and_do_not_touch_printer(
 ):
     m = mainsail_maintenance
     units = tmp_path / "units"
-    env = {**shell_env, "KLIPPERAI_SYSTEMD_DIR": units.as_posix()}
+    env = {**shell_env, "KAI_SYSTEMD_DIR": units.as_posix()}
     args = ["--config-dir", m.config.as_posix(), "--href", "/assistant/printer/"]
     run_shell(INTEGRATION / "install-custom-nav.sh", *args, env=env)
     run_shell(INTEGRATION / "install-auto-reapply.sh", *args, "--user", "printer", env=env)

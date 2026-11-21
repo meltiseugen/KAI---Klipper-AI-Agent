@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import klipperai_agent.__main__ as main_module
+import kai_agent.__main__ as main_module
 
 
 def test_main_configures_and_runs_uvicorn(monkeypatch) -> None:
@@ -10,7 +10,7 @@ def test_main_configures_and_runs_uvicorn(monkeypatch) -> None:
     settings = SimpleNamespace(
         host="127.0.0.1",
         port=8811,
-        root_path="/klippyai",
+        root_path="/kai",
         moonraker_url="http://moonraker",
         enable_write_actions=False,
         ensure_directories=lambda: calls.update(ensured=True),
@@ -30,18 +30,7 @@ def test_main_configures_and_runs_uvicorn(monkeypatch) -> None:
     assert calls["kwargs"]["server_header"] is False
     assert calls["kwargs"]["forwarded_allow_ips"] == "127.0.0.1,::1"
     assert calls["ensured"] is True
-    assert calls["args"] == ("klipperai_agent.web.app:create_app",)
+    assert calls["args"] == ("kai_agent.web.app:create_app",)
     assert calls["kwargs"]["factory"] is True
-    assert calls["kwargs"]["root_path"] == "/klippyai"
+    assert calls["kwargs"]["root_path"] == "/kai"
     assert calls["kwargs"]["log_config"] is None
-
-
-def test_legacy_commands_call_current_entrypoints(monkeypatch) -> None:
-    from klipperai_agent.cli import legacy
-
-    calls = []
-    monkeypatch.setattr(legacy, "main", lambda: calls.append("agent"))
-    monkeypatch.setattr(legacy, "detect_profile", lambda: calls.append("detect"))
-    legacy.agent_main()
-    legacy.detect_main()
-    assert calls == ["agent", "detect"]

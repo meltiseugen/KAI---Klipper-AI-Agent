@@ -3,30 +3,35 @@
 
 write_moonraker_extension_cfg() {
   local temp_file
-  local managed_service="managed_services: klipperai-agent"
-  [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" != appliance ]] || managed_service="# Native service lifecycle is managed by /etc/init.d/S99klipperai."
+  local managed_service="managed_services: kai-agent"
+  [[ "${KAI_SERVICE_MANAGER:-systemd}" != appliance ]] || managed_service="# Native service lifecycle is managed by /etc/init.d/S99kai."
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
-# KlipperAI Moonraker integration
+# KAI Moonraker integration
 #
-# This file is included from moonraker.conf so that KlipperAI appears in
+# This file is included from moonraker.conf so that KAI appears in
 # Moonraker's update manager and can be managed from Mainsail.
 
-[update_manager klipperai-agent]
+[update_manager kai-agent]
 type: git_repo
 channel: dev
 path: $INSTALL_DIR
-origin: $KLIPPERAI_GIT_ORIGIN
-primary_branch: $KLIPPERAI_GIT_PRIMARY_BRANCH
+origin: $KAI_GIT_ORIGIN
+primary_branch: $KAI_GIT_PRIMARY_BRANCH
 $managed_service
 info_tags:
-    desc=KlipperAI
+    desc=KAI
 EOF
 
-  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KLIPPERAI_MANAGED_CONFIG_DIR_PATH"
-  backup_file "$KLIPPERAI_MOONRAKER_EXTENSION_CFG_PATH"
-  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KLIPPERAI_MOONRAKER_EXTENSION_CFG_PATH"
+  if [[ -f "$KAI_MOONRAKER_EXTENSION_CFG_PATH" ]] && [[ "$(run_root cat "$KAI_MOONRAKER_EXTENSION_CFG_PATH")" == "$(cat "$temp_file")" ]]; then
+    rm -f "$temp_file"
+    return
+  fi
+  mark_moonraker_restart_required
+  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KAI_MANAGED_CONFIG_DIR_PATH"
+  backup_file "$KAI_MOONRAKER_EXTENSION_CFG_PATH"
+  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KAI_MOONRAKER_EXTENSION_CFG_PATH"
   rm -f "$temp_file"
 }
 
@@ -52,36 +57,39 @@ build_include_line() {
 
 ensure_moonraker_include() {
   local include_line
-  include_line="$(build_include_line "$KLIPPERAI_MOONRAKER_EXTENSION_CFG_PATH" "$KLIPPERAI_MOONRAKER_CONFIG_PATH")"
-  local legacy_include_line="[include $(basename "$KLIPPERAI_LEGACY_MOONRAKER_EXTENSION_CFG_PATH")]"
+  include_line="$(build_include_line "$KAI_MOONRAKER_EXTENSION_CFG_PATH" "$KAI_MOONRAKER_CONFIG_PATH")"
+  local legacy_include_line="[include $(basename "$KAI_LEGACY_MOONRAKER_EXTENSION_CFG_PATH")]"
 
-  [[ -f "$KLIPPERAI_MOONRAKER_CONFIG_PATH" ]] || die "Moonraker config file not found: $KLIPPERAI_MOONRAKER_CONFIG_PATH"
+  [[ -f "$KAI_MOONRAKER_CONFIG_PATH" ]] || die "Moonraker config file not found: $KAI_MOONRAKER_CONFIG_PATH"
   if [[ "$legacy_include_line" != "$include_line" ]]; then
-    remove_line_from_file_if_present "$KLIPPERAI_MOONRAKER_CONFIG_PATH" "$legacy_include_line"
+    if grep -Fqx "$legacy_include_line" "$KAI_MOONRAKER_CONFIG_PATH"; then mark_moonraker_restart_required; fi
+    remove_line_from_file_if_present "$KAI_MOONRAKER_CONFIG_PATH" "$legacy_include_line"
   fi
-  if grep -Fqx "$include_line" "$KLIPPERAI_MOONRAKER_CONFIG_PATH"; then
+  if grep -Fqx "$include_line" "$KAI_MOONRAKER_CONFIG_PATH"; then
     return
   fi
 
-  backup_file "$KLIPPERAI_MOONRAKER_CONFIG_PATH"
-  printf '\n%s\n' "$include_line" | run_root tee -a "$KLIPPERAI_MOONRAKER_CONFIG_PATH" >/dev/null
+  mark_moonraker_restart_required
+  backup_file "$KAI_MOONRAKER_CONFIG_PATH"
+  printf '\n%s\n' "$include_line" | run_root tee -a "$KAI_MOONRAKER_CONFIG_PATH" >/dev/null
 }
 
 ensure_moonraker_allowed_service() {
-  if [[ -f "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH" ]] && grep -Fqx "$SERVICE_NAME" "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH"; then
+  if [[ -f "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH" ]] && grep -Fqx "$SERVICE_NAME" "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH"; then
     return
   fi
 
-  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KLIPPERAI_PRINTER_DATA_ROOT"
-  if [[ -f "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH" ]]; then
-    backup_file "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH"
-    printf '%s\n' "$SERVICE_NAME" | run_root tee -a "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH" >/dev/null
+  mark_moonraker_restart_required
+  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KAI_PRINTER_DATA_ROOT"
+  if [[ -f "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH" ]]; then
+    backup_file "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH"
+    printf '%s\n' "$SERVICE_NAME" | run_root tee -a "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH" >/dev/null
     return
   fi
 
   local temp_file
   temp_file="$(mktemp)"
   printf '%s\n' "$SERVICE_NAME" >"$temp_file"
-  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KLIPPERAI_MOONRAKER_ALLOWED_SERVICES_PATH"
+  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KAI_MOONRAKER_ALLOWED_SERVICES_PATH"
   rm -f "$temp_file"
 }

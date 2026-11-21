@@ -196,14 +196,14 @@ detect_octoeverywhere_service_name() {
 
 detect_git_origin() {
   if ! command -v git >/dev/null 2>&1; then
-    printf '%s' "https://github.com/meltiseugen/KlipperAI.git"
+    printf '%s' "https://github.com/meltiseugen/KlippyAI.git"
     return
   fi
 
   local origin=""
   origin="$(git -C "$INSTALL_DIR" remote get-url origin 2>/dev/null || true)"
   if [[ -z "$origin" ]]; then
-    printf '%s' "https://github.com/meltiseugen/KlipperAI.git"
+    printf '%s' "https://github.com/meltiseugen/KlippyAI.git"
     return
   fi
 

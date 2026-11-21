@@ -33,33 +33,31 @@ def http(base: str, path: str, body=None):
 @contextmanager
 def daemon(root: Path, extra: dict[str, str] | None = None):
     port = free_port()
-    environment = {
-        key: value for key, value in os.environ.items() if not key.startswith("KLIPPERAI_")
-    }
+    environment = {key: value for key, value in os.environ.items() if not key.startswith("KAI_")}
     environment.update(
         {
             "PYTHONPATH": str(ROOT),
             "PYTHONDONTWRITEBYTECODE": "1",
-            "KLIPPERAI_CONFIG_FILE": str(root / "missing.cfg"),
-            "KLIPPERAI_DATA_DIR": str(root / "app-data"),
-            "KLIPPERAI_PROVIDER_STORAGE_DIR": str(root / "private"),
-            "KLIPPERAI_PRINTER_DATA_ROOT": str(root / "printer"),
-            "KLIPPERAI_MAINSAIL_CONFIG_DIR": str(root / "printer/config"),
-            "KLIPPERAI_PROJECT_CHECKOUT_PATH": str(root / "no-checkout"),
-            "KLIPPERAI_HOST": "127.0.0.1",
-            "KLIPPERAI_PORT": str(port),
-            "KLIPPERAI_ROOT_PATH": "/klipperai",
-            "KLIPPERAI_MOONRAKER_URL": "http://127.0.0.1:1",
-            "KLIPPERAI_MOONRAKER_AGENT_ENABLED": "false",
-            "KLIPPERAI_COLLECT_HOST_LOGS": "false",
-            "KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS": "false",
+            "KAI_CONFIG_FILE": str(root / "missing.cfg"),
+            "KAI_DATA_DIR": str(root / "app-data"),
+            "KAI_PROVIDER_STORAGE_DIR": str(root / "private"),
+            "KAI_PRINTER_DATA_ROOT": str(root / "printer"),
+            "KAI_MAINSAIL_CONFIG_DIR": str(root / "printer/config"),
+            "KAI_PROJECT_CHECKOUT_PATH": str(root / "no-checkout"),
+            "KAI_HOST": "127.0.0.1",
+            "KAI_PORT": str(port),
+            "KAI_ROOT_PATH": "/kai",
+            "KAI_MOONRAKER_URL": "http://127.0.0.1:1",
+            "KAI_MOONRAKER_AGENT_ENABLED": "false",
+            "KAI_COLLECT_HOST_LOGS": "false",
+            "KAI_COLLECT_SYSTEMD_DIAGNOSTICS": "false",
         }
     )
     environment.update(extra or {})
-    base = f"http://127.0.0.1:{environment['KLIPPERAI_PORT']}"
+    base = f"http://127.0.0.1:{environment['KAI_PORT']}"
     with (root / "boot.log").open("w") as log:
         process = subprocess.Popen(
-            [sys.executable, "-m", "klipperai_agent"],
+            [sys.executable, "-m", "kai_agent"],
             cwd=root,
             env=environment,
             stdout=log,

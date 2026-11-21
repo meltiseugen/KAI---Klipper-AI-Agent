@@ -10,13 +10,13 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 
-from klipperai_agent.diagnostics.host_history import summarize_history
-from klipperai_agent.domain.host_history import HostSample, PressureSample
-from klipperai_agent.infrastructure.host import flight_recorder, history_store, proc
-from klipperai_agent.infrastructure.host.flight_recorder import HostFlightRecorder
-from klipperai_agent.infrastructure.host.history_store import HostHistoryStore
-from klipperai_agent.infrastructure.host.proc import ProcSampler, counters, pressure
-from klipperai_agent.infrastructure.host.shutdown import ShutdownCollector
+from kai_agent.diagnostics.host_history import summarize_history
+from kai_agent.domain.host_history import HostSample, PressureSample
+from kai_agent.infrastructure.host import flight_recorder, history_store, proc
+from kai_agent.infrastructure.host.flight_recorder import HostFlightRecorder
+from kai_agent.infrastructure.host.history_store import HostHistoryStore
+from kai_agent.infrastructure.host.proc import ProcSampler, counters, pressure
+from kai_agent.infrastructure.host.shutdown import ShutdownCollector
 
 STAMP = 1792058402
 

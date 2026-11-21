@@ -14,14 +14,14 @@ from fastapi.testclient import TestClient
 from test_investigations import ConfigModel, repository
 from test_investigations import persistent_service as persistent_service
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.investigations import InvestigationMemory
-from klipperai_agent.application.recovery import InvestigationRecovery, with_lease
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.investigation import (
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.investigations import InvestigationMemory
+from kai_agent.application.recovery import InvestigationRecovery, with_lease
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.investigation import (
     Evidence,
     Investigation,
     InvestigationResult,
@@ -29,8 +29,8 @@ from klipperai_agent.domain.investigation import (
     PendingInvestigation,
     utc_now,
 )
-from klipperai_agent.domain.repositories import InvestigationConflict
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.domain.repositories import InvestigationConflict
+from kai_agent.runtime.settings import Settings
 
 
 async def eventually(read, predicate):

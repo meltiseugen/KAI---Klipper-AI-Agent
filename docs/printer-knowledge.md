@@ -27,7 +27,7 @@ public documentation exists or establish which board revision a printer contains
    content, candidate mappings, MCU or connection makes the previous connector
    review stale. Fetching unchanged content only updates its retrieval date.
 
-Saving details changes only KlipperAI application storage, not `klipperai.cfg` or
+Saving details changes only KAI application storage, not `kai.cfg` or
 printer files. A change in the saved profile detected on application restart
 requires the user to recheck and save the knowledge identities. Component names
 are unique lowercase identifiers; `all` is reserved for document search.

@@ -1,13 +1,13 @@
 # Security and local deployment
 
 The [SSH deployment command](printer-testing.md) is an operator-only development
-tool. It selects application code and stops/starts KlipperAI through sudo/systemd
+tool. It selects application code and stops/starts KAI through sudo/systemd
 or the root-owned native init backend. Operator bootstrap modules ship in the wheel
 for native updates and have no model tool registration or HTTP endpoint. They do
 not control Klipper, Moonraker, heaters
 or motion; deployment leaves printer files and application secrets/data in place.
 
-KlipperAI is a shared printer assistant. It has no user accounts or built-in
+KAI is a shared printer assistant. It has no user accounts or built-in
 authentication. Anyone who can reach its HTTP API can create a UI session, read
 printer evidence and saved conversations, change the assistant's knowledge, and
 trigger provider requests charged to the configured key. A session ID is an
@@ -16,7 +16,7 @@ do not isolate different people using the same printer.
 
 ## Deployment boundary
 
-The installed daemon binds to `127.0.0.1:8811`. nginx exposes `/klipperai/` on the
+The installed daemon binds to `127.0.0.1:8811`. nginx exposes `/kai/` on the
 printer's existing web origin. Protect that route with the same authenticated
 access boundary as the rest of the printer. Moonraker authentication does not
 automatically protect this separate application. Do not forward port 8811 or
@@ -39,7 +39,7 @@ The optional Moonraker agent connection uses the local Unix socket and therefore
 relies on host socket permissions. Its extension methods inherit Moonraker's
 client-access boundary. They expose capabilities, bounded public printer status
 and ephemeral UI sessions, with no chat execution or printer commands. The only
-Moonraker database write replaces the fixed `klipperai` namespace's `integration`
+Moonraker database write replaces the fixed `kai` namespace's `integration`
 item with public capability/version metadata. Credentials, session IDs, prompts
 and investigation history are never written there or broadcast as agent events.
 See [Moonraker integration](moonraker-integration.md) for configuration and limits.
@@ -64,8 +64,8 @@ purpose and limitations are described in the
 
 ## Host and proxy configuration
 
-Optional `[security]` settings in `klipperai.cfg` (or corresponding
-`KLIPPERAI_` environment variables):
+Optional `[security]` settings in `kai.cfg` (or corresponding
+`KAI_` environment variables):
 
 ```ini
 security_allowed_hosts: printer.local, 192.168.1.25
@@ -111,9 +111,9 @@ deployment boundary can change these shared settings; UI sessions are not admin
 authentication.
 
 The installer sends the pasted key through stdin to initialize encrypted storage;
-`/etc/klipperai/klipperai.env` contains non-secret metadata only. Existing key
+`/etc/kai/kai.env` contains non-secret metadata only. Existing key
 assignments and installer backups are sanitized after verified migration.
-`klipperai.cfg`, normally editable through Mainsail, rejects `openai_api_key`.
+`kai.cfg`, normally editable through Mainsail, rejects `openai_api_key`.
 Keys must never be added to shared printer configuration. New browser key
 submission requires HTTPS or a localhost/loopback SSH tunnel.
 
@@ -131,8 +131,8 @@ Existing databases have their file permissions tightened when opened. Existing
 parent-directory permissions are not silently rewritten by the Python runtime;
 review them when upgrading an installation without rerunning the installer.
 
-The agent's own runtime log now lives at `<data_dir>/logs/klipperai.log`
-(normally `/var/lib/klipperai/logs/klipperai.log`). It is private application data
+The agent's own runtime log now lives at `<data_dir>/logs/kai.log`
+(normally `/var/lib/kai/logs/kai.log`). It is private application data
 and is no longer automatically published through Mainsail's printer-log directory.
 `agent_log_file_name` accepts a plain `.log` filename. The configured printer-log
 directory, all-current-log collection, external config includes and existing
@@ -159,7 +159,7 @@ tool/model-input and public-result boundaries, on chat/history/artifact input,
 and on saved investigation outcomes. Old investigation rows and old knowledge
 facts are redacted when read. Runtime log formatting also removes the exact
 configured provider key, including in tracebacks. Diagnostic subprocesses do
-not inherit `KLIPPERAI_OPENAI_API_KEY` or `OPENAI_API_KEY`. The legacy single-pass
+not inherit `KAI_OPENAI_API_KEY` or `OPENAI_API_KEY`. The legacy single-pass
 provider also removes its exact key from prompt text while retaining it in the
 HTTP authorization header.
 

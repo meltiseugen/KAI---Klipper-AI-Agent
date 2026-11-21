@@ -9,10 +9,10 @@ still pending. No live KE was connected during development.
 ## Install on the rooted printer
 
 Use a rooted printer that already runs Moonraker and Mainsail/Fluidd. Keep the
-checkout on persistent storage, for example `/usr/data/KlipperAI`, and run:
+checkout on persistent storage, for example `/usr/data/KAI`, and run:
 
 ```sh
-cd /usr/data/KlipperAI
+cd /usr/data/KAI
 sh install.sh
 ```
 
@@ -32,7 +32,7 @@ provenance](installer-prerequisites.md) for requirements and pinned asset detail
 The backend override remains available for unusual layouts:
 
 ```sh
-KLIPPERAI_SERVICE_MANAGER=appliance sh install.sh
+KAI_SERVICE_MANAGER=appliance sh install.sh
 ```
 
 Run this path as root, matching native appliance service conventions. The selected
@@ -41,19 +41,19 @@ must be reachable, and persistent storage must have space for dependencies and a
 necessary C build. No manual Bash/Python installation or backend flag is normally
 needed. Actual KE firmware installation remains a hardware acceptance check.
 
-The application service is `/etc/init.d/S99klipperai`. A fresh Entware bootstrap
+The application service is `/etc/init.d/S99kai`. A fresh Entware bootstrap
 also installs its shared startup entry when none exists. Setup preserves
 the existing Klipper/Moonraker service scripts. It keeps automatic log/config reads
 and installs the same Mainsail link and nginx route. Systemd-only Mainsail/OE timers
 are omitted on native hosts; the manual integration helpers remain available.
 
 ```sh
-/etc/init.d/S99klipperai status
-/etc/init.d/S99klipperai restart
-tail -n 100 /usr/data/klipperai-data/logs/klipperai.log
+/etc/init.d/S99kai status
+/etc/init.d/S99kai restart
+tail -n 100 /usr/data/kai-data/logs/kai.log
 ```
 
-The init entry starts KlipperAI at boot. There is no extra persistent Python
+The init entry starts KAI at boot. There is no extra persistent Python
 supervisor or periodic polling service. After a crash, use the restart command
 and inspect the application's bounded rotating log.
 
@@ -66,7 +66,7 @@ exact running build and restores the previous code on activation failure. Settin
 history and encrypted credentials stay in place. Shared dependencies are unchanged.
 
 ```json
-{"printer": {"host": "root@printer.local", "install_dir": "/usr/data/KlipperAI", "url": "http://127.0.0.1:8811/readyz"}}
+{"printer": {"host": "root@printer.local", "install_dir": "/usr/data/KAI", "url": "http://127.0.0.1:8811/readyz"}}
 ```
 
 ```sh
@@ -75,14 +75,14 @@ python -m tools.deploy printer --rollback
 ```
 
 Run `bash uninstall.sh` from the checkout for removal. The native branch stops only
-its recorded KlipperAI process and removes its own init entry. Credential purge and
+its recorded KAI process and removes its own init entry. Credential purge and
 data removal remain explicit choices; other printer services are preserved.
 
 ## Credentials and process ownership
 
 API keys retain AES-256-GCM encryption. The native host stores an encrypted master
-at `/usr/data/klipperai-host/provider-master.enc`, with a separate root-only wrapping
-key at `/usr/data/.klipperai-host-key/host.key`. On boot it authenticates that master
+at `/usr/data/kai-host/provider-master.enc`, with a separate root-only wrapping
+key at `/usr/data/.kai-host-key/host.key`. On boot it authenticates that master
 and delivers the decrypted bytes through a private, verified tmpfs/ramfs directory.
 No plaintext master is written to persistent storage. Missing/wrong keys or tampered
 ciphertext fail closed and never reset saved credentials.
@@ -130,5 +130,5 @@ failed-build recovery and rollback; CI runs it as root with a required RAM files
 
 Still verify on the actual KE: firmware/helper version, CPU/ABI and dependency
 installation, real boot/reboot, RAM mount permissions, automatic evidence collection,
-provider configuration, `/klipperai/`, update and rollback. Linux process tests do not
+provider configuration, `/kai/`, update and rollback. Linux process tests do not
 establish behavior on a particular vendor firmware image.

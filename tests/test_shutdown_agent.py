@@ -12,15 +12,15 @@ from test_agent import tool_context as tool_context
 from test_investigations import persistent_service as persistent_service
 from test_shutdown import START, stats
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits, ToolCall
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.tools.shutdown import ShutdownTool
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.domain.shutdown import HostObservation, LogExcerpt, ShutdownLogs
-from klipperai_agent.infrastructure.host.shutdown import ShutdownCollector
-from klipperai_agent.infrastructure.host.system import CommandResult
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits, ToolCall
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.tools.shutdown import ShutdownTool
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.domain.shutdown import HostObservation, LogExcerpt, ShutdownLogs
+from kai_agent.infrastructure.host.shutdown import ShutdownCollector
+from kai_agent.infrastructure.host.system import CommandResult
+from kai_agent.runtime.settings import Settings
 
 
 def reader(content=None, host=None):

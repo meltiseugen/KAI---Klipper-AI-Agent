@@ -8,17 +8,17 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.bootstrap.container as container_module
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits, ModelTurn, ToolCall
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.chat import ChatService
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.contracts.api import AgentEvent, ChatRequest
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.runtime.settings import Settings
-from klipperai_agent.web.streaming import ChatEventStream
+import kai_agent.bootstrap.container as container_module
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits, ModelTurn, ToolCall
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.chat import ChatService
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.contracts.api import AgentEvent, ChatRequest
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.runtime.settings import Settings
+from kai_agent.web.streaming import ChatEventStream
 
 
 class ProfileModel:
@@ -71,7 +71,7 @@ async def test_chat_exposes_actions_and_capabilities_without_router_preflight(ag
     agent_service.workflow_context.intent_router.classify.assert_not_called()
 
 
-@pytest.mark.parametrize("prefix", ["", "/klipperai", "/assistant/printer"])
+@pytest.mark.parametrize("prefix", ["", "/kai", "/assistant/printer"])
 def test_stream_endpoint_session_validation_events_final_and_assets(
     monkeypatch, tmp_path, agent_service, prefix
 ):

@@ -6,17 +6,17 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.chat import ChatService
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.diagnostics.collector import DiagnosticsCollector
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.infrastructure.host.logs import HostLogCollector
-from klipperai_agent.infrastructure.moonraker import MoonrakerError
-from klipperai_agent.profile.models import PrinterProfile
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.chat import ChatService
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.diagnostics.collector import DiagnosticsCollector
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.infrastructure.host.logs import HostLogCollector
+from kai_agent.infrastructure.moonraker import MoonrakerError
+from kai_agent.profile.models import PrinterProfile
 from tests.test_agent import ScriptedModel, answer
 
 

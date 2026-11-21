@@ -7,17 +7,17 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits, ModelTurn, SearchResult, ToolCall
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.runner import AgentRunner
-from klipperai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.contracts.api import ArtifactInput, SourceCitation
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.investigation import InvestigationRequest
-from klipperai_agent.profile.models import PrinterProfile
+from kai_agent.agent.models import AgentLimits, ModelTurn, SearchResult, ToolCall
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.runner import AgentRunner
+from kai_agent.agent.tools.base import Tool, ToolArguments, ToolContext
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.contracts.api import ArtifactInput, SourceCitation
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.investigation import InvestigationRequest
+from kai_agent.profile.models import PrinterProfile
 
 
 class ScriptedModel:

@@ -2,8 +2,8 @@
 
 ## Version and changelog
 
-`klipperai_agent/domain/version.py` is the single version source for packaging,
-HTTP metadata, the Moonraker extension and `klipperai-agent --version`. Use
+`kai_agent/domain/version.py` is the single version source for packaging,
+HTTP metadata, the Moonraker extension and `kai-agent --version`. Use
 `MAJOR.MINOR.PATCH`, optionally `aN`, `bN` or `rcN` for prereleases. Increment patch
 for compatible fixes, minor for compatible features and major for breaking changes.
 The current `0.1.0` is the development baseline, not evidence of a published release.
@@ -19,7 +19,7 @@ schema changes need a separate backup/migration/recovery plan.
 The Linux workflow runs on pull requests, main/master pushes and `v*` tags. Python
 3.10 and 3.13 run Ruff, mypy, the generated map check, the complete Python suite
 with 100% statement coverage and the JavaScript module tests. It installs nginx so
-the real `/klipperai/` test is required rather than silently skipped. CI keeps test
+the real `/kai/` test is required rather than silently skipped. CI keeps test
 reports for 7 days and package artifacts for 14 days. Action references are pinned
 to commits.
 
@@ -31,9 +31,9 @@ startup and lifecycle fixes can travel with a code update.
 
 ```sh
 uv sync --locked --extra dev
-uv run --frozen ruff check klipperai_agent tests tools deployment integrations
-uv run --frozen ruff format --check klipperai_agent tests tools deployment integrations
-uv run --frozen mypy klipperai_agent integrations --ignore-missing-imports
+uv run --frozen ruff check kai_agent tests tools deployment integrations
+uv run --frozen ruff format --check kai_agent tests tools deployment integrations
+uv run --frozen mypy kai_agent integrations --ignore-missing-imports
 uv run --frozen python tools/project_map.py --check
 uv run --frozen python -m pytest
 node --test tests/*.test.mjs

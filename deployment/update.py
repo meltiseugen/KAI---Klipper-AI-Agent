@@ -61,7 +61,7 @@ def main() -> None:
             ["systemctl", "show", "--property=User", "--value", SERVICE], text=True
         ).strip()
         if user != pwd.getpwuid(os.geteuid()).pw_name:
-            parser.error("Connect as the configured KlipperAI service user.")
+            parser.error("Connect as the configured KAI service user.")
         run(["sudo", *(["-n"] if options.non_interactive else []), "-v"])
     os.umask(0o077)
 
@@ -87,9 +87,7 @@ def main() -> None:
         else:
             candidate = updater.prepare(options.wheel, options.sha256)
             updater.activate(candidate)
-    print(
-        "KlipperAI code selection is ready. Printer settings, credentials and history were preserved."
-    )
+    print("KAI code selection is ready. Printer settings, credentials and history were preserved.")
 
 
 if __name__ == "__main__":

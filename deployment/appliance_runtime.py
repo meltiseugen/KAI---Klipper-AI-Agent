@@ -19,12 +19,12 @@ def launch(install: Path) -> None:
     environment["CREDENTIALS_DIRECTORY"] = str(config.credentials.deliver(config.runtime))
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     # Checkout is the source fallback; the selected wheel must precede it.
-    current = config.install / ".klipperai-releases/current"
+    current = config.install / ".kai-releases/current"
     environment["PYTHONPATH"] = str(current) + os.pathsep + str(config.install)
     # `python -m` puts cwd before PYTHONPATH; keep the selected release first there too.
     os.chdir(current.resolve() if current.is_symlink() else config.install)
     python = str(config.install / ".venv/bin/python")
-    os.execve(python, [python, "-m", "klipperai_agent"], environment)
+    os.execve(python, [python, "-m", "kai_agent"], environment)
 
 
 def main() -> None:

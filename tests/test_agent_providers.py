@@ -5,12 +5,12 @@ import json
 import httpx
 import pytest
 
-from klipperai_agent.providers.responses import (
+from kai_agent.providers.responses import (
     OpenAIAgentModel,
     ProviderError,
     ResponsesClient,
 )
-from klipperai_agent.providers.web_search import OpenAIWebSearch
+from kai_agent.providers.web_search import OpenAIWebSearch
 
 
 def client_for(data, *, status=200, key="test-key", requests=None):

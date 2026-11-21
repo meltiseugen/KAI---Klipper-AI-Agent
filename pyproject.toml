@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "klipperai"
+name = "kai"
 dynamic = ["version"]
 description = "Moonraker-integrated LLM assistant for Klipper and Kalico printers"
 readme = "README.md"
@@ -30,16 +30,14 @@ dev = [
 ]
 
 [project.scripts]
-klipperai-agent = "klipperai_agent.__main__:main"
-klipperai-detect-profile = "klipperai_agent.cli.detect_profile:main"
-klippyai-agent = "klipperai_agent.cli.legacy:agent_main"
-klippyai-detect-profile = "klipperai_agent.cli.legacy:detect_main"
+kai-agent = "kai_agent.__main__:main"
+kai-detect-profile = "kai_agent.cli.detect_profile:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["klipperai_agent", "deployment"]
+packages = ["kai_agent", "deployment"]
 
 [tool.hatch.version]
-path = "klipperai_agent/domain/version.py"
+path = "kai_agent/domain/version.py"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -58,7 +56,7 @@ include = [
   "/deployment",
   "/docs",
   "/pyproject.toml",
-  "/klipperai_agent",
+  "/kai_agent",
   "/tools",
   "/tests",
 ]
@@ -66,7 +64,7 @@ include = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = [
-  "--cov=klipperai_agent",
+  "--cov=kai_agent",
   "--cov=integrations",
   "--cov-report=term-missing",
   "--cov-fail-under=100",
@@ -80,7 +78,7 @@ target-version = "py310"
 select = ["E4", "E7", "E9", "F", "I"]
 
 [tool.coverage.run]
-source = ["klipperai_agent", "integrations"]
+source = ["kai_agent", "integrations"]
 
 [tool.coverage.report]
 show_missing = true

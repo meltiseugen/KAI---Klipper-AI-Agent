@@ -1,4 +1,4 @@
-from klipperai_agent.application.intent import (
+from kai_agent.application.intent import (
     ChatIntentOutput,
     classify_deterministic_intent,
     route_for_intent,

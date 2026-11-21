@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from klipperai_agent.contracts.api import ArtifactInput
-from klipperai_agent.diagnostics.collector import DiagnosticsCollector
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.infrastructure.moonraker import MoonrakerError
+from kai_agent.contracts.api import ArtifactInput
+from kai_agent.diagnostics.collector import DiagnosticsCollector
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.infrastructure.moonraker import MoonrakerError
 
 
 def test_diagnostics_snapshot_prompt_rendering() -> None:

@@ -1,7 +1,7 @@
 # Architecture
 
-KlipperAI is a standalone async Python daemon on the printer host. Mainsail links
-to its same-origin `/klipperai/` UI; Moonraker remains the printer API. The runtime
+KAI is a standalone async Python daemon on the printer host. Mainsail links
+to its same-origin `/kai/` UI; Moonraker remains the printer API. The runtime
 reads evidence and drafts config proposals. It cannot apply them.
 
 The browser is composed from storage, transport, rendering and application
@@ -166,10 +166,10 @@ idle proxy connections open.
 
 ## State and deployment
 
-The flat layout keeps one importable `klipperai_agent/` package at the repository
+The flat layout keeps one importable `kai_agent/` package at the repository
 root. Hatch includes Python modules, templates and static assets in the wheel.
-CLI names remain `klipperai-agent` and `klipperai-detect-profile`; older
-`klippyai-*` commands adapt environment variables into the canonical package.
+CLI names remain `kai-agent` and `kai-detect-profile`; older
+`kai-*` commands adapt environment variables into the canonical package.
 
 Sessions are ephemeral. `thread_id` identifies a durable investigation stored in
 `data_dir/investigations.sqlite3`. Server history takes precedence over browser
@@ -192,7 +192,7 @@ merges bounded observations in `domain/moonraker.py`. Application-owned extensio
 methods expose public capabilities/status and ephemeral session bootstrap. A
 session-protected SSE endpoint sends the latest observation to UI badges at most
 once per second. The model's status tools still make fresh reads. Moonraker's
-`klipperai.integration` database item stores only fixed public capabilities; it
+`kai.integration` database item stores only fixed public capabilities; it
 is separate from investigations, credentials and sessions. See
 [Moonraker integration](moonraker-integration.md) for protocol and ownership details.
 

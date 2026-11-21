@@ -43,7 +43,7 @@ def atomic_write(
     verify: Callable[[], None] | None = None,
 ):
     """Stage a complete file in the target directory; never truncate the destination."""
-    fd, name = tempfile.mkstemp(prefix=".klipperai-", dir=path.parent)
+    fd, name = tempfile.mkstemp(prefix=".kai-", dir=path.parent)
     temporary = Path(name)
     try:
         with os.fdopen(fd, "wb") as stream:

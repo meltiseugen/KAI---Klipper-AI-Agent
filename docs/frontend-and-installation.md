@@ -12,7 +12,7 @@ Root, `/embed`, and `/direct` serve the same self-contained, uncached page.
 This is deliberate: OctoEverywhere's navigation helper can fetch `/direct` and
 write that HTML into a popup without relying on separate asset requests.
 
-| File under `klipperai_agent/web/static/` | Responsibility |
+| File under `kai_agent/web/static/` | Responsibility |
 | --- | --- |
 | `embed.js` | Construct the application, store, transport and view |
 | `chat-application.js` | Bootstrap, restore, select, submit, delete and recheck; one operation at a time |
@@ -91,18 +91,18 @@ still be read when accessible. Missing OpenAI credentials link to Provider setti
 agent remains unavailable until an API key is active. Expired UI sessions renew once;
 failed renewal displays **Reconnect** without replaying the question. Connection
 checks preserve the draft and do not start another analysis. Provider changes
-still require a manual KlipperAI restart.
+still require a manual KAI restart.
 
 ## Access paths
 
 ```mermaid
 flowchart LR
-    Mainsail[Mainsail navi.json] --> Local[nginx /klipperai/]
-    Local --> Backend[KlipperAI on loopback]
+    Mainsail[Mainsail navi.json] --> Local[nginx /kai/]
+    Local --> Backend[KAI on loopback]
     Remote[OctoEverywhere portal] --> Router[Optional patched OE router]
     Router --> Backend
     Remote --> Helper[OE navigation helper]
-    Helper --> Direct[/klipperai/direct]
+    Helper --> Direct[/kai/direct]
     Direct --> Router
 ```
 
@@ -110,7 +110,7 @@ nginx and the OE router strip the public prefix before forwarding. The service
 passes its configured prefix to Uvicorn for correct mounted-asset routing.
 The HTML and transport keep API requests under that prefix, including sessions,
 SSE, history, deletion and proposal rechecks. Match the prefix and port across
-KlipperAI settings, nginx, Mainsail navigation and OE patch options.
+KAI settings, nginx, Mainsail navigation and OE patch options.
 
 nginx redirects the bare prefix with a relative URL preserving query strings,
 uses `^~` prefix precedence over Mainsail asset regexes, disables proxy caching
@@ -182,9 +182,9 @@ upgrade instructions and limits of coordination with external updaters.
 python -m pytest
 node --test tests/*.test.mjs
 sh install.sh --check
-ruff check klipperai_agent tests tools integrations
-ruff format --check klipperai_agent tests tools integrations
-mypy klipperai_agent --ignore-missing-imports
+ruff check kai_agent tests tools integrations
+ruff format --check kai_agent tests tools integrations
+mypy kai_agent --ignore-missing-imports
 mypy integrations --ignore-missing-imports
 python tools/project_map.py --check
 uv build

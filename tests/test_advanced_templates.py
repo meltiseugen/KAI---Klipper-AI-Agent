@@ -2,8 +2,8 @@
 
 import pytest
 
-from klipperai_agent.config.review_parser import parse_review_config
-from klipperai_agent.config.templates.catalog import ProposalCatalog
+from kai_agent.config.review_parser import parse_review_config
+from kai_agent.config.templates.catalog import ProposalCatalog
 from tests.test_config_analysis import snapshot
 from tests.test_config_features import payload
 
@@ -13,7 +13,7 @@ from tests.test_config_features import payload
     [
         ("Create a start print macro", "START_PRINT", "params.BED_TEMP"),
         ("Create an end print macro", "END_PRINT", "TURN_OFF_HEATERS"),
-        ("Create a preflight macro", "KLIPPERAI_PREFLIGHT", "action_respond_info"),
+        ("Create a preflight macro", "KAI_PREFLIGHT", "action_respond_info"),
     ],
 )
 def test_purpose_specific_macros_parse_and_remain_manual(prompt, name, required):

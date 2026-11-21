@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.runtime.settings import Settings
 from tools import validate_shutdown as validation
 
 

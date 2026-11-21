@@ -8,17 +8,17 @@ from test_agent import ScriptedModel
 from test_agent import tool_context as tool_context
 from test_agent_providers import client_for
 
-from klipperai_agent.agent.models import AgentLimits, ModelTurn
-from klipperai_agent.agent.response_contracts import (
+from kai_agent.agent.models import AgentLimits, ModelTurn
+from kai_agent.agent.response_contracts import (
     response_format,
     response_model,
     select_workflow,
     workflow_prompt,
 )
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.domain.investigation import InvestigationRequest
-from klipperai_agent.providers.responses import OpenAIAgentModel
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.domain.investigation import InvestigationRequest
+from kai_agent.providers.responses import OpenAIAgentModel
 
 
 @pytest.mark.parametrize(

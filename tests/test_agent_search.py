@@ -5,11 +5,11 @@ import json
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits, ToolCall
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.tools.config_search import SearchConfigArguments, SearchConfigTool
-from klipperai_agent.agent.tools.diagnostics import SearchDiagnosticArguments, SearchDiagnosticTool
-from klipperai_agent.agent.tools.logs import (
+from kai_agent.agent.models import AgentLimits, ToolCall
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.tools.config_search import SearchConfigArguments, SearchConfigTool
+from kai_agent.agent.tools.diagnostics import SearchDiagnosticArguments, SearchDiagnosticTool
+from kai_agent.agent.tools.logs import (
     ListLogsArguments,
     ListLogsTool,
     ReadLogArguments,
@@ -19,12 +19,12 @@ from klipperai_agent.agent.tools.logs import (
     log_inventory,
     log_window,
 )
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigReadError
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.domain.logs import LOG_RUN_BYTES, LOG_WINDOW_BYTES, LogReadError
-from klipperai_agent.infrastructure.host.log_reader import ReadOnlyLogReader
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigReadError
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.domain.logs import LOG_RUN_BYTES, LOG_WINDOW_BYTES, LogReadError
+from kai_agent.infrastructure.host.log_reader import ReadOnlyLogReader
 from tests.test_agent import answer, call
 from tests.test_agent import tool_context as tool_context
 

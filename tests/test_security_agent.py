@@ -5,18 +5,18 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 
-import klipperai_agent.providers.json_client as json_client
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.search import SearchArguments, WebSearchTool
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.chat import ChatService
-from klipperai_agent.application.knowledge import PrinterKnowledge
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.knowledge import KnowledgeSetup
-from klipperai_agent.infrastructure.public_docs import public_target
-from klipperai_agent.knowledge.sources import document_source
-from klipperai_agent.profile.models import PrinterProfile
+import kai_agent.providers.json_client as json_client
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.search import SearchArguments, WebSearchTool
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.chat import ChatService
+from kai_agent.application.knowledge import PrinterKnowledge
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.knowledge import KnowledgeSetup
+from kai_agent.infrastructure.public_docs import public_target
+from kai_agent.knowledge.sources import document_source
+from kai_agent.profile.models import PrinterProfile
 from tests.knowledge_helpers import setup
 from tests.test_agent import ScriptedModel, answer, call
 from tests.test_agent import tool_context as tool_context

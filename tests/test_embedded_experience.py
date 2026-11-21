@@ -4,9 +4,9 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.domain.provider_settings import ProviderPolicy
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.domain.provider_settings import ProviderPolicy
+from kai_agent.runtime.settings import Settings
 from tests.test_agent_integration import agent_service as agent_service
 
 
@@ -74,7 +74,7 @@ def test_text_attachments_reach_chat_and_stream_with_same_limits(embedded_client
         assert response.status_code == 200
         assert "Your saved firmware is Kalico." in response.text
     # Boundary sizes are accepted without truncation.
-    from klipperai_agent.contracts.api import ChatRequest
+    from kai_agent.contracts.api import ChatRequest
 
     request = ChatRequest(
         session_id=session, message="Analyze", artifacts=[{**artifact, "content": "x" * 40000}] * 4

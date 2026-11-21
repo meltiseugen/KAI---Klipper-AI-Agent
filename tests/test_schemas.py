@@ -1,4 +1,4 @@
-from klipperai_agent.contracts.api import ArtifactInput, ConfigProposal, _stringify_dict
+from kai_agent.contracts.api import ArtifactInput, ConfigProposal, _stringify_dict
 
 
 def test_artifact_prompt_excerpt_full_and_truncated() -> None:

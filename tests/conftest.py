@@ -14,10 +14,10 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def isolated_provider_storage(monkeypatch, tmp_path):
-    monkeypatch.setenv("KLIPPERAI_PROVIDER_STORAGE_DIR", str(tmp_path / "provider-secrets"))
+    monkeypatch.setenv("KAI_PROVIDER_STORAGE_DIR", str(tmp_path / "provider-secrets"))
     credentials = tmp_path / "systemd-credentials"
     credentials.mkdir()
-    master = credentials / "klipperai-provider-master"
+    master = credentials / "kai-provider-master"
     master.write_bytes(b"t" * 32)
     master.chmod(0o600)
     monkeypatch.setenv("CREDENTIALS_DIRECTORY", str(credentials))
@@ -31,7 +31,7 @@ def mainsail_maintenance(monkeypatch, tmp_path):
     cli = importlib.import_module("nav_cli")
     config = tmp_path / "printer-data/config"
     config.mkdir(parents=True)
-    state = config.parent / ".klipperai-mainsail"
+    state = config.parent / ".kai-mainsail"
     return SimpleNamespace(
         cli=cli,
         config=config,
@@ -140,8 +140,8 @@ def shell_env(tmp_path, shell) -> dict[str, str]:
     return {
         **os.environ,
         "PATH": os.pathsep.join((str(fake_bin), str(Path(shell).parent), os.environ["PATH"])),
-        "KLIPPERAI_NO_SUDO": "1",
-        "MSYS2_ENV_CONV_EXCL": "KLIPPERAI_PREFIX",
-        "MSYS2_ARG_CONV_EXCL": "/klipperai;/assistant/",
-        "KLIPPERAI_STATE_DIR": (tmp_path / "state").as_posix(),
+        "KAI_NO_SUDO": "1",
+        "MSYS2_ENV_CONV_EXCL": "KAI_PREFIX",
+        "MSYS2_ARG_CONV_EXCL": "/kai;/assistant/",
+        "KAI_STATE_DIR": (tmp_path / "state").as_posix(),
     }

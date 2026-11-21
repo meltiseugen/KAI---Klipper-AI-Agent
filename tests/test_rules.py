@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.contracts.api import ArtifactInput
-from klipperai_agent.diagnostics.rules import RuleEngine
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.contracts.api import ArtifactInput
+from kai_agent.diagnostics.rules import RuleEngine
 
 
 def test_timer_too_close_is_detected() -> None:

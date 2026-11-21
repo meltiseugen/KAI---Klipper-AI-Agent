@@ -10,10 +10,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from klipperai_agent.cli import credentials as cli
-from klipperai_agent.domain.provider_settings import ProviderPolicy
-from klipperai_agent.infrastructure import credential_cipher as crypto
-from klipperai_agent.infrastructure.provider_store import ProviderStore
+from kai_agent.cli import credentials as cli
+from kai_agent.domain.provider_settings import ProviderPolicy
+from kai_agent.infrastructure import credential_cipher as crypto
+from kai_agent.infrastructure.provider_store import ProviderStore
 
 
 def arguments(tmp_path, **overrides):
@@ -172,7 +172,7 @@ def test_installer_same_store_fresh_policy_input_errors_and_locked_storage(tmp_p
 
 def test_installer_migrates_custom_configured_store_without_overwriting_other_policy(tmp_path):
     args = arguments(tmp_path)
-    args.legacy_config_file = tmp_path / "klipperai.cfg"
+    args.legacy_config_file = tmp_path / "kai.cfg"
     directory = tmp_path / "custom-private"
     args.legacy_config_file.write_text(
         f"[server]\nport: 8811\n[llm]\nprovider_storage_dir: {directory.as_posix()}\n"

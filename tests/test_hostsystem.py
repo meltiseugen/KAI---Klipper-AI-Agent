@@ -3,7 +3,7 @@ from __future__ import annotations
 import subprocess
 from types import SimpleNamespace
 
-from klipperai_agent.infrastructure.host.system import (
+from kai_agent.infrastructure.host.system import (
     CommandResult,
     HostSystemCollector,
 )
@@ -88,7 +88,7 @@ def test_system_command_runner_captures_and_strips_output(monkeypatch) -> None:
         run,
     )
     runner = __import__(
-        "klipperai_agent.infrastructure.host.system", fromlist=["SystemCommandRunner"]
+        "kai_agent.infrastructure.host.system", fromlist=["SystemCommandRunner"]
     ).SystemCommandRunner(2.5)
     result = runner.run(("test", "arg"))
     assert result.returncode == 7

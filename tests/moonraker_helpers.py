@@ -4,13 +4,13 @@ import asyncio
 import json
 from types import SimpleNamespace
 
-from klipperai_agent.application.moonraker import MoonrakerMethods
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.domain.moonraker import MoonrakerObservation
+from kai_agent.application.moonraker import MoonrakerMethods
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.domain.moonraker import MoonrakerObservation
 
 
 def methods():
-    return MoonrakerMethods(InMemorySessionStore(60), "/klipperai/", MoonrakerObservation())
+    return MoonrakerMethods(InMemorySessionStore(60), "/kai/", MoonrakerObservation())
 
 
 async def until(predicate):

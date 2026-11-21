@@ -1,11 +1,12 @@
 # Encrypted provider credentials
 
-Standard Linux services use systemd 250+ (`systemd-creds` and `systemd-run`)
-and an unprivileged account. Native Creality/KE services use the separate
+Standard Linux services use an unprivileged account and systemd 247 or newer.
+Systemd 250+ uses `systemd-creds`; systemd 247-249 uses the private credential
+socket described below. Native Creality/KE services use the separate
 [appliance credential backend](creality-compatibility.md): a root-only host wrapping
 key, authenticated encrypted master and verified RAM-only delivery. There is no
 plaintext-storage fallback. Neither host-key backend protects a complete disk image
-containing its wrapping key; systemd can additionally use TPM binding.
+containing its wrapping key; systemd 250+ can additionally use TPM binding.
 The web page can start without an API key, but the agent remains unavailable.
 Keys cannot be saved until the secure installer provisions a master credential.
 
@@ -23,9 +24,9 @@ usage counters are non-secret; only the API-key field is encrypted. Symlinks,
 hardlinks, special files and storage inside shared printer files are rejected.
 
 The separate random 256-bit master key is encrypted by `systemd-creds` and stored
-root-owned at `/etc/klipperai/credentials/provider-master.cred` (directory 0700,
+root-owned at `/etc/kai/credentials/provider-master.cred` (directory 0700,
 file 0600). It is never stored next to the database in plaintext. The unit uses
-`LoadCredentialEncrypted=klipperai-provider-master:...` to deliver the decrypted
+`LoadCredentialEncrypted=kai-provider-master:...` to deliver the decrypted
 master under `$CREDENTIALS_DIRECTORY` at startup. The application reads that
 fixed credential name; it never adds the key to environment variables or model
 tools. Master files must be regular, singly linked and private to the service UID.
@@ -36,6 +37,39 @@ Where `systemd-creds has-tpm2` confirms full support, creation explicitly requir
 uses the root-only systemd host key and prints that reduced protection explicitly.
 An existing master is kept; reinstalling never silently replaces it. Existing
 host-only credentials are not automatically re-bound after a hardware upgrade.
+
+### Systemd 247-249, including Debian 11/BTT CB1
+
+These hosts support `LoadCredential=` and secure per-service credential
+directories, but do not have `systemd-creds` or `LoadCredentialEncrypted=`.
+The installer keeps the existing OS and selects a root-owned socket helper:
+
+- The provider database still uses the same AES-256-GCM encryption.
+- The master is authenticated and encrypted with AES-256-GCM at
+  `/etc/kai/credentials/provider-master.enc`. Its separate wrapping key is
+  root-only at `/etc/kai-host-key/host.key`.
+- `kai-credentials.socket` listens only on
+  `/run/kai-credentials.sock`, owned by root with mode 0600. Each connection
+  activates `kai-credentials@.service`. The helper also checks the peer UID
+  before authenticating and sending the master.
+- The helper runs with an isolated base Python interpreter and root-owned copies
+  of its code and PyCryptodome under `/usr/local/lib/kai-credentials`.
+  Root never imports the agent's user-writable checkout or virtual environment
+  during service startup. Agent updates do not change the privileged helper;
+  updating that helper requires rerunning the installer.
+- `LoadCredential=` reads the socket directly. No decrypted master is written
+  into a persistent file, environment variable, command argument, or journal.
+  The agent continues running as the selected unprivileged account.
+- Reinstallation authenticates and retains the original key/master. Missing or
+  damaged credentials fail closed. A later systemd upgrade retains this backend
+  until an explicit credential migration is implemented; it never silently
+  generates an unrelated master. Automatic conversion of a pre-existing
+  `systemd-creds` master to the socket backend is refused.
+
+Both backends require 32-byte master keys and protect files against redirects,
+unsafe permissions and hardlinks. Uninstall removes the private socket units;
+credential purge separately removes this application's encrypted master and
+wrapping key. A retained helper code snapshot contains no secrets.
 
 Host-key-only encryption does not protect a complete disk image containing both
 the encrypted master and `/var/lib/systemd/credential.secret`. TPM binding can
@@ -54,7 +88,7 @@ encryption; only ciphertext reaches a temporary file. No secret is placed in an
 external command argument. The environment file contains deployment metadata,
 including the provider storage path, but no API key.
 
-Before migration, the installer stops KlipperAI alone. It uses the same encrypted
+Before migration, the installer stops KAI alone. It uses the same encrypted
 repository as Provider settings, preserving saved policy, revision checks and
 usage counters. A previous home-based store, environment-selected store or
 `provider_storage_dir` in the old config can be imported. Legacy plaintext DB

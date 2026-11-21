@@ -59,7 +59,7 @@ until Entware's wget/CA packages exist. No remote installer script is executed.
 Existing package managers retain their own repository configuration.
 
 A fresh bootstrap adds an Entware startup entry only if none exists. Entware and
-its packages are shared prerequisites and remain when KlipperAI is uninstalled.
+its packages are shared prerequisites and remain when KAI is uninstalled.
 Existing Klipper, Moonraker and vendor nginx service scripts are preserved.
 
 When upstream bootstrap assets change, installation fails on a digest mismatch.

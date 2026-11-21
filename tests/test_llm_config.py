@@ -2,29 +2,29 @@ from __future__ import annotations
 
 import pytest
 
-from klipperai_agent.config.models import ConfigRequestTarget, ConfigSnapshot
-from klipperai_agent.config.requests import ConfigPromptPayload
-from klipperai_agent.config.templates.catalog import ProposalCatalog
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.providers.openai import OpenAIConfigAssistantProvider
+from kai_agent.config.models import ConfigRequestTarget, ConfigSnapshot
+from kai_agent.config.requests import ConfigPromptPayload
+from kai_agent.config.templates.catalog import ProposalCatalog
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.providers.openai import OpenAIConfigAssistantProvider
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     ("feature", "expected_target"),
     [
-        ("fan", "klipperai/fan.cfg"),
-        ("macro", "klipperai/macros.cfg"),
-        ("sensor", "klipperai/sensor.cfg"),
-        ("probe", "klipperai/probe.cfg"),
-        ("heater", "klipperai/heater.cfg"),
-        ("input_shaper", "klipperai/input_shaper.cfg"),
-        ("bed_mesh", "klipperai/bed_mesh.cfg"),
-        ("filament", "klipperai/filament.cfg"),
-        ("canbus", "klipperai/canbus.cfg"),
-        ("stepper", "klipperai/stepper.cfg"),
-        ("extruder", "klipperai/extruder.cfg"),
-        ("generic", "klipperai/custom.cfg"),
+        ("fan", "kai/fan.cfg"),
+        ("macro", "kai/macros.cfg"),
+        ("sensor", "kai/sensor.cfg"),
+        ("probe", "kai/probe.cfg"),
+        ("heater", "kai/heater.cfg"),
+        ("input_shaper", "kai/input_shaper.cfg"),
+        ("bed_mesh", "kai/bed_mesh.cfg"),
+        ("filament", "kai/filament.cfg"),
+        ("canbus", "kai/canbus.cfg"),
+        ("stepper", "kai/stepper.cfg"),
+        ("extruder", "kai/extruder.cfg"),
+        ("generic", "kai/custom.cfg"),
     ],
 )
 async def test_template_catalog_returns_a_proposal_for_each_feature(
@@ -63,8 +63,8 @@ async def test_openai_config_provider_normalizes_include_feature_to_generic() ->
                     "feature": "include",
                     "title": "Managed include",
                     "target_file": "printer.cfg",
-                    "config": "[include klipperai/*.cfg]\n",
-                    "rationale": "Load managed KlipperAI snippets.",
+                    "config": "[include kai/*.cfg]\n",
+                    "rationale": "Load managed KAI snippets.",
                     "assumptions": [],
                     "warnings": [],
                 }
@@ -76,7 +76,7 @@ async def test_openai_config_provider_normalizes_include_feature_to_generic() ->
     provider = OpenAIConfigAssistantProvider(model="test", api_key="test")
     provider._client = client
     payload = ConfigPromptPayload(
-        user_message="Add the KlipperAI include",
+        user_message="Add the KAI include",
         snapshot=ConfigSnapshot(root_file=None, documents=[], notes=[]),
         target=ConfigRequestTarget(feature="generic", rationale="test"),
         profile=PrinterProfile(),
@@ -97,7 +97,7 @@ async def test_openai_config_provider_uses_detected_feature_for_unknown_label() 
                 {
                     "feature": "cooling",
                     "title": "Part cooling fan",
-                    "target_file": "klipperai/fan.cfg",
+                    "target_file": "kai/fan.cfg",
                     "config": "[fan]\npin: <FAN_PIN>\n",
                     "rationale": "Add part cooling.",
                     "assumptions": [],

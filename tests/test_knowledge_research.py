@@ -7,25 +7,25 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-import klipperai_agent.infrastructure.documentation as download_module
-import klipperai_agent.infrastructure.public_docs as network_module
-from klipperai_agent.agent.models import SearchResult
-from klipperai_agent.domain.evidence import SourceCitation
-from klipperai_agent.domain.knowledge import ComponentIdentity, FanMapping
-from klipperai_agent.infrastructure.documentation import (
+import kai_agent.infrastructure.documentation as download_module
+import kai_agent.infrastructure.public_docs as network_module
+from kai_agent.agent.models import SearchResult
+from kai_agent.domain.evidence import SourceCitation
+from kai_agent.domain.knowledge import ComponentIdentity, FanMapping
+from kai_agent.infrastructure.documentation import (
     PublicDocumentationFetcher,
     extract_document,
 )
-from klipperai_agent.infrastructure.public_docs import public_target, resolve_addresses
-from klipperai_agent.knowledge.fans import inspect_fan_ports
-from klipperai_agent.knowledge.pins import pin_ownership
-from klipperai_agent.knowledge.sources import (
+from kai_agent.infrastructure.public_docs import public_target, resolve_addresses
+from kai_agent.knowledge.fans import inspect_fan_ports
+from kai_agent.knowledge.pins import pin_ownership
+from kai_agent.knowledge.sources import (
     component_key,
     document_source,
     grounded_mapping,
     mapping_evidence,
 )
-from klipperai_agent.providers.knowledge import OpenAIKnowledgeResearcher, public_identity
+from kai_agent.providers.knowledge import OpenAIKnowledgeResearcher, public_identity
 from tests.knowledge_helpers import documents, setup, snapshot
 
 

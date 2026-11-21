@@ -8,8 +8,8 @@ install_python_package() {
   log "Using Python interpreter: $PYTHON_BIN ($(python_version_string "$PYTHON_BIN"))"
 
   log "Creating service data directory."
-  run_root install -d -m 700 "$KLIPPERAI_DATA_DIR"
-  run_root chown "$INSTALL_USER:$INSTALL_GROUP" "$KLIPPERAI_DATA_DIR"
+  run_root install -d -m 700 "$KAI_DATA_DIR"
+  run_root chown "$INSTALL_USER:$INSTALL_GROUP" "$KAI_DATA_DIR"
 
   log "Creating Python virtual environment."
   if [[ -d "$INSTALL_DIR/.venv" ]]; then
@@ -18,7 +18,7 @@ install_python_package() {
       confirm "Recreate the virtual environment?" "Y" || die "Installation cancelled."
       run_as_user rm -rf "$INSTALL_DIR/.venv"
     elif ! python_is_supported "$INSTALL_DIR/.venv/bin/python"; then
-      warn "Existing virtual environment uses Python $(python_version_string "$INSTALL_DIR/.venv/bin/python"), but KlipperAI requires Python ${MIN_PYTHON_VERSION}+."
+      warn "Existing virtual environment uses Python $(python_version_string "$INSTALL_DIR/.venv/bin/python"), but KAI requires Python ${MIN_PYTHON_VERSION}+."
       confirm "Recreate the virtual environment with $PYTHON_BIN?" "Y" || die "Installation cancelled."
       run_as_user rm -rf "$INSTALL_DIR/.venv"
     fi

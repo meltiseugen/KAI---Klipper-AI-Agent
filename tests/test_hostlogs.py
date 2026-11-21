@@ -4,9 +4,9 @@ from pathlib import Path
 
 import pytest
 
-from klipperai_agent.diagnostics.collector import DiagnosticsCollector
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.infrastructure.host.logs import HostLogCollector
+from kai_agent.diagnostics.collector import DiagnosticsCollector
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.infrastructure.host.logs import HostLogCollector
 
 
 def test_host_log_collector_reads_all_current_log_files_and_tails_last_lines(
@@ -82,20 +82,20 @@ def test_host_log_collector_supports_absolute_logs_dir_path(tmp_path: Path) -> N
     assert any(f"Loaded 1 current log file(s) from {logs_dir}." in note for note in notes)
 
 
-def test_host_log_collector_detects_klipperai_runtime_logs(tmp_path: Path) -> None:
+def test_host_log_collector_detects_kai_runtime_logs(tmp_path: Path) -> None:
     logs_dir = tmp_path / "printer_data" / "logs"
     logs_dir.mkdir(parents=True)
-    (logs_dir / "klipperai.log").write_text(
-        "2026-05-19 12:00:00 INFO [klipperai_agent.bootstrap] Starting KlipperAI\n"
-        "2026-05-19 12:00:01 INFO [klipperai_agent.app] Application startup complete.\n",
+    (logs_dir / "kai.log").write_text(
+        "2026-05-19 12:00:00 INFO [kai_agent.bootstrap] Starting KAI\n"
+        "2026-05-19 12:00:01 INFO [kai_agent.app] Application startup complete.\n",
         encoding="utf-8",
     )
 
     collector = HostLogCollector(tmp_path / "printer_data")
     artifacts, notes = collector.collect()
 
-    assert any(artifact.label == "klipperai.log" for artifact in artifacts)
-    assert any("Host log: KlipperAI" in artifact.content for artifact in artifacts)
+    assert any(artifact.label == "kai.log" for artifact in artifacts)
+    assert any("Host log: KAI" in artifact.content for artifact in artifacts)
     assert any("Loaded 1 current log file(s)" in note for note in notes)
 
 
@@ -103,13 +103,13 @@ def test_host_log_collector_skips_excluded_logs_by_name_stem_and_glob(tmp_path: 
     logs_dir = tmp_path / "printer_data" / "logs"
     logs_dir.mkdir(parents=True)
     (logs_dir / "klippy.log").write_text("klippy line\n", encoding="utf-8")
-    (logs_dir / "klipperai.log").write_text("agent line\n", encoding="utf-8")
+    (logs_dir / "kai.log").write_text("agent line\n", encoding="utf-8")
     (logs_dir / "crowsnest.log").write_text("camera line\n", encoding="utf-8")
     (logs_dir / "service_debug.log").write_text("debug line\n", encoding="utf-8")
 
     collector = HostLogCollector(
         tmp_path / "printer_data",
-        excluded_logs=["klipperai.log", "crowsnest", "*_debug.log"],
+        excluded_logs=["kai.log", "crowsnest", "*_debug.log"],
     )
     artifacts, notes = collector.collect()
 

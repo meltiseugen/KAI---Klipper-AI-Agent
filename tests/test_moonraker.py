@@ -5,7 +5,7 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 
-from klipperai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
+from kai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
 
 
 def _client(handler) -> MoonrakerClient:

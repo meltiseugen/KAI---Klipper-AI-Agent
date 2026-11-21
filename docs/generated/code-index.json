@@ -1,7 +1,7 @@
 {
   "modules": {
-    "klipperai_agent.__main__": {
-      "path": "klipperai_agent/__main__.py",
+    "kai_agent.__main__": {
+      "path": "kai_agent/__main__.py",
       "lines": 48,
       "symbols": [
         {
@@ -11,17 +11,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.version",
-        "klipperai_agent.runtime.logging",
-        "klipperai_agent.runtime.settings"
+        "kai_agent.domain.version",
+        "kai_agent.runtime.logging",
+        "kai_agent.runtime.settings"
       ],
       "tests": [
         "tests/test_main.py",
         "tests/test_release_identity.py"
       ]
     },
-    "klipperai_agent.agent.claim_citations": {
-      "path": "klipperai_agent/agent/claim_citations.py",
+    "kai_agent.agent.claim_citations": {
+      "path": "kai_agent/agent/claim_citations.py",
       "lines": 66,
       "symbols": [
         {
@@ -31,16 +31,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.response_contracts",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.agent.response_contracts",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_structured_citations.py"
       ]
     },
-    "klipperai_agent.agent.context_budget": {
-      "path": "klipperai_agent/agent/context_budget.py",
+    "kai_agent.agent.context_budget": {
+      "path": "kai_agent/agent/context_budget.py",
       "lines": 18,
       "symbols": [
         {
@@ -54,8 +54,8 @@
         "tests/test_agent_modes.py"
       ]
     },
-    "klipperai_agent.agent.deadline": {
-      "path": "klipperai_agent/agent/deadline.py",
+    "kai_agent.agent.deadline": {
+      "path": "kai_agent/agent/deadline.py",
       "lines": 19,
       "symbols": [
         {
@@ -67,8 +67,8 @@
       "imports": [],
       "tests": []
     },
-    "klipperai_agent.agent.models": {
-      "path": "klipperai_agent/agent/models.py",
+    "kai_agent.agent.models": {
+      "path": "kai_agent/agent/models.py",
       "lines": 71,
       "symbols": [
         {
@@ -130,10 +130,10 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.domain.base",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -161,8 +161,8 @@
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.agent.ports": {
-      "path": "klipperai_agent/agent/ports.py",
+    "kai_agent.agent.ports": {
+      "path": "kai_agent/agent/ports.py",
       "lines": 77,
       "symbols": [
         {
@@ -309,17 +309,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.domain.logs",
-        "klipperai_agent.domain.shutdown"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.knowledge",
+        "kai_agent.domain.logs",
+        "kai_agent.domain.shutdown"
       ],
       "tests": []
     },
-    "klipperai_agent.agent.prompts": {
-      "path": "klipperai_agent/agent/prompts.py",
+    "kai_agent.agent.prompts": {
+      "path": "kai_agent/agent/prompts.py",
       "lines": 87,
       "symbols": [],
       "imports": [],
@@ -327,8 +327,8 @@
         "tests/test_agent_modes.py"
       ]
     },
-    "klipperai_agent.agent.registry": {
-      "path": "klipperai_agent/agent/registry.py",
+    "kai_agent.agent.registry": {
+      "path": "kai_agent/agent/registry.py",
       "lines": 176,
       "symbols": [
         {
@@ -364,14 +364,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.deadline",
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.agent.deadline",
+        "kai_agent.agent.models",
+        "kai_agent.agent.tools.base",
+        "kai_agent.config.models",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.context",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -382,8 +382,8 @@
         "tests/test_shutdown_agent.py"
       ]
     },
-    "klipperai_agent.agent.response_contracts": {
-      "path": "klipperai_agent/agent/response_contracts.py",
+    "kai_agent.agent.response_contracts": {
+      "path": "kai_agent/agent/response_contracts.py",
       "lines": 160,
       "symbols": [
         {
@@ -450,18 +450,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.targeting",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.targeting",
+        "kai_agent.domain.base",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_structured_citations.py",
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.agent.runner": {
-      "path": "klipperai_agent/agent/runner.py",
+    "kai_agent.agent.runner": {
+      "path": "kai_agent/agent/runner.py",
       "lines": 239,
       "symbols": [
         {
@@ -500,28 +500,28 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.claim_citations",
-        "klipperai_agent.agent.deadline",
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.prompts",
-        "klipperai_agent.agent.registry",
-        "klipperai_agent.agent.response_contracts",
-        "klipperai_agent.agent.starting_context",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.agent.claim_citations",
+        "kai_agent.agent.deadline",
+        "kai_agent.agent.models",
+        "kai_agent.agent.prompts",
+        "kai_agent.agent.registry",
+        "kai_agent.agent.response_contracts",
+        "kai_agent.agent.starting_context",
+        "kai_agent.agent.tools.base",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.context",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_agent.py"
       ]
     },
-    "klipperai_agent.agent.starting_context": {
-      "path": "klipperai_agent/agent/starting_context.py",
+    "kai_agent.agent.starting_context": {
+      "path": "kai_agent/agent/starting_context.py",
       "lines": 232,
       "symbols": [
         {
@@ -536,22 +536,22 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.context_budget",
-        "klipperai_agent.agent.deadline",
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.prompts",
-        "klipperai_agent.agent.registry",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.agent.context_budget",
+        "kai_agent.agent.deadline",
+        "kai_agent.agent.models",
+        "kai_agent.agent.prompts",
+        "kai_agent.agent.registry",
+        "kai_agent.agent.tools.base",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.context",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation"
       ],
       "tests": []
     },
-    "klipperai_agent.agent.tools.base": {
-      "path": "klipperai_agent/agent/tools/base.py",
+    "kai_agent.agent.tools.base": {
+      "path": "kai_agent/agent/tools/base.py",
       "lines": 106,
       "symbols": [
         {
@@ -596,14 +596,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.logs"
+        "kai_agent.agent.ports",
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.base",
+        "kai_agent.domain.context",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.logs"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -612,8 +612,8 @@
         "tests/test_knowledge_agent.py"
       ]
     },
-    "klipperai_agent.agent.tools.components": {
-      "path": "klipperai_agent/agent/tools/components.py",
+    "kai_agent.agent.tools.components": {
+      "path": "kai_agent/agent/tools/components.py",
       "lines": 69,
       "symbols": [
         {
@@ -639,19 +639,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.deadline",
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.agent.tools.knowledge",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.knowledge.components"
+        "kai_agent.agent.deadline",
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.agent.tools.knowledge",
+        "kai_agent.domain.evidence",
+        "kai_agent.knowledge.components"
       ],
       "tests": [
         "tests/test_hardware_knowledge.py"
       ]
     },
-    "klipperai_agent.agent.tools.config": {
-      "path": "klipperai_agent/agent/tools/config.py",
+    "kai_agent.agent.tools.config": {
+      "path": "kai_agent/agent/tools/config.py",
       "lines": 108,
       "symbols": [
         {
@@ -690,16 +690,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.evidence"
+        "kai_agent.agent.tools.base",
+        "kai_agent.config.models",
+        "kai_agent.domain.evidence"
       ],
       "tests": [
         "tests/test_agent_modes.py"
       ]
     },
-    "klipperai_agent.agent.tools.config_analysis": {
-      "path": "klipperai_agent/agent/tools/config_analysis.py",
+    "kai_agent.agent.tools.config_analysis": {
+      "path": "kai_agent/agent/tools/config_analysis.py",
       "lines": 63,
       "symbols": [
         {
@@ -720,21 +720,21 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.config.analysis",
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.config_analysis",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.config.analysis",
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.config_analysis",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_config_analysis.py"
       ]
     },
-    "klipperai_agent.agent.tools.config_search": {
-      "path": "klipperai_agent/agent/tools/config_search.py",
+    "kai_agent.agent.tools.config_search": {
+      "path": "kai_agent/agent/tools/config_search.py",
       "lines": 112,
       "symbols": [
         {
@@ -756,18 +756,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.agent.tools.text_search",
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.evidence"
+        "kai_agent.agent.tools.base",
+        "kai_agent.agent.tools.text_search",
+        "kai_agent.config.models",
+        "kai_agent.domain.evidence"
       ],
       "tests": [
         "tests/test_agent_modes.py",
         "tests/test_agent_search.py"
       ]
     },
-    "klipperai_agent.agent.tools.config_templates": {
-      "path": "klipperai_agent/agent/tools/config_templates.py",
+    "kai_agent.agent.tools.config_templates": {
+      "path": "kai_agent/agent/tools/config_templates.py",
       "lines": 47,
       "symbols": [
         {
@@ -789,19 +789,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.templates.catalog",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.profile.models"
+        "kai_agent.agent.tools.base",
+        "kai_agent.config.models",
+        "kai_agent.config.requests",
+        "kai_agent.config.templates.catalog",
+        "kai_agent.domain.proposals",
+        "kai_agent.profile.models"
       ],
       "tests": [
         "tests/test_config_templates_agent.py"
       ]
     },
-    "klipperai_agent.agent.tools.diagnostics": {
-      "path": "klipperai_agent/agent/tools/diagnostics.py",
+    "kai_agent.agent.tools.diagnostics": {
+      "path": "kai_agent/agent/tools/diagnostics.py",
       "lines": 110,
       "symbols": [
         {
@@ -840,18 +840,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.agent.tools.text_search",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.agent.tools.base",
+        "kai_agent.agent.tools.text_search",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_agent_modes.py",
         "tests/test_agent_search.py"
       ]
     },
-    "klipperai_agent.agent.tools.file_metadata": {
-      "path": "klipperai_agent/agent/tools/file_metadata.py",
+    "kai_agent.agent.tools.file_metadata": {
+      "path": "kai_agent/agent/tools/file_metadata.py",
       "lines": 63,
       "symbols": [
         {
@@ -882,17 +882,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.moonraker"
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.moonraker"
       ],
       "tests": [
         "tests/test_moonraker_metadata.py"
       ]
     },
-    "klipperai_agent.agent.tools.knowledge": {
-      "path": "klipperai_agent/agent/tools/knowledge.py",
+    "kai_agent.agent.tools.knowledge": {
+      "path": "kai_agent/agent/tools/knowledge.py",
       "lines": 243,
       "symbols": [
         {
@@ -985,25 +985,25 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.deadline",
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.knowledge.eddy",
-        "klipperai_agent.knowledge.fans",
-        "klipperai_agent.knowledge.firmware",
-        "klipperai_agent.knowledge.identity",
-        "klipperai_agent.knowledge.retrieval",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.agent.deadline",
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.config.models",
+        "kai_agent.domain.evidence",
+        "kai_agent.knowledge.eddy",
+        "kai_agent.knowledge.fans",
+        "kai_agent.knowledge.firmware",
+        "kai_agent.knowledge.identity",
+        "kai_agent.knowledge.retrieval",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_knowledge_agent.py",
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.agent.tools.logs": {
-      "path": "klipperai_agent/agent/tools/logs.py",
+    "kai_agent.agent.tools.logs": {
+      "path": "kai_agent/agent/tools/logs.py",
       "lines": 249,
       "symbols": [
         {
@@ -1087,18 +1087,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.agent.tools.text_search",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.logs"
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.agent.tools.text_search",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.logs"
       ],
       "tests": [
         "tests/test_agent_search.py"
       ]
     },
-    "klipperai_agent.agent.tools.objects": {
-      "path": "klipperai_agent/agent/tools/objects.py",
+    "kai_agent.agent.tools.objects": {
+      "path": "kai_agent/agent/tools/objects.py",
       "lines": 53,
       "symbols": [
         {
@@ -1120,14 +1120,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base"
+        "kai_agent.agent.tools.base"
       ],
       "tests": [
         "tests/test_agent_modes.py"
       ]
     },
-    "klipperai_agent.agent.tools.printer": {
-      "path": "klipperai_agent/agent/tools/printer.py",
+    "kai_agent.agent.tools.printer": {
+      "path": "kai_agent/agent/tools/printer.py",
       "lines": 124,
       "symbols": [
         {
@@ -1176,17 +1176,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.agent.tools.base",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent_modes.py"
       ]
     },
-    "klipperai_agent.agent.tools.search": {
-      "path": "klipperai_agent/agent/tools/search.py",
+    "kai_agent.agent.tools.search": {
+      "path": "kai_agent/agent/tools/search.py",
       "lines": 38,
       "symbols": [
         {
@@ -1212,16 +1212,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.agent.models",
+        "kai_agent.agent.tools.base",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.agent.tools.shutdown": {
-      "path": "klipperai_agent/agent/tools/shutdown.py",
+    "kai_agent.agent.tools.shutdown": {
+      "path": "kai_agent/agent/tools/shutdown.py",
       "lines": 166,
       "symbols": [
         {
@@ -1252,20 +1252,20 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.diagnostics.shutdown",
-        "klipperai_agent.diagnostics.shutdown_assessment",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.shutdown"
+        "kai_agent.agent.ports",
+        "kai_agent.agent.tools.base",
+        "kai_agent.diagnostics.shutdown",
+        "kai_agent.diagnostics.shutdown_assessment",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.shutdown"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py",
         "tests/test_shutdown_agent.py"
       ]
     },
-    "klipperai_agent.agent.tools.text_search": {
-      "path": "klipperai_agent/agent/tools/text_search.py",
+    "kai_agent.agent.tools.text_search": {
+      "path": "kai_agent/agent/tools/text_search.py",
       "lines": 90,
       "symbols": [
         {
@@ -1292,14 +1292,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.tools.base"
+        "kai_agent.agent.tools.base"
       ],
       "tests": [
         "tests/test_text_search.py"
       ]
     },
-    "klipperai_agent.agent.workflow": {
-      "path": "klipperai_agent/agent/workflow.py",
+    "kai_agent.agent.workflow": {
+      "path": "kai_agent/agent/workflow.py",
       "lines": 122,
       "symbols": [
         {
@@ -1323,26 +1323,26 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.agent.registry",
-        "klipperai_agent.agent.runner",
-        "klipperai_agent.agent.tools.base",
-        "klipperai_agent.agent.tools.components",
-        "klipperai_agent.agent.tools.config",
-        "klipperai_agent.agent.tools.config_analysis",
-        "klipperai_agent.agent.tools.config_search",
-        "klipperai_agent.agent.tools.config_templates",
-        "klipperai_agent.agent.tools.diagnostics",
-        "klipperai_agent.agent.tools.file_metadata",
-        "klipperai_agent.agent.tools.knowledge",
-        "klipperai_agent.agent.tools.logs",
-        "klipperai_agent.agent.tools.objects",
-        "klipperai_agent.agent.tools.printer",
-        "klipperai_agent.agent.tools.search",
-        "klipperai_agent.agent.tools.shutdown",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.agent.models",
+        "kai_agent.agent.ports",
+        "kai_agent.agent.registry",
+        "kai_agent.agent.runner",
+        "kai_agent.agent.tools.base",
+        "kai_agent.agent.tools.components",
+        "kai_agent.agent.tools.config",
+        "kai_agent.agent.tools.config_analysis",
+        "kai_agent.agent.tools.config_search",
+        "kai_agent.agent.tools.config_templates",
+        "kai_agent.agent.tools.diagnostics",
+        "kai_agent.agent.tools.file_metadata",
+        "kai_agent.agent.tools.knowledge",
+        "kai_agent.agent.tools.logs",
+        "kai_agent.agent.tools.objects",
+        "kai_agent.agent.tools.printer",
+        "kai_agent.agent.tools.search",
+        "kai_agent.agent.tools.shutdown",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -1368,8 +1368,8 @@
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.application.chat": {
-      "path": "klipperai_agent/application/chat.py",
+    "kai_agent.application.chat": {
+      "path": "kai_agent/application/chat.py",
       "lines": 386,
       "symbols": [
         {
@@ -1417,26 +1417,26 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.workflow",
-        "klipperai_agent.application.chat_bootstrap",
-        "klipperai_agent.application.chat_response",
-        "klipperai_agent.application.intent",
-        "klipperai_agent.application.investigations",
-        "klipperai_agent.application.knowledge",
-        "klipperai_agent.application.proposal_review",
-        "klipperai_agent.application.recovery",
-        "klipperai_agent.application.request_context",
-        "klipperai_agent.application.sessions",
-        "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.model_usage",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories",
-        "klipperai_agent.runtime.model_usage",
-        "klipperai_agent.workflows.context"
+        "kai_agent.agent.models",
+        "kai_agent.agent.workflow",
+        "kai_agent.application.chat_bootstrap",
+        "kai_agent.application.chat_response",
+        "kai_agent.application.intent",
+        "kai_agent.application.investigations",
+        "kai_agent.application.knowledge",
+        "kai_agent.application.proposal_review",
+        "kai_agent.application.recovery",
+        "kai_agent.application.request_context",
+        "kai_agent.application.sessions",
+        "kai_agent.contracts.api",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.context",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.model_usage",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories",
+        "kai_agent.runtime.model_usage",
+        "kai_agent.workflows.context"
       ],
       "tests": [
         "tests/test_agent_integration.py",
@@ -1446,8 +1446,8 @@
         "tests/test_services.py"
       ]
     },
-    "klipperai_agent.application.chat_bootstrap": {
-      "path": "klipperai_agent/application/chat_bootstrap.py",
+    "kai_agent.application.chat_bootstrap": {
+      "path": "kai_agent/application/chat_bootstrap.py",
       "lines": 82,
       "symbols": [
         {
@@ -1457,16 +1457,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.workflow",
-        "klipperai_agent.application.sessions",
-        "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.workflows.context"
+        "kai_agent.agent.workflow",
+        "kai_agent.application.sessions",
+        "kai_agent.contracts.api",
+        "kai_agent.domain.redaction",
+        "kai_agent.workflows.context"
       ],
       "tests": []
     },
-    "klipperai_agent.application.chat_response": {
-      "path": "klipperai_agent/application/chat_response.py",
+    "kai_agent.application.chat_response": {
+      "path": "kai_agent/application/chat_response.py",
       "lines": 38,
       "symbols": [
         {
@@ -1476,14 +1476,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.contracts.api",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.investigation"
       ],
       "tests": []
     },
-    "klipperai_agent.application.hardware_validation": {
-      "path": "klipperai_agent/application/hardware_validation.py",
+    "kai_agent.application.hardware_validation": {
+      "path": "kai_agent/application/hardware_validation.py",
       "lines": 84,
       "symbols": [
         {
@@ -1493,18 +1493,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.firmware",
-        "klipperai_agent.knowledge.pins"
+        "kai_agent.agent.ports",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.firmware",
+        "kai_agent.knowledge.pins"
       ],
       "tests": [
         "tests/test_live_hardware_validation.py"
       ]
     },
-    "klipperai_agent.application.intent": {
-      "path": "klipperai_agent/application/intent.py",
+    "kai_agent.application.intent": {
+      "path": "kai_agent/application/intent.py",
       "lines": 172,
       "symbols": [
         {
@@ -1558,16 +1558,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.targeting",
-        "klipperai_agent.domain.base"
+        "kai_agent.config.targeting",
+        "kai_agent.domain.base"
       ],
       "tests": [
         "tests/test_intent_extra.py",
         "tests/test_llm_output.py"
       ]
     },
-    "klipperai_agent.application.investigations": {
-      "path": "klipperai_agent/application/investigations.py",
+    "kai_agent.application.investigations": {
+      "path": "kai_agent/application/investigations.py",
       "lines": 159,
       "symbols": [
         {
@@ -1639,9 +1639,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.messages",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.messages",
+        "kai_agent.domain.repositories"
       ],
       "tests": [
         "tests/test_confirmed_memory.py",
@@ -1649,8 +1649,8 @@
         "tests/test_investigations.py"
       ]
     },
-    "klipperai_agent.application.knowledge": {
-      "path": "klipperai_agent/application/knowledge.py",
+    "kai_agent.application.knowledge": {
+      "path": "kai_agent/application/knowledge.py",
       "lines": 344,
       "symbols": [
         {
@@ -1722,18 +1722,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.application.hardware_validation",
-        "klipperai_agent.application.knowledge_observations",
-        "klipperai_agent.application.knowledge_refresh",
-        "klipperai_agent.domain.hardware",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.knowledge.buses",
-        "klipperai_agent.knowledge.firmware",
-        "klipperai_agent.knowledge.identity",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.agent.ports",
+        "kai_agent.application.hardware_validation",
+        "kai_agent.application.knowledge_observations",
+        "kai_agent.application.knowledge_refresh",
+        "kai_agent.domain.hardware",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.knowledge",
+        "kai_agent.domain.redaction",
+        "kai_agent.knowledge.buses",
+        "kai_agent.knowledge.firmware",
+        "kai_agent.knowledge.identity",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
@@ -1743,8 +1743,8 @@
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.application.knowledge_observations": {
-      "path": "klipperai_agent/application/knowledge_observations.py",
+    "kai_agent.application.knowledge_observations": {
+      "path": "kai_agent/application/knowledge_observations.py",
       "lines": 67,
       "symbols": [
         {
@@ -1764,19 +1764,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.hardware",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.knowledge.buses"
+        "kai_agent.domain.hardware",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.knowledge",
+        "kai_agent.domain.redaction",
+        "kai_agent.knowledge.buses"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
         "tests/test_hardware_knowledge.py"
       ]
     },
-    "klipperai_agent.application.knowledge_refresh": {
-      "path": "klipperai_agent/application/knowledge_refresh.py",
+    "kai_agent.application.knowledge_refresh": {
+      "path": "kai_agent/application/knowledge_refresh.py",
       "lines": 59,
       "symbols": [
         {
@@ -1786,18 +1786,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.buses",
-        "klipperai_agent.knowledge.pdf_pages",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.buses",
+        "kai_agent.knowledge.pdf_pages",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.application.moonraker": {
-      "path": "klipperai_agent/application/moonraker.py",
+    "kai_agent.application.moonraker": {
+      "path": "kai_agent/application/moonraker.py",
       "lines": 39,
       "symbols": [
         {
@@ -1817,15 +1817,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.sessions",
-        "klipperai_agent.domain.moonraker"
+        "kai_agent.application.sessions",
+        "kai_agent.domain.moonraker"
       ],
       "tests": [
         "tests/test_moonraker_extension.py"
       ]
     },
-    "klipperai_agent.application.proposal_review": {
-      "path": "klipperai_agent/application/proposal_review.py",
+    "kai_agent.application.proposal_review": {
+      "path": "kai_agent/application/proposal_review.py",
       "lines": 107,
       "symbols": [
         {
@@ -1849,12 +1849,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.application.review_firmware",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.review",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.knowledge.review"
+        "kai_agent.agent.ports",
+        "kai_agent.application.review_firmware",
+        "kai_agent.config.models",
+        "kai_agent.config.review",
+        "kai_agent.domain.investigation",
+        "kai_agent.knowledge.review"
       ],
       "tests": [
         "tests/test_config_patches.py",
@@ -1864,8 +1864,8 @@
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.application.providers": {
-      "path": "klipperai_agent/application/providers.py",
+    "kai_agent.application.providers": {
+      "path": "kai_agent/application/providers.py",
       "lines": 82,
       "symbols": [
         {
@@ -1889,15 +1889,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.provider_settings"
+        "kai_agent.domain.provider_settings"
       ],
       "tests": [
         "tests/test_provider_management.py",
         "tests/test_provider_web.py"
       ]
     },
-    "klipperai_agent.application.recovery": {
-      "path": "klipperai_agent/application/recovery.py",
+    "kai_agent.application.recovery": {
+      "path": "kai_agent/application/recovery.py",
       "lines": 76,
       "symbols": [
         {
@@ -1930,15 +1930,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.investigations",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.application.investigations",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_investigation_recovery.py"
       ]
     },
-    "klipperai_agent.application.request_context": {
-      "path": "klipperai_agent/application/request_context.py",
+    "kai_agent.application.request_context": {
+      "path": "kai_agent/application/request_context.py",
       "lines": 88,
       "symbols": [
         {
@@ -1963,15 +1963,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.messages"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.messages"
       ],
       "tests": [
         "tests/test_services.py"
       ]
     },
-    "klipperai_agent.application.review_firmware": {
-      "path": "klipperai_agent/application/review_firmware.py",
+    "kai_agent.application.review_firmware": {
+      "path": "kai_agent/application/review_firmware.py",
       "lines": 36,
       "symbols": [
         {
@@ -1981,17 +1981,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.ports",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.agent.ports",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.proposals",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.application.sessions": {
-      "path": "klipperai_agent/application/sessions.py",
+    "kai_agent.application.sessions": {
+      "path": "kai_agent/application/sessions.py",
       "lines": 43,
       "symbols": [
         {
@@ -2039,8 +2039,8 @@
         "tests/test_sessions.py"
       ]
     },
-    "klipperai_agent.bootstrap.container": {
-      "path": "klipperai_agent/bootstrap/container.py",
+    "kai_agent.bootstrap.container": {
+      "path": "kai_agent/bootstrap/container.py",
       "lines": 273,
       "symbols": [
         {
@@ -2061,39 +2061,39 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.agent.workflow",
-        "klipperai_agent.application.chat",
-        "klipperai_agent.application.investigations",
-        "klipperai_agent.application.knowledge",
-        "klipperai_agent.application.moonraker",
-        "klipperai_agent.application.proposal_review",
-        "klipperai_agent.application.providers",
-        "klipperai_agent.application.sessions",
-        "klipperai_agent.bootstrap.providers",
-        "klipperai_agent.config.collector",
-        "klipperai_agent.diagnostics.collector",
-        "klipperai_agent.diagnostics.rules",
-        "klipperai_agent.domain.moonraker",
-        "klipperai_agent.infrastructure.documentation",
-        "klipperai_agent.infrastructure.host.flight_recorder",
-        "klipperai_agent.infrastructure.host.history_store",
-        "klipperai_agent.infrastructure.host.log_reader",
-        "klipperai_agent.infrastructure.host.logs",
-        "klipperai_agent.infrastructure.host.shutdown",
-        "klipperai_agent.infrastructure.host.system",
-        "klipperai_agent.infrastructure.investigations",
-        "klipperai_agent.infrastructure.knowledge",
-        "klipperai_agent.infrastructure.moonraker",
-        "klipperai_agent.infrastructure.moonraker_agent",
-        "klipperai_agent.profile.saved",
-        "klipperai_agent.providers.factory",
-        "klipperai_agent.providers.knowledge",
-        "klipperai_agent.providers.responses",
-        "klipperai_agent.providers.web_search",
-        "klipperai_agent.runtime.settings",
-        "klipperai_agent.workflows.context",
-        "klipperai_agent.workflows.engine"
+        "kai_agent.agent.models",
+        "kai_agent.agent.workflow",
+        "kai_agent.application.chat",
+        "kai_agent.application.investigations",
+        "kai_agent.application.knowledge",
+        "kai_agent.application.moonraker",
+        "kai_agent.application.proposal_review",
+        "kai_agent.application.providers",
+        "kai_agent.application.sessions",
+        "kai_agent.bootstrap.providers",
+        "kai_agent.config.collector",
+        "kai_agent.diagnostics.collector",
+        "kai_agent.diagnostics.rules",
+        "kai_agent.domain.moonraker",
+        "kai_agent.infrastructure.documentation",
+        "kai_agent.infrastructure.host.flight_recorder",
+        "kai_agent.infrastructure.host.history_store",
+        "kai_agent.infrastructure.host.log_reader",
+        "kai_agent.infrastructure.host.logs",
+        "kai_agent.infrastructure.host.shutdown",
+        "kai_agent.infrastructure.host.system",
+        "kai_agent.infrastructure.investigations",
+        "kai_agent.infrastructure.knowledge",
+        "kai_agent.infrastructure.moonraker",
+        "kai_agent.infrastructure.moonraker_agent",
+        "kai_agent.profile.saved",
+        "kai_agent.providers.factory",
+        "kai_agent.providers.knowledge",
+        "kai_agent.providers.responses",
+        "kai_agent.providers.web_search",
+        "kai_agent.runtime.settings",
+        "kai_agent.workflows.context",
+        "kai_agent.workflows.engine"
       ],
       "tests": [
         "tests/test_agent_integration.py",
@@ -2102,8 +2102,8 @@
         "tests/test_provider_management.py"
       ]
     },
-    "klipperai_agent.bootstrap.providers": {
-      "path": "klipperai_agent/bootstrap/providers.py",
+    "kai_agent.bootstrap.providers": {
+      "path": "kai_agent/bootstrap/providers.py",
       "lines": 67,
       "symbols": [
         {
@@ -2118,20 +2118,20 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.providers",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.infrastructure.provider_store",
-        "klipperai_agent.providers.credentials",
-        "klipperai_agent.providers.usage",
-        "klipperai_agent.runtime.logging",
-        "klipperai_agent.runtime.settings"
+        "kai_agent.application.providers",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.infrastructure.provider_store",
+        "kai_agent.providers.credentials",
+        "kai_agent.providers.usage",
+        "kai_agent.runtime.logging",
+        "kai_agent.runtime.settings"
       ],
       "tests": [
         "tests/test_provider_management.py"
       ]
     },
-    "klipperai_agent.cli.credentials": {
-      "path": "klipperai_agent/cli/credentials.py",
+    "kai_agent.cli.credentials": {
+      "path": "kai_agent/cli/credentials.py",
       "lines": 108,
       "symbols": [
         {
@@ -2146,16 +2146,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.infrastructure.credential_cipher",
-        "klipperai_agent.infrastructure.provider_store"
+        "kai_agent.domain.provider_settings",
+        "kai_agent.infrastructure.credential_cipher",
+        "kai_agent.infrastructure.provider_store"
       ],
       "tests": [
         "tests/test_credential_storage.py"
       ]
     },
-    "klipperai_agent.cli.detect_profile": {
-      "path": "klipperai_agent/cli/detect_profile.py",
+    "kai_agent.cli.detect_profile": {
+      "path": "kai_agent/cli/detect_profile.py",
       "lines": 111,
       "symbols": [
         {
@@ -2185,46 +2185,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.collector",
-        "klipperai_agent.infrastructure.moonraker",
-        "klipperai_agent.profile.collector",
-        "klipperai_agent.profile.persistence"
+        "kai_agent.config.collector",
+        "kai_agent.infrastructure.moonraker",
+        "kai_agent.profile.collector",
+        "kai_agent.profile.persistence"
       ],
       "tests": [
         "tests/test_detect_profile.py"
       ]
     },
-    "klipperai_agent.cli.legacy": {
-      "path": "klipperai_agent/cli/legacy.py",
-      "lines": 25,
-      "symbols": [
-        {
-          "name": "export_legacy_environment",
-          "line": 11,
-          "kind": "FunctionDef"
-        },
-        {
-          "name": "agent_main",
-          "line": 18,
-          "kind": "FunctionDef"
-        },
-        {
-          "name": "detect_main",
-          "line": 23,
-          "kind": "FunctionDef"
-        }
-      ],
-      "imports": [
-        "klipperai_agent.__main__",
-        "klipperai_agent.cli.detect_profile"
-      ],
-      "tests": [
-        "tests/test_legacy_compat.py",
-        "tests/test_main.py"
-      ]
-    },
-    "klipperai_agent.config.analysis": {
-      "path": "klipperai_agent/config/analysis.py",
+    "kai_agent.config.analysis": {
+      "path": "kai_agent/config/analysis.py",
       "lines": 201,
       "symbols": [
         {
@@ -2234,19 +2205,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.include_paths",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.domain.config_analysis",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.knowledge.pins"
+        "kai_agent.config.include_paths",
+        "kai_agent.config.models",
+        "kai_agent.config.review_parser",
+        "kai_agent.domain.config_analysis",
+        "kai_agent.domain.evidence",
+        "kai_agent.knowledge.pins"
       ],
       "tests": [
         "tests/test_config_analysis.py"
       ]
     },
-    "klipperai_agent.config.collector": {
-      "path": "klipperai_agent/config/collector.py",
+    "kai_agent.config.collector": {
+      "path": "kai_agent/config/collector.py",
       "lines": 355,
       "symbols": [
         {
@@ -2323,9 +2294,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.parser",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.config.models",
+        "kai_agent.config.parser",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -2349,8 +2320,8 @@
         "tests/test_workflows.py"
       ]
     },
-    "klipperai_agent.config.include_paths": {
-      "path": "klipperai_agent/config/include_paths.py",
+    "kai_agent.config.include_paths": {
+      "path": "kai_agent/config/include_paths.py",
       "lines": 13,
       "symbols": [
         {
@@ -2364,8 +2335,8 @@
         "tests/test_config_patches.py"
       ]
     },
-    "klipperai_agent.config.lookup": {
-      "path": "klipperai_agent/config/lookup.py",
+    "kai_agent.config.lookup": {
+      "path": "kai_agent/config/lookup.py",
       "lines": 259,
       "symbols": [
         {
@@ -2430,9 +2401,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.matching",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.vocabulary"
+        "kai_agent.config.matching",
+        "kai_agent.config.models",
+        "kai_agent.config.vocabulary"
       ],
       "tests": [
         "tests/test_llm_extra.py",
@@ -2440,8 +2411,8 @@
         "tests/test_printerconfig_extra.py"
       ]
     },
-    "klipperai_agent.config.macro_names": {
-      "path": "klipperai_agent/config/macro_names.py",
+    "kai_agent.config.macro_names": {
+      "path": "kai_agent/config/macro_names.py",
       "lines": 118,
       "symbols": [
         {
@@ -2481,14 +2452,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.vocabulary"
+        "kai_agent.config.vocabulary"
       ],
       "tests": [
         "tests/test_printerconfig_extra.py"
       ]
     },
-    "klipperai_agent.config.matching": {
-      "path": "klipperai_agent/config/matching.py",
+    "kai_agent.config.matching": {
+      "path": "kai_agent/config/matching.py",
       "lines": 34,
       "symbols": [
         {
@@ -2513,14 +2484,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.vocabulary"
+        "kai_agent.config.vocabulary"
       ],
       "tests": [
         "tests/test_printerconfig_extra.py"
       ]
     },
-    "klipperai_agent.config.models": {
-      "path": "klipperai_agent/config/models.py",
+    "kai_agent.config.models": {
+      "path": "kai_agent/config/models.py",
       "lines": 263,
       "symbols": [
         {
@@ -2624,9 +2595,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.matching",
-        "klipperai_agent.config.vocabulary",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.config.matching",
+        "kai_agent.config.vocabulary",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent_modes.py",
@@ -2648,8 +2619,8 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.config.option_review": {
-      "path": "klipperai_agent/config/option_review.py",
+    "kai_agent.config.option_review": {
+      "path": "kai_agent/config/option_review.py",
       "lines": 251,
       "symbols": [
         {
@@ -2679,18 +2650,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.option_rules",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.config.review_versions",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.models",
+        "kai_agent.config.option_rules",
+        "kai_agent.config.review_parser",
+        "kai_agent.config.review_versions",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.config.option_rules": {
-      "path": "klipperai_agent/config/option_rules.py",
+    "kai_agent.config.option_rules": {
+      "path": "kai_agent/config/option_rules.py",
       "lines": 228,
       "symbols": [
         {
@@ -2710,8 +2681,8 @@
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.config.parser": {
-      "path": "klipperai_agent/config/parser.py",
+    "kai_agent.config.parser": {
+      "path": "kai_agent/config/parser.py",
       "lines": 99,
       "symbols": [
         {
@@ -2739,16 +2710,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models"
+        "kai_agent.config.models"
       ],
       "tests": [
         "tests/test_config_analysis.py",
         "tests/test_printerconfig_extra.py"
       ]
     },
-    "klipperai_agent.config.patches": {
-      "path": "klipperai_agent/config/patches.py",
-      "lines": 229,
+    "kai_agent.config.patches": {
+      "path": "kai_agent/config/patches.py",
+      "lines": 227,
       "symbols": [
         {
           "name": "valid_target",
@@ -2782,20 +2753,20 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.include_paths",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.parser",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.knowledge.pins"
+        "kai_agent.config.include_paths",
+        "kai_agent.config.models",
+        "kai_agent.config.parser",
+        "kai_agent.config.review_parser",
+        "kai_agent.domain.proposals",
+        "kai_agent.domain.redaction",
+        "kai_agent.knowledge.pins"
       ],
       "tests": [
         "tests/test_config_patches.py"
       ]
     },
-    "klipperai_agent.config.requests": {
-      "path": "klipperai_agent/config/requests.py",
+    "kai_agent.config.requests": {
+      "path": "kai_agent/config/requests.py",
       "lines": 34,
       "symbols": [
         {
@@ -2811,11 +2782,11 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.profile.models"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.artifacts",
+        "kai_agent.profile.models"
       ],
       "tests": [
         "tests/test_config_features.py",
@@ -2823,8 +2794,8 @@
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.config.review": {
-      "path": "klipperai_agent/config/review.py",
+    "kai_agent.config.review": {
+      "path": "kai_agent/config/review.py",
       "lines": 179,
       "symbols": [
         {
@@ -2840,15 +2811,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.option_review",
-        "klipperai_agent.config.parser",
-        "klipperai_agent.config.patches",
-        "klipperai_agent.config.review_guidance",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.config.review_versions",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.models",
+        "kai_agent.config.option_review",
+        "kai_agent.config.parser",
+        "kai_agent.config.patches",
+        "kai_agent.config.review_guidance",
+        "kai_agent.config.review_parser",
+        "kai_agent.config.review_versions",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_config_patches.py",
@@ -2856,8 +2827,8 @@
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.config.review_guidance": {
-      "path": "klipperai_agent/config/review_guidance.py",
+    "kai_agent.config.review_guidance": {
+      "path": "kai_agent/config/review_guidance.py",
       "lines": 55,
       "symbols": [
         {
@@ -2867,13 +2838,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.option_rules",
-        "klipperai_agent.config.review_parser"
+        "kai_agent.config.option_rules",
+        "kai_agent.config.review_parser"
       ],
       "tests": []
     },
-    "klipperai_agent.config.review_parser": {
-      "path": "klipperai_agent/config/review_parser.py",
+    "kai_agent.config.review_parser": {
+      "path": "kai_agent/config/review_parser.py",
       "lines": 66,
       "symbols": [
         {
@@ -2889,15 +2860,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.proposals"
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_advanced_templates.py",
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.config.review_versions": {
-      "path": "klipperai_agent/config/review_versions.py",
+    "kai_agent.config.review_versions": {
+      "path": "kai_agent/config/review_versions.py",
       "lines": 76,
       "symbols": [
         {
@@ -2912,14 +2883,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.option_rules",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.option_rules",
+        "kai_agent.config.review_parser",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.targeting": {
-      "path": "klipperai_agent/config/targeting.py",
+    "kai_agent.config.targeting": {
+      "path": "kai_agent/config/targeting.py",
       "lines": 213,
       "symbols": [
         {
@@ -2969,10 +2940,10 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.macro_names",
-        "klipperai_agent.config.matching",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.vocabulary"
+        "kai_agent.config.macro_names",
+        "kai_agent.config.matching",
+        "kai_agent.config.models",
+        "kai_agent.config.vocabulary"
       ],
       "tests": [
         "tests/test_printerconfig.py",
@@ -2980,8 +2951,8 @@
         "tests/test_workflows.py"
       ]
     },
-    "klipperai_agent.config.templates.advanced": {
-      "path": "klipperai_agent/config/templates/advanced.py",
+    "kai_agent.config.templates.advanced": {
+      "path": "kai_agent/config/templates/advanced.py",
       "lines": 164,
       "symbols": [
         {
@@ -3001,14 +2972,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.requests",
+        "kai_agent.config.review_parser",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.templates.calibration": {
-      "path": "klipperai_agent/config/templates/calibration.py",
+    "kai_agent.config.templates.calibration": {
+      "path": "kai_agent/config/templates/calibration.py",
       "lines": 79,
       "symbols": [
         {
@@ -3046,13 +3017,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.requests",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.templates.catalog": {
-      "path": "klipperai_agent/config/templates/catalog.py",
+    "kai_agent.config.templates.catalog": {
+      "path": "kai_agent/config/templates/catalog.py",
       "lines": 75,
       "symbols": [
         {
@@ -3087,16 +3058,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.templates.advanced",
-        "klipperai_agent.config.templates.calibration",
-        "klipperai_agent.config.templates.features",
-        "klipperai_agent.config.templates.macros",
-        "klipperai_agent.config.templates.motion",
-        "klipperai_agent.config.templates.thermal",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.profile.models"
+        "kai_agent.config.models",
+        "kai_agent.config.requests",
+        "kai_agent.config.templates.advanced",
+        "kai_agent.config.templates.calibration",
+        "kai_agent.config.templates.features",
+        "kai_agent.config.templates.macros",
+        "kai_agent.config.templates.motion",
+        "kai_agent.config.templates.thermal",
+        "kai_agent.domain.proposals",
+        "kai_agent.profile.models"
       ],
       "tests": [
         "tests/test_advanced_templates.py",
@@ -3105,8 +3076,8 @@
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.config.templates.features": {
-      "path": "klipperai_agent/config/templates/features.py",
+    "kai_agent.config.templates.features": {
+      "path": "kai_agent/config/templates/features.py",
       "lines": 137,
       "symbols": [
         {
@@ -3116,17 +3087,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.review_parser",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.models",
+        "kai_agent.config.requests",
+        "kai_agent.config.review_parser",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_config_features.py"
       ]
     },
-    "klipperai_agent.config.templates.macros": {
-      "path": "klipperai_agent/config/templates/macros.py",
+    "kai_agent.config.templates.macros": {
+      "path": "kai_agent/config/templates/macros.py",
       "lines": 79,
       "symbols": [
         {
@@ -3164,13 +3135,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.requests",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.templates.motion": {
-      "path": "klipperai_agent/config/templates/motion.py",
+    "kai_agent.config.templates.motion": {
+      "path": "kai_agent/config/templates/motion.py",
       "lines": 82,
       "symbols": [
         {
@@ -3208,13 +3179,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.requests",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.templates.thermal": {
-      "path": "klipperai_agent/config/templates/thermal.py",
+    "kai_agent.config.templates.thermal": {
+      "path": "kai_agent/config/templates/thermal.py",
       "lines": 73,
       "symbols": [
         {
@@ -3252,22 +3223,22 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.config.requests",
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.config.vocabulary": {
-      "path": "klipperai_agent/config/vocabulary.py",
+    "kai_agent.config.vocabulary": {
+      "path": "kai_agent/config/vocabulary.py",
       "lines": 142,
       "symbols": [],
       "imports": [
-        "klipperai_agent.domain.proposals"
+        "kai_agent.domain.proposals"
       ],
       "tests": []
     },
-    "klipperai_agent.contracts.api": {
-      "path": "klipperai_agent/contracts/api.py",
+    "kai_agent.contracts.api": {
+      "path": "kai_agent/contracts/api.py",
       "lines": 143,
       "symbols": [
         {
@@ -3317,14 +3288,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.contracts.base",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.messages",
-        "klipperai_agent.domain.model_usage",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.contracts.base",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.context",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.messages",
+        "kai_agent.domain.model_usage",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -3349,17 +3320,17 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.contracts.base": {
-      "path": "klipperai_agent/contracts/base.py",
+    "kai_agent.contracts.base": {
+      "path": "kai_agent/contracts/base.py",
       "lines": 1,
       "symbols": [],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": []
     },
-    "klipperai_agent.diagnostics.collector": {
-      "path": "klipperai_agent/diagnostics/collector.py",
+    "kai_agent.diagnostics.collector": {
+      "path": "kai_agent/diagnostics/collector.py",
       "lines": 102,
       "symbols": [
         {
@@ -3387,14 +3358,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.infrastructure.host.logs",
-        "klipperai_agent.infrastructure.host.system",
-        "klipperai_agent.infrastructure.moonraker",
-        "klipperai_agent.infrastructure.moonraker_state"
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.infrastructure.host.logs",
+        "kai_agent.infrastructure.host.system",
+        "kai_agent.infrastructure.moonraker",
+        "kai_agent.infrastructure.moonraker_state"
       ],
       "tests": [
         "tests/test_automatic_context.py",
@@ -3404,8 +3375,8 @@
         "tests/test_hostlogs.py"
       ]
     },
-    "klipperai_agent.diagnostics.evidence": {
-      "path": "klipperai_agent/diagnostics/evidence.py",
+    "kai_agent.diagnostics.evidence": {
+      "path": "kai_agent/diagnostics/evidence.py",
       "lines": 120,
       "symbols": [
         {
@@ -3425,19 +3396,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_structured_citations.py",
         "tests/test_typed_artifacts.py"
       ]
     },
-    "klipperai_agent.diagnostics.host_history": {
-      "path": "klipperai_agent/diagnostics/host_history.py",
+    "kai_agent.diagnostics.host_history": {
+      "path": "kai_agent/diagnostics/host_history.py",
       "lines": 60,
       "symbols": [
         {
@@ -3447,15 +3418,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.host_history"
+        "kai_agent.domain.host_history"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py",
         "tests/test_host_flight_recorder.py"
       ]
     },
-    "klipperai_agent.diagnostics.models": {
-      "path": "klipperai_agent/diagnostics/models.py",
+    "kai_agent.diagnostics.models": {
+      "path": "kai_agent/diagnostics/models.py",
       "lines": 90,
       "symbols": [
         {
@@ -3487,9 +3458,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation"
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -3501,8 +3472,8 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.diagnostics.playbooks": {
-      "path": "klipperai_agent/diagnostics/playbooks.py",
+    "kai_agent.diagnostics.playbooks": {
+      "path": "kai_agent/diagnostics/playbooks.py",
       "lines": 215,
       "symbols": [
         {
@@ -3517,14 +3488,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.recovery"
+        "kai_agent.domain.recovery"
       ],
       "tests": [
         "tests/test_intelligence_quality.py"
       ]
     },
-    "klipperai_agent.diagnostics.requests": {
-      "path": "klipperai_agent/diagnostics/requests.py",
+    "kai_agent.diagnostics.requests": {
+      "path": "kai_agent/diagnostics/requests.py",
       "lines": 36,
       "symbols": [
         {
@@ -3540,19 +3511,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.evidence",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.profile.models"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.evidence",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.evidence",
+        "kai_agent.profile.models"
       ],
       "tests": [
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.diagnostics.rules": {
-      "path": "klipperai_agent/diagnostics/rules.py",
+    "kai_agent.diagnostics.rules": {
+      "path": "kai_agent/diagnostics/rules.py",
       "lines": 136,
       "symbols": [
         {
@@ -3581,10 +3552,10 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.playbooks",
-        "klipperai_agent.diagnostics.signatures",
-        "klipperai_agent.domain.evidence"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.playbooks",
+        "kai_agent.diagnostics.signatures",
+        "kai_agent.domain.evidence"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -3603,8 +3574,8 @@
         "tests/test_typed_artifacts.py"
       ]
     },
-    "klipperai_agent.diagnostics.shutdown": {
-      "path": "klipperai_agent/diagnostics/shutdown.py",
+    "kai_agent.diagnostics.shutdown": {
+      "path": "kai_agent/diagnostics/shutdown.py",
       "lines": 179,
       "symbols": [
         {
@@ -3629,15 +3600,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.shutdown"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.shutdown"
       ],
       "tests": [
         "tests/test_shutdown.py"
       ]
     },
-    "klipperai_agent.diagnostics.shutdown_assessment": {
-      "path": "klipperai_agent/diagnostics/shutdown_assessment.py",
+    "kai_agent.diagnostics.shutdown_assessment": {
+      "path": "kai_agent/diagnostics/shutdown_assessment.py",
       "lines": 156,
       "symbols": [
         {
@@ -3647,23 +3618,23 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.shutdown"
+        "kai_agent.domain.shutdown"
       ],
       "tests": [
         "tests/test_shutdown.py"
       ]
     },
-    "klipperai_agent.diagnostics.signatures": {
-      "path": "klipperai_agent/diagnostics/signatures.py",
+    "kai_agent.diagnostics.signatures": {
+      "path": "kai_agent/diagnostics/signatures.py",
       "lines": 185,
       "symbols": [],
       "imports": [
-        "klipperai_agent.domain.evidence"
+        "kai_agent.domain.evidence"
       ],
       "tests": []
     },
-    "klipperai_agent.domain.artifacts": {
-      "path": "klipperai_agent/domain/artifacts.py",
+    "kai_agent.domain.artifacts": {
+      "path": "kai_agent/domain/artifacts.py",
       "lines": 194,
       "symbols": [
         {
@@ -3698,17 +3669,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.base",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_structured_citations.py",
         "tests/test_typed_artifacts.py"
       ]
     },
-    "klipperai_agent.domain.base": {
-      "path": "klipperai_agent/domain/base.py",
+    "kai_agent.domain.base": {
+      "path": "kai_agent/domain/base.py",
       "lines": 14,
       "symbols": [
         {
@@ -3730,8 +3701,8 @@
       "imports": [],
       "tests": []
     },
-    "klipperai_agent.domain.config_analysis": {
-      "path": "klipperai_agent/domain/config_analysis.py",
+    "kai_agent.domain.config_analysis": {
+      "path": "kai_agent/domain/config_analysis.py",
       "lines": 16,
       "symbols": [
         {
@@ -3742,13 +3713,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.evidence"
+        "kai_agent.domain.base",
+        "kai_agent.domain.evidence"
       ],
       "tests": []
     },
-    "klipperai_agent.domain.context": {
-      "path": "klipperai_agent/domain/context.py",
+    "kai_agent.domain.context": {
+      "path": "kai_agent/domain/context.py",
       "lines": 24,
       "symbols": [
         {
@@ -3765,12 +3736,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": []
     },
-    "klipperai_agent.domain.evidence": {
-      "path": "klipperai_agent/domain/evidence.py",
+    "kai_agent.domain.evidence": {
+      "path": "kai_agent/domain/evidence.py",
       "lines": 96,
       "symbols": [
         {
@@ -3820,8 +3791,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.recovery"
+        "kai_agent.domain.base",
+        "kai_agent.domain.recovery"
       ],
       "tests": [
         "tests/test_agent_modes.py",
@@ -3838,8 +3809,8 @@
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.domain.hardware": {
-      "path": "klipperai_agent/domain/hardware.py",
+    "kai_agent.domain.hardware": {
+      "path": "kai_agent/domain/hardware.py",
       "lines": 61,
       "symbols": [
         {
@@ -3873,15 +3844,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
         "tests/test_hardware_knowledge.py"
       ]
     },
-    "klipperai_agent.domain.host_history": {
-      "path": "klipperai_agent/domain/host_history.py",
+    "kai_agent.domain.host_history": {
+      "path": "kai_agent/domain/host_history.py",
       "lines": 37,
       "symbols": [
         {
@@ -3904,15 +3875,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py",
         "tests/test_host_flight_recorder.py"
       ]
     },
-    "klipperai_agent.domain.investigation": {
-      "path": "klipperai_agent/domain/investigation.py",
+    "kai_agent.domain.investigation": {
+      "path": "kai_agent/domain/investigation.py",
       "lines": 151,
       "symbols": [
         {
@@ -3990,13 +3961,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.artifacts",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.messages",
-        "klipperai_agent.domain.model_usage",
-        "klipperai_agent.domain.proposals"
+        "kai_agent.domain.artifacts",
+        "kai_agent.domain.base",
+        "kai_agent.domain.context",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.messages",
+        "kai_agent.domain.model_usage",
+        "kai_agent.domain.proposals"
       ],
       "tests": [
         "tests/test_agent.py",
@@ -4016,8 +3987,8 @@
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.domain.knowledge": {
-      "path": "klipperai_agent/domain/knowledge.py",
+    "kai_agent.domain.knowledge": {
+      "path": "kai_agent/domain/knowledge.py",
       "lines": 151,
       "symbols": [
         {
@@ -4133,8 +4104,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.hardware"
+        "kai_agent.domain.base",
+        "kai_agent.domain.hardware"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
@@ -4147,8 +4118,8 @@
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.domain.logs": {
-      "path": "klipperai_agent/domain/logs.py",
+    "kai_agent.domain.logs": {
+      "path": "kai_agent/domain/logs.py",
       "lines": 46,
       "symbols": [
         {
@@ -4182,8 +4153,8 @@
         "tests/test_log_reader.py"
       ]
     },
-    "klipperai_agent.domain.messages": {
-      "path": "klipperai_agent/domain/messages.py",
+    "kai_agent.domain.messages": {
+      "path": "kai_agent/domain/messages.py",
       "lines": 16,
       "symbols": [
         {
@@ -4199,14 +4170,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": [
         "tests/test_investigations.py"
       ]
     },
-    "klipperai_agent.domain.model_usage": {
-      "path": "klipperai_agent/domain/model_usage.py",
+    "kai_agent.domain.model_usage": {
+      "path": "kai_agent/domain/model_usage.py",
       "lines": 14,
       "symbols": [
         {
@@ -4217,12 +4188,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": []
     },
-    "klipperai_agent.domain.moonraker": {
-      "path": "klipperai_agent/domain/moonraker.py",
+    "kai_agent.domain.moonraker": {
+      "path": "kai_agent/domain/moonraker.py",
       "lines": 127,
       "symbols": [
         {
@@ -4291,8 +4262,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.version"
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.version"
       ],
       "tests": [
         "tests/test_moonraker_extension.py",
@@ -4300,8 +4271,8 @@
         "tests/test_release_identity.py"
       ]
     },
-    "klipperai_agent.domain.proposals": {
-      "path": "klipperai_agent/domain/proposals.py",
+    "kai_agent.domain.proposals": {
+      "path": "kai_agent/domain/proposals.py",
       "lines": 122,
       "symbols": [
         {
@@ -4352,7 +4323,7 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": [
         "tests/test_config_patches.py",
@@ -4361,8 +4332,8 @@
         "tests/test_review_options.py"
       ]
     },
-    "klipperai_agent.domain.provider_settings": {
-      "path": "klipperai_agent/domain/provider_settings.py",
+    "kai_agent.domain.provider_settings": {
+      "path": "kai_agent/domain/provider_settings.py",
       "lines": 74,
       "symbols": [
         {
@@ -4456,8 +4427,8 @@
         "tests/test_provider_web.py"
       ]
     },
-    "klipperai_agent.domain.recovery": {
-      "path": "klipperai_agent/domain/recovery.py",
+    "kai_agent.domain.recovery": {
+      "path": "kai_agent/domain/recovery.py",
       "lines": 16,
       "symbols": [
         {
@@ -4468,12 +4439,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base"
+        "kai_agent.domain.base"
       ],
       "tests": []
     },
-    "klipperai_agent.domain.redaction": {
-      "path": "klipperai_agent/domain/redaction.py",
+    "kai_agent.domain.redaction": {
+      "path": "kai_agent/domain/redaction.py",
       "lines": 78,
       "symbols": [
         {
@@ -4498,8 +4469,8 @@
         "tests/test_typed_artifacts.py"
       ]
     },
-    "klipperai_agent.domain.repositories": {
-      "path": "klipperai_agent/domain/repositories.py",
+    "kai_agent.domain.repositories": {
+      "path": "kai_agent/domain/repositories.py",
       "lines": 59,
       "symbols": [
         {
@@ -4579,7 +4550,7 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation"
+        "kai_agent.domain.investigation"
       ],
       "tests": [
         "tests/test_confirmed_memory.py",
@@ -4588,8 +4559,8 @@
         "tests/test_resource_bounds.py"
       ]
     },
-    "klipperai_agent.domain.shutdown": {
-      "path": "klipperai_agent/domain/shutdown.py",
+    "kai_agent.domain.shutdown": {
+      "path": "kai_agent/domain/shutdown.py",
       "lines": 50,
       "symbols": [
         {
@@ -4624,8 +4595,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.evidence"
+        "kai_agent.domain.base",
+        "kai_agent.domain.evidence"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py",
@@ -4633,8 +4604,8 @@
         "tests/test_shutdown_agent.py"
       ]
     },
-    "klipperai_agent.domain.version": {
-      "path": "klipperai_agent/domain/version.py",
+    "kai_agent.domain.version": {
+      "path": "kai_agent/domain/version.py",
       "lines": 3,
       "symbols": [],
       "imports": [],
@@ -4643,8 +4614,8 @@
         "tests/test_release_identity.py"
       ]
     },
-    "klipperai_agent.infrastructure.confirmed_memory": {
-      "path": "klipperai_agent/infrastructure/confirmed_memory.py",
+    "kai_agent.infrastructure.confirmed_memory": {
+      "path": "kai_agent/infrastructure/confirmed_memory.py",
       "lines": 64,
       "symbols": [
         {
@@ -4672,14 +4643,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories"
       ],
       "tests": []
     },
-    "klipperai_agent.infrastructure.credential_cipher": {
-      "path": "klipperai_agent/infrastructure/credential_cipher.py",
+    "kai_agent.infrastructure.credential_cipher": {
+      "path": "kai_agent/infrastructure/credential_cipher.py",
       "lines": 95,
       "symbols": [
         {
@@ -4724,11 +4695,12 @@
       "imports": [],
       "tests": [
         "tests/test_appliance_deployment.py",
-        "tests/test_credential_storage.py"
+        "tests/test_credential_storage.py",
+        "tests/test_kai_identity.py"
       ]
     },
-    "klipperai_agent.infrastructure.documentation": {
-      "path": "klipperai_agent/infrastructure/documentation.py",
+    "kai_agent.infrastructure.documentation": {
+      "path": "kai_agent/infrastructure/documentation.py",
       "lines": 101,
       "symbols": [
         {
@@ -4776,17 +4748,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.infrastructure.pdf_index",
-        "klipperai_agent.infrastructure.public_docs"
+        "kai_agent.domain.knowledge",
+        "kai_agent.infrastructure.pdf_index",
+        "kai_agent.infrastructure.public_docs"
       ],
       "tests": [
         "tests/test_knowledge_research.py",
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.flight_recorder": {
-      "path": "klipperai_agent/infrastructure/host/flight_recorder.py",
+    "kai_agent.infrastructure.host.flight_recorder": {
+      "path": "kai_agent/infrastructure/host/flight_recorder.py",
       "lines": 77,
       "symbols": [
         {
@@ -4822,16 +4794,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.diagnostics.host_history",
-        "klipperai_agent.infrastructure.host.history_store",
-        "klipperai_agent.infrastructure.host.proc"
+        "kai_agent.diagnostics.host_history",
+        "kai_agent.infrastructure.host.history_store",
+        "kai_agent.infrastructure.host.proc"
       ],
       "tests": [
         "tests/test_host_flight_recorder.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.history_store": {
-      "path": "klipperai_agent/infrastructure/host/history_store.py",
+    "kai_agent.infrastructure.host.history_store": {
+      "path": "kai_agent/infrastructure/host/history_store.py",
       "lines": 87,
       "symbols": [
         {
@@ -4867,16 +4839,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.host_history",
-        "klipperai_agent.infrastructure.private_files"
+        "kai_agent.domain.host_history",
+        "kai_agent.infrastructure.private_files"
       ],
       "tests": [
         "tests/test_host_flight_recorder.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.log_reader": {
-      "path": "klipperai_agent/infrastructure/host/log_reader.py",
-      "lines": 184,
+    "kai_agent.infrastructure.host.log_reader": {
+      "path": "kai_agent/infrastructure/host/log_reader.py",
+      "lines": 183,
       "symbols": [
         {
           "name": "_stamp",
@@ -4902,26 +4874,26 @@
             },
             {
               "name": "read_window",
-              "line": 107
+              "line": 106
             },
             {
               "name": "_compressed",
-              "line": 171
+              "line": 170
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.domain.logs",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.logs",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_agent_search.py",
         "tests/test_log_reader.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.logs": {
-      "path": "klipperai_agent/infrastructure/host/logs.py",
+    "kai_agent.infrastructure.host.logs": {
+      "path": "kai_agent/infrastructure/host/logs.py",
       "lines": 181,
       "symbols": [
         {
@@ -4975,8 +4947,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_automatic_context.py",
@@ -4986,8 +4958,8 @@
         "tests/test_workflows.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.proc": {
-      "path": "klipperai_agent/infrastructure/host/proc.py",
+    "kai_agent.infrastructure.host.proc": {
+      "path": "kai_agent/infrastructure/host/proc.py",
       "lines": 143,
       "symbols": [
         {
@@ -5021,15 +4993,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.host_history",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.host_history",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_host_flight_recorder.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.shutdown": {
-      "path": "klipperai_agent/infrastructure/host/shutdown.py",
+    "kai_agent.infrastructure.host.shutdown": {
+      "path": "kai_agent/infrastructure/host/shutdown.py",
       "lines": 164,
       "symbols": [
         {
@@ -5062,12 +5034,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.shutdown",
-        "klipperai_agent.infrastructure.host.flight_recorder",
-        "klipperai_agent.infrastructure.host.shutdown_logs",
-        "klipperai_agent.infrastructure.host.system",
-        "klipperai_agent.infrastructure.moonraker"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.shutdown",
+        "kai_agent.infrastructure.host.flight_recorder",
+        "kai_agent.infrastructure.host.shutdown_logs",
+        "kai_agent.infrastructure.host.system",
+        "kai_agent.infrastructure.moonraker"
       ],
       "tests": [
         "tests/test_host_flight_recorder.py",
@@ -5075,8 +5047,8 @@
         "tests/test_shutdown_host.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.shutdown_logs": {
-      "path": "klipperai_agent/infrastructure/host/shutdown_logs.py",
+    "kai_agent.infrastructure.host.shutdown_logs": {
+      "path": "kai_agent/infrastructure/host/shutdown_logs.py",
       "lines": 91,
       "symbols": [
         {
@@ -5091,15 +5063,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.shutdown"
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.shutdown"
       ],
       "tests": [
         "tests/test_shutdown_host.py"
       ]
     },
-    "klipperai_agent.infrastructure.host.system": {
-      "path": "klipperai_agent/infrastructure/host/system.py",
+    "kai_agent.infrastructure.host.system": {
+      "path": "kai_agent/infrastructure/host/system.py",
       "lines": 275,
       "symbols": [
         {
@@ -5174,8 +5146,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py",
@@ -5185,8 +5157,8 @@
         "tests/test_shutdown_host.py"
       ]
     },
-    "klipperai_agent.infrastructure.investigation_records": {
-      "path": "klipperai_agent/infrastructure/investigation_records.py",
+    "kai_agent.infrastructure.investigation_records": {
+      "path": "kai_agent/infrastructure/investigation_records.py",
       "lines": 29,
       "symbols": [
         {
@@ -5196,14 +5168,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories"
       ],
       "tests": []
     },
-    "klipperai_agent.infrastructure.investigation_runs": {
-      "path": "klipperai_agent/infrastructure/investigation_runs.py",
+    "kai_agent.infrastructure.investigation_runs": {
+      "path": "kai_agent/infrastructure/investigation_runs.py",
       "lines": 131,
       "symbols": [
         {
@@ -5240,15 +5212,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories",
-        "klipperai_agent.infrastructure.investigation_records"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories",
+        "kai_agent.infrastructure.investigation_records"
       ],
       "tests": []
     },
-    "klipperai_agent.infrastructure.investigations": {
-      "path": "klipperai_agent/infrastructure/investigations.py",
+    "kai_agent.infrastructure.investigations": {
+      "path": "kai_agent/infrastructure/investigations.py",
       "lines": 187,
       "symbols": [
         {
@@ -5300,13 +5272,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories",
-        "klipperai_agent.infrastructure.confirmed_memory",
-        "klipperai_agent.infrastructure.investigation_records",
-        "klipperai_agent.infrastructure.investigation_runs",
-        "klipperai_agent.infrastructure.private_files"
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories",
+        "kai_agent.infrastructure.confirmed_memory",
+        "kai_agent.infrastructure.investigation_records",
+        "kai_agent.infrastructure.investigation_runs",
+        "kai_agent.infrastructure.private_files"
       ],
       "tests": [
         "tests/test_investigations.py",
@@ -5314,8 +5286,8 @@
         "tests/test_security.py"
       ]
     },
-    "klipperai_agent.infrastructure.knowledge": {
-      "path": "klipperai_agent/infrastructure/knowledge.py",
+    "kai_agent.infrastructure.knowledge": {
+      "path": "kai_agent/infrastructure/knowledge.py",
       "lines": 116,
       "symbols": [
         {
@@ -5371,15 +5343,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.infrastructure.private_files"
+        "kai_agent.domain.knowledge",
+        "kai_agent.infrastructure.private_files"
       ],
       "tests": [
         "tests/test_knowledge_storage.py"
       ]
     },
-    "klipperai_agent.infrastructure.moonraker": {
-      "path": "klipperai_agent/infrastructure/moonraker.py",
+    "kai_agent.infrastructure.moonraker": {
+      "path": "kai_agent/infrastructure/moonraker.py",
       "lines": 146,
       "symbols": [
         {
@@ -5453,7 +5425,7 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.moonraker"
+        "kai_agent.domain.moonraker"
       ],
       "tests": [
         "tests/test_automatic_context.py",
@@ -5466,9 +5438,9 @@
         "tests/test_shutdown_host.py"
       ]
     },
-    "klipperai_agent.infrastructure.moonraker_agent": {
-      "path": "klipperai_agent/infrastructure/moonraker_agent.py",
-      "lines": 200,
+    "kai_agent.infrastructure.moonraker_agent": {
+      "path": "kai_agent/infrastructure/moonraker_agent.py",
+      "lines": 198,
       "symbols": [
         {
           "name": "open_moonraker_socket",
@@ -5506,21 +5478,21 @@
             },
             {
               "name": "_refresh",
-              "line": 156
+              "line": 154
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.domain.moonraker",
-        "klipperai_agent.infrastructure.moonraker_rpc"
+        "kai_agent.domain.moonraker",
+        "kai_agent.infrastructure.moonraker_rpc"
       ],
       "tests": [
         "tests/test_moonraker_extension.py"
       ]
     },
-    "klipperai_agent.infrastructure.moonraker_rpc": {
-      "path": "klipperai_agent/infrastructure/moonraker_rpc.py",
+    "kai_agent.infrastructure.moonraker_rpc": {
+      "path": "kai_agent/infrastructure/moonraker_rpc.py",
       "lines": 127,
       "symbols": [
         {
@@ -5566,15 +5538,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.moonraker"
+        "kai_agent.domain.moonraker"
       ],
       "tests": [
         "tests/test_moonraker_extension.py",
         "tests/test_moonraker_rpc.py"
       ]
     },
-    "klipperai_agent.infrastructure.moonraker_state": {
-      "path": "klipperai_agent/infrastructure/moonraker_state.py",
+    "kai_agent.infrastructure.moonraker_state": {
+      "path": "kai_agent/infrastructure/moonraker_state.py",
       "lines": 104,
       "symbols": [
         {
@@ -5589,17 +5561,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.infrastructure.moonraker"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.infrastructure.moonraker"
       ],
       "tests": [
         "tests/test_diagnostics_mvp.py"
       ]
     },
-    "klipperai_agent.infrastructure.pdf_index": {
-      "path": "klipperai_agent/infrastructure/pdf_index.py",
+    "kai_agent.infrastructure.pdf_index": {
+      "path": "kai_agent/infrastructure/pdf_index.py",
       "lines": 82,
       "symbols": [
         {
@@ -5623,8 +5595,8 @@
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.infrastructure.private_files": {
-      "path": "klipperai_agent/infrastructure/private_files.py",
+    "kai_agent.infrastructure.private_files": {
+      "path": "kai_agent/infrastructure/private_files.py",
       "lines": 34,
       "symbols": [
         {
@@ -5638,8 +5610,8 @@
         "tests/test_security.py"
       ]
     },
-    "klipperai_agent.infrastructure.provider_store": {
-      "path": "klipperai_agent/infrastructure/provider_store.py",
+    "kai_agent.infrastructure.provider_store": {
+      "path": "kai_agent/infrastructure/provider_store.py",
       "lines": 167,
       "symbols": [
         {
@@ -5695,9 +5667,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.infrastructure.credential_cipher",
-        "klipperai_agent.infrastructure.private_files"
+        "kai_agent.domain.provider_settings",
+        "kai_agent.infrastructure.credential_cipher",
+        "kai_agent.infrastructure.private_files"
       ],
       "tests": [
         "tests/test_appliance_deployment.py",
@@ -5705,8 +5677,8 @@
         "tests/test_provider_management.py"
       ]
     },
-    "klipperai_agent.infrastructure.public_docs": {
-      "path": "klipperai_agent/infrastructure/public_docs.py",
+    "kai_agent.infrastructure.public_docs": {
+      "path": "kai_agent/infrastructure/public_docs.py",
       "lines": 39,
       "symbols": [
         {
@@ -5721,15 +5693,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_knowledge_research.py",
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.knowledge.buses": {
-      "path": "klipperai_agent/knowledge/buses.py",
+    "kai_agent.knowledge.buses": {
+      "path": "kai_agent/knowledge/buses.py",
       "lines": 106,
       "symbols": [
         {
@@ -5754,19 +5726,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.hardware",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.pins",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.config.models",
+        "kai_agent.domain.hardware",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.pins",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
         "tests/test_hardware_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.components": {
-      "path": "klipperai_agent/knowledge/components.py",
+    "kai_agent.knowledge.components": {
+      "path": "kai_agent/knowledge/components.py",
       "lines": 95,
       "symbols": [
         {
@@ -5781,19 +5753,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.buses",
-        "klipperai_agent.knowledge.firmware",
-        "klipperai_agent.knowledge.retrieval",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.config.models",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.buses",
+        "kai_agent.knowledge.firmware",
+        "kai_agent.knowledge.retrieval",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_hardware_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.eddy": {
-      "path": "klipperai_agent/knowledge/eddy.py",
+    "kai_agent.knowledge.eddy": {
+      "path": "kai_agent/knowledge/eddy.py",
       "lines": 125,
       "symbols": [
         {
@@ -5803,18 +5775,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.pins",
-        "klipperai_agent.knowledge.retrieval",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.config.models",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.pins",
+        "kai_agent.knowledge.retrieval",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.fans": {
-      "path": "klipperai_agent/knowledge/fans.py",
+    "kai_agent.knowledge.fans": {
+      "path": "kai_agent/knowledge/fans.py",
       "lines": 111,
       "symbols": [
         {
@@ -5824,12 +5796,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.hardware",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.buses",
-        "klipperai_agent.knowledge.identity",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.config.models",
+        "kai_agent.domain.hardware",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.buses",
+        "kai_agent.knowledge.identity",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_hardware_knowledge.py",
@@ -5837,8 +5809,8 @@
         "tests/test_knowledge_research.py"
       ]
     },
-    "klipperai_agent.knowledge.firmware": {
-      "path": "klipperai_agent/knowledge/firmware.py",
+    "kai_agent.knowledge.firmware": {
+      "path": "kai_agent/knowledge/firmware.py",
       "lines": 47,
       "symbols": [
         {
@@ -5858,15 +5830,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge"
+        "kai_agent.domain.knowledge"
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.identity": {
-      "path": "klipperai_agent/knowledge/identity.py",
+    "kai_agent.knowledge.identity": {
+      "path": "kai_agent/knowledge/identity.py",
       "lines": 65,
       "symbols": [
         {
@@ -5881,15 +5853,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.sources"
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.sources"
       ],
       "tests": [
         "tests/test_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.pdf_pages": {
-      "path": "klipperai_agent/knowledge/pdf_pages.py",
+    "kai_agent.knowledge.pdf_pages": {
+      "path": "kai_agent/knowledge/pdf_pages.py",
       "lines": 37,
       "symbols": [
         {
@@ -5899,14 +5871,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.hardware"
+        "kai_agent.domain.hardware"
       ],
       "tests": [
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.pins": {
-      "path": "klipperai_agent/knowledge/pins.py",
+    "kai_agent.knowledge.pins": {
+      "path": "kai_agent/knowledge/pins.py",
       "lines": 183,
       "symbols": [
         {
@@ -5931,16 +5903,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.domain.knowledge"
+        "kai_agent.config.models",
+        "kai_agent.domain.knowledge"
       ],
       "tests": [
         "tests/test_knowledge.py",
         "tests/test_knowledge_research.py"
       ]
     },
-    "klipperai_agent.knowledge.retrieval": {
-      "path": "klipperai_agent/knowledge/retrieval.py",
+    "kai_agent.knowledge.retrieval": {
+      "path": "kai_agent/knowledge/retrieval.py",
       "lines": 61,
       "symbols": [
         {
@@ -5955,15 +5927,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge"
+        "kai_agent.domain.knowledge"
       ],
       "tests": [
         "tests/test_knowledge.py",
         "tests/test_pdf_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.review": {
-      "path": "klipperai_agent/knowledge/review.py",
+    "kai_agent.knowledge.review": {
+      "path": "kai_agent/knowledge/review.py",
       "lines": 74,
       "symbols": [
         {
@@ -5973,19 +5945,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.parser",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.knowledge.fans",
-        "klipperai_agent.knowledge.pins"
+        "kai_agent.config.models",
+        "kai_agent.config.parser",
+        "kai_agent.domain.knowledge",
+        "kai_agent.domain.proposals",
+        "kai_agent.knowledge.fans",
+        "kai_agent.knowledge.pins"
       ],
       "tests": [
         "tests/test_knowledge.py"
       ]
     },
-    "klipperai_agent.knowledge.sources": {
-      "path": "klipperai_agent/knowledge/sources.py",
+    "kai_agent.knowledge.sources": {
+      "path": "kai_agent/knowledge/sources.py",
       "lines": 110,
       "symbols": [
         {
@@ -6015,8 +5987,8 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.domain.redaction"
+        "kai_agent.domain.knowledge",
+        "kai_agent.domain.redaction"
       ],
       "tests": [
         "tests/test_knowledge.py",
@@ -6026,8 +5998,8 @@
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.profile.addons": {
-      "path": "klipperai_agent/profile/addons.py",
+    "kai_agent.profile.addons": {
+      "path": "kai_agent/profile/addons.py",
       "lines": 94,
       "symbols": [
         {
@@ -6043,13 +6015,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.profile.models"
+        "kai_agent.config.models",
+        "kai_agent.profile.models"
       ],
       "tests": []
     },
-    "klipperai_agent.profile.capabilities": {
-      "path": "klipperai_agent/profile/capabilities.py",
+    "kai_agent.profile.capabilities": {
+      "path": "kai_agent/profile/capabilities.py",
       "lines": 108,
       "symbols": [
         {
@@ -6089,14 +6061,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.profile.models"
+        "kai_agent.config.models",
+        "kai_agent.profile.models"
       ],
       "tests": []
     },
-    "klipperai_agent.profile.collector": {
-      "path": "klipperai_agent/profile/collector.py",
-      "lines": 241,
+    "kai_agent.profile.collector": {
+      "path": "kai_agent/profile/collector.py",
+      "lines": 239,
       "symbols": [
         {
           "name": "PrinterProfileCollector",
@@ -6113,33 +6085,33 @@
             },
             {
               "name": "_collect_optional",
-              "line": 224
+              "line": 222
             },
             {
               "name": "_normalize_override",
-              "line": 237
+              "line": 235
             }
           ]
         }
       ],
       "imports": [
-        "klipperai_agent.config.collector",
-        "klipperai_agent.config.models",
-        "klipperai_agent.infrastructure.moonraker",
-        "klipperai_agent.profile.addons",
-        "klipperai_agent.profile.capabilities",
-        "klipperai_agent.profile.hardware",
-        "klipperai_agent.profile.host",
-        "klipperai_agent.profile.models",
-        "klipperai_agent.profile.values"
+        "kai_agent.config.collector",
+        "kai_agent.config.models",
+        "kai_agent.infrastructure.moonraker",
+        "kai_agent.profile.addons",
+        "kai_agent.profile.capabilities",
+        "kai_agent.profile.hardware",
+        "kai_agent.profile.host",
+        "kai_agent.profile.models",
+        "kai_agent.profile.values"
       ],
       "tests": [
         "tests/test_printerprofile.py",
         "tests/test_printerprofile_extra.py"
       ]
     },
-    "klipperai_agent.profile.hardware": {
-      "path": "klipperai_agent/profile/hardware.py",
+    "kai_agent.profile.hardware": {
+      "path": "kai_agent/profile/hardware.py",
       "lines": 255,
       "symbols": [
         {
@@ -6199,13 +6171,13 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.profile.values"
+        "kai_agent.config.models",
+        "kai_agent.profile.values"
       ],
       "tests": []
     },
-    "klipperai_agent.profile.host": {
-      "path": "klipperai_agent/profile/host.py",
+    "kai_agent.profile.host": {
+      "path": "kai_agent/profile/host.py",
       "lines": 95,
       "symbols": [
         {
@@ -6249,12 +6221,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.profile.values"
+        "kai_agent.profile.values"
       ],
       "tests": []
     },
-    "klipperai_agent.profile.models": {
-      "path": "klipperai_agent/profile/models.py",
+    "kai_agent.profile.models": {
+      "path": "kai_agent/profile/models.py",
       "lines": 260,
       "symbols": [
         {
@@ -6334,8 +6306,8 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.profile.persistence": {
-      "path": "klipperai_agent/profile/persistence.py",
+    "kai_agent.profile.persistence": {
+      "path": "kai_agent/profile/persistence.py",
       "lines": 261,
       "symbols": [
         {
@@ -6375,15 +6347,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.profile.models"
+        "kai_agent.profile.models"
       ],
       "tests": [
         "tests/test_printerprofile.py",
         "tests/test_printerprofile_extra.py"
       ]
     },
-    "klipperai_agent.profile.saved": {
-      "path": "klipperai_agent/profile/saved.py",
+    "kai_agent.profile.saved": {
+      "path": "kai_agent/profile/saved.py",
       "lines": 61,
       "symbols": [
         {
@@ -6398,16 +6370,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.profile.models",
-        "klipperai_agent.runtime.settings"
+        "kai_agent.profile.models",
+        "kai_agent.runtime.settings"
       ],
       "tests": [
         "tests/test_printerprofile.py",
         "tests/test_printerprofile_extra.py"
       ]
     },
-    "klipperai_agent.profile.values": {
-      "path": "klipperai_agent/profile/values.py",
+    "kai_agent.profile.values": {
+      "path": "kai_agent/profile/values.py",
       "lines": 17,
       "symbols": [
         {
@@ -6426,8 +6398,8 @@
         "tests/test_printerprofile_extra.py"
       ]
     },
-    "klipperai_agent.providers.credentials": {
-      "path": "klipperai_agent/providers/credentials.py",
+    "kai_agent.providers.credentials": {
+      "path": "kai_agent/providers/credentials.py",
       "lines": 38,
       "symbols": [
         {
@@ -6447,14 +6419,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.providers.usage"
+        "kai_agent.providers.usage"
       ],
       "tests": [
         "tests/test_provider_management.py"
       ]
     },
-    "klipperai_agent.providers.factory": {
-      "path": "klipperai_agent/providers/factory.py",
+    "kai_agent.providers.factory": {
+      "path": "kai_agent/providers/factory.py",
       "lines": 45,
       "symbols": [
         {
@@ -6474,19 +6446,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.intent",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.providers.models",
-        "klipperai_agent.providers.openai",
-        "klipperai_agent.providers.usage",
-        "klipperai_agent.runtime.settings"
+        "kai_agent.application.intent",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.providers.models",
+        "kai_agent.providers.openai",
+        "kai_agent.providers.usage",
+        "kai_agent.runtime.settings"
       ],
       "tests": [
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.providers.json_client": {
-      "path": "klipperai_agent/providers/json_client.py",
+    "kai_agent.providers.json_client": {
+      "path": "kai_agent/providers/json_client.py",
       "lines": 68,
       "symbols": [
         {
@@ -6506,11 +6478,11 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.providers.normalization",
-        "klipperai_agent.providers.usage",
-        "klipperai_agent.runtime.model_usage"
+        "kai_agent.domain.provider_settings",
+        "kai_agent.domain.redaction",
+        "kai_agent.providers.normalization",
+        "kai_agent.providers.usage",
+        "kai_agent.runtime.model_usage"
       ],
       "tests": [
         "tests/test_llm_extra.py",
@@ -6519,8 +6491,8 @@
         "tests/test_security_agent.py"
       ]
     },
-    "klipperai_agent.providers.knowledge": {
-      "path": "klipperai_agent/providers/knowledge.py",
+    "kai_agent.providers.knowledge": {
+      "path": "kai_agent/providers/knowledge.py",
       "lines": 105,
       "symbols": [
         {
@@ -6555,19 +6527,19 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.knowledge",
-        "klipperai_agent.knowledge.sources",
-        "klipperai_agent.providers.normalization",
-        "klipperai_agent.providers.responses",
-        "klipperai_agent.providers.web_search"
+        "kai_agent.domain.base",
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.sources",
+        "kai_agent.providers.normalization",
+        "kai_agent.providers.responses",
+        "kai_agent.providers.web_search"
       ],
       "tests": [
         "tests/test_knowledge_research.py"
       ]
     },
-    "klipperai_agent.providers.models": {
-      "path": "klipperai_agent/providers/models.py",
+    "kai_agent.providers.models": {
+      "path": "kai_agent/providers/models.py",
       "lines": 66,
       "symbols": [
         {
@@ -6628,11 +6600,11 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.requests",
-        "klipperai_agent.diagnostics.requests",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.providers.normalization"
+        "kai_agent.config.requests",
+        "kai_agent.diagnostics.requests",
+        "kai_agent.domain.base",
+        "kai_agent.domain.proposals",
+        "kai_agent.providers.normalization"
       ],
       "tests": [
         "tests/test_evidence_pipeline.py",
@@ -6642,8 +6614,8 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.providers.normalization": {
-      "path": "klipperai_agent/providers/normalization.py",
+    "kai_agent.providers.normalization": {
+      "path": "kai_agent/providers/normalization.py",
       "lines": 121,
       "symbols": [
         {
@@ -6673,14 +6645,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.vocabulary"
+        "kai_agent.config.vocabulary"
       ],
       "tests": [
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.providers.openai": {
-      "path": "klipperai_agent/providers/openai.py",
+    "kai_agent.providers.openai": {
+      "path": "kai_agent/providers/openai.py",
       "lines": 157,
       "symbols": [
         {
@@ -6730,22 +6702,22 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.intent",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.diagnostics.requests",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.providers.json_client",
-        "klipperai_agent.providers.models",
-        "klipperai_agent.providers.normalization",
-        "klipperai_agent.providers.usage"
+        "kai_agent.application.intent",
+        "kai_agent.config.requests",
+        "kai_agent.diagnostics.requests",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.providers.json_client",
+        "kai_agent.providers.models",
+        "kai_agent.providers.normalization",
+        "kai_agent.providers.usage"
       ],
       "tests": [
         "tests/test_llm_config.py",
         "tests/test_llm_extra.py"
       ]
     },
-    "klipperai_agent.providers.probe": {
-      "path": "klipperai_agent/providers/probe.py",
+    "kai_agent.providers.probe": {
+      "path": "kai_agent/providers/probe.py",
       "lines": 55,
       "symbols": [
         {
@@ -6755,15 +6727,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.providers.responses"
+        "kai_agent.domain.investigation",
+        "kai_agent.providers.responses"
       ],
       "tests": [
         "tests/test_live_hardware_validation.py"
       ]
     },
-    "klipperai_agent.providers.responses": {
-      "path": "klipperai_agent/providers/responses.py",
+    "kai_agent.providers.responses": {
+      "path": "kai_agent/providers/responses.py",
       "lines": 146,
       "symbols": [
         {
@@ -6813,11 +6785,11 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.providers.usage",
-        "klipperai_agent.runtime.model_usage"
+        "kai_agent.agent.models",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.domain.redaction",
+        "kai_agent.providers.usage",
+        "kai_agent.runtime.model_usage"
       ],
       "tests": [
         "tests/test_agent_providers.py",
@@ -6827,8 +6799,8 @@
         "tests/test_workflow_contracts.py"
       ]
     },
-    "klipperai_agent.providers.usage": {
-      "path": "klipperai_agent/providers/usage.py",
+    "kai_agent.providers.usage": {
+      "path": "kai_agent/providers/usage.py",
       "lines": 49,
       "symbols": [
         {
@@ -6856,14 +6828,14 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.provider_settings"
+        "kai_agent.domain.provider_settings"
       ],
       "tests": [
         "tests/test_provider_management.py"
       ]
     },
-    "klipperai_agent.providers.web_search": {
-      "path": "klipperai_agent/providers/web_search.py",
+    "kai_agent.providers.web_search": {
+      "path": "kai_agent/providers/web_search.py",
       "lines": 65,
       "symbols": [
         {
@@ -6883,16 +6855,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.agent.models",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.providers.responses"
+        "kai_agent.agent.models",
+        "kai_agent.domain.evidence",
+        "kai_agent.providers.responses"
       ],
       "tests": [
         "tests/test_agent_providers.py"
       ]
     },
-    "klipperai_agent.runtime.logging": {
-      "path": "klipperai_agent/runtime/logging.py",
+    "kai_agent.runtime.logging": {
+      "path": "kai_agent/runtime/logging.py",
       "lines": 98,
       "symbols": [
         {
@@ -6933,9 +6905,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.infrastructure.private_files",
-        "klipperai_agent.runtime.settings"
+        "kai_agent.domain.redaction",
+        "kai_agent.infrastructure.private_files",
+        "kai_agent.runtime.settings"
       ],
       "tests": [
         "tests/test_provider_management.py",
@@ -6943,8 +6915,8 @@
         "tests/test_security.py"
       ]
     },
-    "klipperai_agent.runtime.model_usage": {
-      "path": "klipperai_agent/runtime/model_usage.py",
+    "kai_agent.runtime.model_usage": {
+      "path": "kai_agent/runtime/model_usage.py",
       "lines": 53,
       "symbols": [
         {
@@ -6965,15 +6937,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.model_usage"
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.model_usage"
       ],
       "tests": [
         "tests/test_model_usage.py"
       ]
     },
-    "klipperai_agent.runtime.release": {
-      "path": "klipperai_agent/runtime/release.py",
+    "kai_agent.runtime.release": {
+      "path": "kai_agent/runtime/release.py",
       "lines": 20,
       "symbols": [
         {
@@ -6983,15 +6955,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.domain.version"
+        "kai_agent.domain.version"
       ],
       "tests": [
         "tests/test_release_identity.py"
       ]
     },
-    "klipperai_agent.runtime.settings": {
-      "path": "klipperai_agent/runtime/settings.py",
-      "lines": 290,
+    "kai_agent.runtime.settings": {
+      "path": "kai_agent/runtime/settings.py",
+      "lines": 288,
       "symbols": [
         {
           "name": "Settings",
@@ -7000,62 +6972,62 @@
           "methods": [
             {
               "name": "_journal_units",
-              "line": 107
+              "line": 105
             },
             {
               "name": "_normalize_moonraker_socket",
-              "line": 122
+              "line": 120
             },
             {
               "name": "_normalize_optional_identity",
-              "line": 143
+              "line": 141
             },
             {
               "name": "_normalize_required_strings",
-              "line": 150
+              "line": 148
             },
             {
               "name": "_log_basename",
-              "line": 157
+              "line": 155
             },
             {
               "name": "_normalize_log_tail_lines_overrides",
-              "line": 163
+              "line": 161
             },
             {
               "name": "_normalize_excluded_logs",
-              "line": 178
+              "line": 176
             },
             {
               "name": "_normalize_provider",
-              "line": 199
+              "line": 197
             },
             {
               "name": "_enforce_read_only_runtime",
-              "line": 207
+              "line": 205
             },
             {
               "name": "host_logs_dir",
-              "line": 224
+              "line": 222
             },
             {
               "name": "agent_log_path",
-              "line": 229
+              "line": 227
             },
             {
               "name": "ensure_directories",
-              "line": 232
+              "line": 230
             }
           ]
         },
         {
-          "name": "_load_klipperai_cfg_values",
-          "line": 237,
+          "name": "_load_kai_cfg_values",
+          "line": 235,
           "kind": "FunctionDef"
         },
         {
           "name": "get_settings",
-          "line": 287,
+          "line": 285,
           "kind": "FunctionDef"
         }
       ],
@@ -7070,6 +7042,7 @@
         "tests/test_evidence_pipeline.py",
         "tests/test_investigation_recovery.py",
         "tests/test_investigations.py",
+        "tests/test_kai_identity.py",
         "tests/test_knowledge_web.py",
         "tests/test_live_hardware_validation.py",
         "tests/test_llm_extra.py",
@@ -7086,8 +7059,8 @@
         "tests/test_shutdown_validation.py"
       ]
     },
-    "klipperai_agent.web.app": {
-      "path": "klipperai_agent/web/app.py",
+    "kai_agent.web.app": {
+      "path": "kai_agent/web/app.py",
       "lines": 238,
       "symbols": [
         {
@@ -7102,23 +7075,23 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.recovery",
-        "klipperai_agent.bootstrap.container",
-        "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.context",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.domain.repositories",
-        "klipperai_agent.domain.version",
-        "klipperai_agent.runtime.release",
-        "klipperai_agent.runtime.settings",
-        "klipperai_agent.web.chat_readiness",
-        "klipperai_agent.web.investigations",
-        "klipperai_agent.web.knowledge",
-        "klipperai_agent.web.memory",
-        "klipperai_agent.web.moonraker",
-        "klipperai_agent.web.providers",
-        "klipperai_agent.web.security",
-        "klipperai_agent.web.streaming"
+        "kai_agent.application.recovery",
+        "kai_agent.bootstrap.container",
+        "kai_agent.contracts.api",
+        "kai_agent.domain.context",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.domain.repositories",
+        "kai_agent.domain.version",
+        "kai_agent.runtime.release",
+        "kai_agent.runtime.settings",
+        "kai_agent.web.chat_readiness",
+        "kai_agent.web.investigations",
+        "kai_agent.web.knowledge",
+        "kai_agent.web.memory",
+        "kai_agent.web.moonraker",
+        "kai_agent.web.providers",
+        "kai_agent.web.security",
+        "kai_agent.web.streaming"
       ],
       "tests": [
         "tests/test_agent_integration.py",
@@ -7138,8 +7111,8 @@
         "tests/test_shutdown_agent.py"
       ]
     },
-    "klipperai_agent.web.chat_readiness": {
-      "path": "klipperai_agent/web/chat_readiness.py",
+    "kai_agent.web.chat_readiness": {
+      "path": "kai_agent/web/chat_readiness.py",
       "lines": 25,
       "symbols": [
         {
@@ -7154,12 +7127,12 @@
         }
       ],
       "imports": [
-        "klipperai_agent.bootstrap.container"
+        "kai_agent.bootstrap.container"
       ],
       "tests": []
     },
-    "klipperai_agent.web.investigations": {
-      "path": "klipperai_agent/web/investigations.py",
+    "kai_agent.web.investigations": {
+      "path": "kai_agent/web/investigations.py",
       "lines": 81,
       "symbols": [
         {
@@ -7169,15 +7142,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.chat",
-        "klipperai_agent.application.investigations",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.application.chat",
+        "kai_agent.application.investigations",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.repositories"
       ],
       "tests": []
     },
-    "klipperai_agent.web.knowledge": {
-      "path": "klipperai_agent/web/knowledge.py",
+    "kai_agent.web.knowledge": {
+      "path": "kai_agent/web/knowledge.py",
       "lines": 140,
       "symbols": [
         {
@@ -7222,16 +7195,16 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.chat",
-        "klipperai_agent.application.knowledge",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.hardware",
-        "klipperai_agent.domain.knowledge"
+        "kai_agent.application.chat",
+        "kai_agent.application.knowledge",
+        "kai_agent.domain.base",
+        "kai_agent.domain.hardware",
+        "kai_agent.domain.knowledge"
       ],
       "tests": []
     },
-    "klipperai_agent.web.memory": {
-      "path": "klipperai_agent/web/memory.py",
+    "kai_agent.web.memory": {
+      "path": "kai_agent/web/memory.py",
       "lines": 79,
       "symbols": [
         {
@@ -7256,17 +7229,17 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.chat",
-        "klipperai_agent.application.investigations",
-        "klipperai_agent.domain.base",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.redaction",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.application.chat",
+        "kai_agent.application.investigations",
+        "kai_agent.domain.base",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.redaction",
+        "kai_agent.domain.repositories"
       ],
       "tests": []
     },
-    "klipperai_agent.web.moonraker": {
-      "path": "klipperai_agent/web/moonraker.py",
+    "kai_agent.web.moonraker": {
+      "path": "kai_agent/web/moonraker.py",
       "lines": 55,
       "symbols": [
         {
@@ -7281,15 +7254,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.bootstrap.container",
-        "klipperai_agent.domain.moonraker"
+        "kai_agent.bootstrap.container",
+        "kai_agent.domain.moonraker"
       ],
       "tests": [
         "tests/test_moonraker_web.py"
       ]
     },
-    "klipperai_agent.web.providers": {
-      "path": "klipperai_agent/web/providers.py",
+    "kai_agent.web.providers": {
+      "path": "kai_agent/web/providers.py",
       "lines": 79,
       "symbols": [
         {
@@ -7304,15 +7277,15 @@
         }
       ],
       "imports": [
-        "klipperai_agent.bootstrap.container",
-        "klipperai_agent.domain.provider_settings",
-        "klipperai_agent.providers.probe",
-        "klipperai_agent.web.knowledge"
+        "kai_agent.bootstrap.container",
+        "kai_agent.domain.provider_settings",
+        "kai_agent.providers.probe",
+        "kai_agent.web.knowledge"
       ],
       "tests": []
     },
-    "klipperai_agent.web.security": {
-      "path": "klipperai_agent/web/security.py",
+    "kai_agent.web.security": {
+      "path": "kai_agent/web/security.py",
       "lines": 78,
       "symbols": [
         {
@@ -7341,8 +7314,8 @@
         "tests/test_security_http.py"
       ]
     },
-    "klipperai_agent.web.streaming": {
-      "path": "klipperai_agent/web/streaming.py",
+    "kai_agent.web.streaming": {
+      "path": "kai_agent/web/streaming.py",
       "lines": 69,
       "symbols": [
         {
@@ -7362,11 +7335,11 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.chat",
-        "klipperai_agent.contracts.api",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.model_usage",
-        "klipperai_agent.domain.repositories"
+        "kai_agent.application.chat",
+        "kai_agent.contracts.api",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.model_usage",
+        "kai_agent.domain.repositories"
       ],
       "tests": [
         "tests/test_agent_integration.py",
@@ -7374,8 +7347,8 @@
         "tests/test_resource_bounds.py"
       ]
     },
-    "klipperai_agent.workflows.citations": {
-      "path": "klipperai_agent/workflows/citations.py",
+    "kai_agent.workflows.citations": {
+      "path": "kai_agent/workflows/citations.py",
       "lines": 190,
       "symbols": [
         {
@@ -7420,18 +7393,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.targeting",
-        "klipperai_agent.config.vocabulary",
-        "klipperai_agent.workflows.context",
-        "klipperai_agent.workflows.text"
+        "kai_agent.config.models",
+        "kai_agent.config.targeting",
+        "kai_agent.config.vocabulary",
+        "kai_agent.workflows.context",
+        "kai_agent.workflows.text"
       ],
       "tests": [
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.workflows.configuration": {
-      "path": "klipperai_agent/workflows/configuration.py",
+    "kai_agent.workflows.configuration": {
+      "path": "kai_agent/workflows/configuration.py",
       "lines": 220,
       "symbols": [
         {
@@ -7471,26 +7444,26 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.lookup",
-        "klipperai_agent.config.models",
-        "klipperai_agent.config.requests",
-        "klipperai_agent.config.targeting",
-        "klipperai_agent.config.vocabulary",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.domain.proposals",
-        "klipperai_agent.workflows.citations",
-        "klipperai_agent.workflows.context",
-        "klipperai_agent.workflows.text"
+        "kai_agent.config.lookup",
+        "kai_agent.config.models",
+        "kai_agent.config.requests",
+        "kai_agent.config.targeting",
+        "kai_agent.config.vocabulary",
+        "kai_agent.diagnostics.models",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.domain.proposals",
+        "kai_agent.workflows.citations",
+        "kai_agent.workflows.context",
+        "kai_agent.workflows.text"
       ],
       "tests": [
         "tests/test_workflows.py",
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.workflows.context": {
-      "path": "klipperai_agent/workflows/context.py",
+    "kai_agent.workflows.context": {
+      "path": "kai_agent/workflows/context.py",
       "lines": 77,
       "symbols": [
         {
@@ -7530,18 +7503,18 @@
         }
       ],
       "imports": [
-        "klipperai_agent.application.intent",
-        "klipperai_agent.config.collector",
-        "klipperai_agent.diagnostics.collector",
-        "klipperai_agent.diagnostics.rules",
-        "klipperai_agent.infrastructure.host.logs",
-        "klipperai_agent.profile.models",
-        "klipperai_agent.providers.models"
+        "kai_agent.application.intent",
+        "kai_agent.config.collector",
+        "kai_agent.diagnostics.collector",
+        "kai_agent.diagnostics.rules",
+        "kai_agent.infrastructure.host.logs",
+        "kai_agent.profile.models",
+        "kai_agent.providers.models"
       ],
       "tests": []
     },
-    "klipperai_agent.workflows.diagnosis": {
-      "path": "klipperai_agent/workflows/diagnosis.py",
+    "kai_agent.workflows.diagnosis": {
+      "path": "kai_agent/workflows/diagnosis.py",
       "lines": 117,
       "symbols": [
         {
@@ -7566,21 +7539,21 @@
         }
       ],
       "imports": [
-        "klipperai_agent.config.models",
-        "klipperai_agent.diagnostics.models",
-        "klipperai_agent.diagnostics.requests",
-        "klipperai_agent.domain.evidence",
-        "klipperai_agent.domain.investigation",
-        "klipperai_agent.workflows.context",
-        "klipperai_agent.workflows.text"
+        "kai_agent.config.models",
+        "kai_agent.diagnostics.models",
+        "kai_agent.diagnostics.requests",
+        "kai_agent.domain.evidence",
+        "kai_agent.domain.investigation",
+        "kai_agent.workflows.context",
+        "kai_agent.workflows.text"
       ],
       "tests": [
         "tests/test_workflows.py",
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.workflows.engine": {
-      "path": "klipperai_agent/workflows/engine.py",
+    "kai_agent.workflows.engine": {
+      "path": "kai_agent/workflows/engine.py",
       "lines": 65,
       "symbols": [
         {
@@ -7626,9 +7599,9 @@
         }
       ],
       "imports": [
-        "klipperai_agent.workflows.configuration",
-        "klipperai_agent.workflows.context",
-        "klipperai_agent.workflows.diagnosis"
+        "kai_agent.workflows.configuration",
+        "kai_agent.workflows.context",
+        "kai_agent.workflows.diagnosis"
       ],
       "tests": [
         "tests/test_evidence_pipeline.py",
@@ -7636,8 +7609,8 @@
         "tests/test_workflows_extra.py"
       ]
     },
-    "klipperai_agent.workflows.text": {
-      "path": "klipperai_agent/workflows/text.py",
+    "kai_agent.workflows.text": {
+      "path": "kai_agent/workflows/text.py",
       "lines": 27,
       "symbols": [
         {

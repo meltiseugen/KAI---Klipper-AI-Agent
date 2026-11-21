@@ -3,12 +3,14 @@ bootstrap
 entware
 platform
 credentials
+legacy-credentials
 python
 prerequisites
 accounts
 discovery
 settings
 moonraker
+moonraker-restart
 service
 nginx
 integrations

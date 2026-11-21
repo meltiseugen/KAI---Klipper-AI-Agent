@@ -46,16 +46,16 @@ def moonraker_updates():
 def reapply(tmp_path, oe_checkout, run_shell, shell_env, moonraker_updates):
     root, router, ui = oe_checkout
     state, url = moonraker_updates
-    legacy_backup = router.with_name(router.name + ".klippyai-backup-old")
+    legacy_backup = router.with_name(router.name + ".kai-backup-old")
     legacy_backup.write_text("legacy\n")
     runner = tmp_path / "reapply"
     env = {
         **shell_env,
-        "KLIPPERAI_OE_RUNNER_PATH": runner.as_posix(),
-        "KLIPPERAI_SYSTEMD_DIR": (tmp_path / "systemd").as_posix(),
+        "KAI_OE_RUNNER_PATH": runner.as_posix(),
+        "KAI_SYSTEMD_DIR": (tmp_path / "systemd").as_posix(),
     }
     run_shell(
-        (INTEGRATION / "apply-local-klipperai-route-patch.sh").as_posix(),
+        (INTEGRATION / "apply-local-kai-route-patch.sh").as_posix(),
         "--oe-root",
         root.as_posix(),
         env=env,
@@ -70,13 +70,13 @@ def reapply(tmp_path, oe_checkout, run_shell, shell_env, moonraker_updates):
         url,
         env=env,
     )
-    state_dir = Path(env["KLIPPERAI_STATE_DIR"])
+    state_dir = Path(env["KAI_STATE_DIR"])
     assert (state_dir / "octoeverywhere-backups/legacy" / legacy_backup.name).exists()
     assert not legacy_backup.exists()
-    assert (tmp_path / "systemd/klipperai-octoeverywhere-reapply.path").exists()
+    assert (tmp_path / "systemd/kai-octoeverywhere-reapply.path").exists()
     # A systemd runner must retain its configured storage without shell environment hints.
     env.pop("HOME", None)
-    env.pop("KLIPPERAI_STATE_DIR")
+    env.pop("KAI_STATE_DIR")
 
     def run(check=True):
         return run_shell(runner.as_posix(), env=env, check=check)
@@ -91,15 +91,15 @@ def test_auto_reapply_coordinates_pending_update(reapply):
         "version_info": {"OctoEverywhere": {"commits_behind_count": 2}},
     }
     run()
-    assert "KlipperAI local route patch init start" not in router.read_text()
-    assert "KlipperAI local route patch start" not in ui.read_text()
+    assert "KAI local route patch init start" not in router.read_text()
+    assert "KAI local route patch start" not in ui.read_text()
     assert (state_dir / "octoeverywhere-reapply.suspended").exists()
     assert state["refreshes"] == 1
     run()  # An already clean checkout does not keep refreshing Moonraker.
     assert state["refreshes"] == 1
     state["result"]["version_info"]["OctoEverywhere"]["commits_behind_count"] = 0
     run()
-    assert "KlipperAI local route patch init start" in router.read_text()
+    assert "KAI local route patch init start" in router.read_text()
     assert not (state_dir / "octoeverywhere-reapply.suspended").exists()
     before = router.read_bytes(), ui.read_bytes()
     run()
@@ -154,8 +154,8 @@ def test_hook_install_enables_retries_even_if_initial_moonraker_query_fails(
     env = {
         **shell_env,
         "SYSTEMCTL_CALLS": calls.as_posix(),
-        "KLIPPERAI_OE_RUNNER_PATH": runner.as_posix(),
-        "KLIPPERAI_SYSTEMD_DIR": units.as_posix(),
+        "KAI_OE_RUNNER_PATH": runner.as_posix(),
+        "KAI_SYSTEMD_DIR": units.as_posix(),
     }
     result = run_shell(
         (INTEGRATION / "install-auto-reapply.sh").as_posix(),
@@ -168,19 +168,15 @@ def test_hook_install_enables_retries_even_if_initial_moonraker_query_fails(
         env=env,
     )
     assert "retries remain enabled" in result.stderr
-    assert "enable --now klipperai-octoeverywhere-reapply.timer" in calls.read_text()
-    assert "enable --now klipperai-octoeverywhere-reapply.path" in calls.read_text()
+    assert "enable --now kai-octoeverywhere-reapply.timer" in calls.read_text()
+    assert "enable --now kai-octoeverywhere-reapply.path" in calls.read_text()
     assert (
-        "restart klipperai-octoeverywhere-reapply.timer klipperai-octoeverywhere-reapply.path"
+        "restart kai-octoeverywhere-reapply.timer kai-octoeverywhere-reapply.path"
         in calls.read_text()
     )
-    assert (
-        "OnUnitInactiveSec=5min" in (units / "klipperai-octoeverywhere-reapply.timer").read_text()
-    )
-    assert "OnBootSec=30s" in (units / "klipperai-octoeverywhere-reapply.timer").read_text()
-    assert (
-        "WantedBy=timers.target" in (units / "klipperai-octoeverywhere-reapply.timer").read_text()
-    )
+    assert "OnUnitInactiveSec=5min" in (units / "kai-octoeverywhere-reapply.timer").read_text()
+    assert "OnBootSec=30s" in (units / "kai-octoeverywhere-reapply.timer").read_text()
+    assert "WantedBy=timers.target" in (units / "kai-octoeverywhere-reapply.timer").read_text()
     state.update(
         status=200,
         result={"busy": False, "version_info": {"octoeverywhere": {"commits_behind_count": 0}}},

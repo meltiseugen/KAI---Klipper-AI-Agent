@@ -2,8 +2,8 @@
 
 import pytest
 
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.evidence import ArtifactInput
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.evidence import ArtifactInput
 
 
 @pytest.mark.parametrize(

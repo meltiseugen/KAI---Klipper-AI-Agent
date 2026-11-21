@@ -5,17 +5,17 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.runtime.settings import (
+from kai_agent.runtime.settings import (
     Settings,
-    _load_klipperai_cfg_values,
+    _load_kai_cfg_values,
     get_settings,
 )
 
 
 def test_moonraker_socket_defaults_and_config_override(tmp_path):
-    config = tmp_path / "klipperai.cfg"
+    config = tmp_path / "kai.cfg"
     config.write_text("[moonraker]\nmoonraker_agent_enabled: false\nmoonraker_socket_path:\n")
-    settings = Settings(**_load_klipperai_cfg_values(config))
+    settings = Settings(**_load_kai_cfg_values(config))
     assert not settings.moonraker_agent_enabled and settings.moonraker_socket_path is None
     assert Settings().moonraker_agent_enabled
     assert Settings(moonraker_socket_path="  ").moonraker_socket_path is None
@@ -24,8 +24,8 @@ def test_moonraker_socket_defaults_and_config_override(tmp_path):
     )
 
 
-def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) -> None:
-    cfg_path = tmp_path / "klipperai.cfg"
+def test_settings_load_values_from_kai_cfg(monkeypatch, tmp_path: Path) -> None:
+    cfg_path = tmp_path / "kai.cfg"
     cfg_path.write_text(
         "[install]\n"
         "printer_data_root: /home/pi/printer_data  # Printer data root\n"
@@ -42,17 +42,17 @@ def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) ->
         "ignore_globs: backups/**, archive/**  # Ignore globs\n\n"
         "[server]\n"
         "port: 9911  # Port\n"
-        "root_path: /klipperai  # Root path\n"
-        "data_dir: /var/lib/klipperai  # Data dir\n"
-        "checkpoint_db: /var/lib/klipperai/checkpoints.sqlite  # Checkpoint db\n"
+        "root_path: /kai  # Root path\n"
+        "data_dir: /var/lib/kai  # Data dir\n"
+        "checkpoint_db: /var/lib/kai/checkpoints.sqlite  # Checkpoint db\n"
         "enable_write_actions: true  # Should still coerce false\n\n"
         "[chat]\n"
         "conversation_history_pairs: 7  # Previous chat pairs\n\n"
         "[logs]\n"
         "logs_dir_path: /home/pi/printer_data/logs  # Log dir\n"
-        "agent_log_file_name: klipperai.log  # Agent log name\n"
+        "agent_log_file_name: kai.log  # Agent log name\n"
         "agent_log_level: debug  # Log level\n"
-        "excluded_logs: klipperai.log, crowsnest, *_debug.log  # Excluded logs\n"
+        "excluded_logs: kai.log, crowsnest, *_debug.log  # Excluded logs\n"
         "log_tail_lines_default: 100  # Default tail lines\n\n"
         "[log_tail_lines]\n"
         "klippy: 120  # Override\n"
@@ -63,20 +63,20 @@ def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) ->
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("KLIPPERAI_CONFIG_FILE", str(cfg_path))
-    monkeypatch.setenv("KLIPPERAI_MOONRAKER_URL", "http://127.0.0.1:7125")
+    monkeypatch.setenv("KAI_CONFIG_FILE", str(cfg_path))
+    monkeypatch.setenv("KAI_MOONRAKER_URL", "http://127.0.0.1:7125")
     get_settings.cache_clear()
     settings = get_settings()
 
     assert settings.config_file == cfg_path
     assert settings.port == 9911
-    assert settings.root_path == "/klipperai"
+    assert settings.root_path == "/kai"
     assert settings.public_base_url == "http://127.0.0.1:9911"
     assert settings.moonraker_url == "http://127.0.0.1:7125"
     assert settings.enable_write_actions is False
     assert settings.conversation_history_pairs == 7
     assert settings.agent_log_level == "DEBUG"
-    assert settings.agent_log_path() == Path("/var/lib/klipperai/logs/klipperai.log")
+    assert settings.agent_log_path() == Path("/var/lib/kai/logs/kai.log")
     assert settings.printer_data_root == Path("/home/pi/printer_data")
     assert settings.mainsail_config_dir == Path("/home/pi/printer_data/config")
     assert settings.mainboard == "BTT Octopus Pro"
@@ -88,25 +88,25 @@ def test_settings_load_values_from_klipperai_cfg(monkeypatch, tmp_path: Path) ->
     assert settings.config_ignore_globs == "backups/**, archive/**"
     assert settings.log_tail_lines_default == 100
     assert settings.log_tail_lines_overrides == {"klippy": 120, "moonraker": 220}
-    assert settings.excluded_logs == ["klipperai.log", "crowsnest", "*_debug.log"]
+    assert settings.excluded_logs == ["kai.log", "crowsnest", "*_debug.log"]
 
     get_settings.cache_clear()
 
 
 def test_settings_merge_cfg_with_env_secret(monkeypatch, tmp_path: Path) -> None:
-    cfg_path = tmp_path / "klipperai.cfg"
+    cfg_path = tmp_path / "kai.cfg"
     cfg_path.write_text(
         "[server]\n"
         "port: 8811\n"
-        "root_path: /klipperai\n\n"
+        "root_path: /kai\n\n"
         "[llm]\n"
         "llm_provider: openai\n"
         "openai_model: gpt-5.4-mini\n",
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("KLIPPERAI_CONFIG_FILE", str(cfg_path))
-    monkeypatch.setenv("KLIPPERAI_OPENAI_API_KEY", "test-openai-key")
+    monkeypatch.setenv("KAI_CONFIG_FILE", str(cfg_path))
+    monkeypatch.setenv("KAI_OPENAI_API_KEY", "test-openai-key")
     get_settings.cache_clear()
     settings = get_settings()
 
@@ -119,7 +119,7 @@ def test_settings_merge_cfg_with_env_secret(monkeypatch, tmp_path: Path) -> None
 
 
 def test_settings_load_without_printer_geometry_section(monkeypatch, tmp_path: Path) -> None:
-    cfg_path = tmp_path / "klipperai.cfg"
+    cfg_path = tmp_path / "kai.cfg"
     cfg_path.write_text(
         "[printer_identity]\n"
         "mainboard: BTT Octopus Pro\n\n"
@@ -131,7 +131,7 @@ def test_settings_load_without_printer_geometry_section(monkeypatch, tmp_path: P
         encoding="utf-8",
     )
 
-    monkeypatch.setenv("KLIPPERAI_CONFIG_FILE", str(cfg_path))
+    monkeypatch.setenv("KAI_CONFIG_FILE", str(cfg_path))
     get_settings.cache_clear()
     settings = get_settings()
 
@@ -150,11 +150,11 @@ def test_settings_validators_and_directory_creation(tmp_path: Path) -> None:
         printer_data_root=tmp_path / "printer-data",
         firmware_flavor="  ",
         log_tail_lines_overrides={" Klippy ": 20, "": 10, "bad": -1},
-        excluded_logs=[" KlippyAI.log ", "klippyai.log", "", "CROWSNEST"],
+        excluded_logs=[" KAI.log ", "kai.log", "", "CROWSNEST"],
     )
     assert settings.firmware_flavor is None
     assert settings.log_tail_lines_overrides == {"klippy": 20}
-    assert settings.excluded_logs == ["klippyai.log", "crowsnest"]
+    assert settings.excluded_logs == ["kai.log", "crowsnest"]
     settings.ensure_directories()
     assert settings.data_dir.is_dir()
     assert settings.agent_log_path().parent.is_dir()
@@ -174,7 +174,7 @@ def test_settings_validators_and_directory_creation(tmp_path: Path) -> None:
 
 
 def test_config_loader_handles_missing_file_and_default_tail(tmp_path: Path) -> None:
-    assert _load_klipperai_cfg_values(tmp_path / "missing.cfg") == {}
+    assert _load_kai_cfg_values(tmp_path / "missing.cfg") == {}
     cfg = tmp_path / "config.cfg"
     cfg.write_text("[log_tail_lines]\ndefault = 55\n", encoding="utf-8")
-    assert _load_klipperai_cfg_values(cfg)["log_tail_lines_default"] == "55"
+    assert _load_kai_cfg_values(cfg)["log_tail_lines_default"] == "55"

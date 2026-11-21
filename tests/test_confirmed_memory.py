@@ -10,17 +10,17 @@ from fastapi.testclient import TestClient
 from test_investigations import persistent_service as persistent_service
 from test_investigations import repository
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.application.investigations import InvestigationMemory
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.investigation import (
+import kai_agent.web.app as app_module
+from kai_agent.application.investigations import InvestigationMemory
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.investigation import (
     ConfirmedMemory,
     Investigation,
     InvestigationResult,
     InvestigationTurn,
 )
-from klipperai_agent.domain.repositories import InvestigationConflict
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.domain.repositories import InvestigationConflict
+from kai_agent.runtime.settings import Settings
 
 
 @pytest.mark.asyncio

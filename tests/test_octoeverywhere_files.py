@@ -51,7 +51,7 @@ def test_write_failure_rolls_back_both_files_and_keeps_backup(oe_maintenance, mo
     with pytest.raises(PermissionError):
         files.commit(plan)
     assert [path.read_bytes() for path in files.paths] == [item.original for item in plan.files]
-    assert not list(files.root.rglob(".klipperai-*"))
+    assert not list(files.root.rglob(".kai-*"))
     backup = next(oe_maintenance.state.path("backups").iterdir())
     assert (backup / files.paths[0].name).read_bytes() == plan.files[0].original
 
@@ -93,7 +93,7 @@ def test_staging_cleanup_preserves_mode_and_owner(oe_maintenance, monkeypatch):
     monkeypatch.setattr(os, "chmod", lambda *args: (_ for _ in ()).throw(PermissionError("mode")))
     with pytest.raises(PermissionError):
         files.stage(item, item.desired)
-    assert not list(files.root.rglob(".klipperai-*"))
+    assert not list(files.root.rglob(".kai-*"))
 
 
 def test_refuses_hardlinks_and_git_operations_in_worktrees(oe_maintenance):

@@ -14,7 +14,7 @@ and [Klipper configfile status](https://www.klipper3d.org/Status_Reference.html#
 
 ## Optional broader service journals
 
-In `klipperai.cfg`, extend `[system]` with an explicit selection:
+In `kai.cfg`, extend `[system]` with an explicit selection:
 
 ```ini
 [system]
@@ -28,7 +28,7 @@ paths, wildcards and command arguments are rejected. Duplicate units, including
 the configured Moonraker/Klipper units, are collected once. Additional units get
 journal reads only. The main system-diagnostics switch gates all service reads;
 the model cannot supply unit names or commands. Restart the agent after editing.
-For direct development, `KLIPPERAI_ADDITIONAL_JOURNAL_UNITS` accepts the same
+For direct development, `KAI_ADDITIONAL_JOURNAL_UNITS` accepts the same
 comma-separated names.
 
 Journal reads are capped at 1,000 entries, 256 KiB of captured stdout/stderr per
@@ -42,7 +42,7 @@ that command is not capped. No sudo or service mutation is used.
 ## Opt-in flight recorder
 
 The recorder is disabled by default. Enable it explicitly on the Linux printer
-host in `klipperai.cfg`, then manually restart the KlipperAI agent:
+host in `kai.cfg`, then manually restart the KAI agent:
 
 ```ini
 [flight_recorder]

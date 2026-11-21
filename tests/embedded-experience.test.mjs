@@ -30,7 +30,7 @@ async function fixture() {
 
 test("the composer asks only for a question and relies on automatic printer evidence", async () => {
   const { app, ids, server } = await fixture();
-  const html = await readFile(new URL("../klipperai_agent/web/templates/embed.html", import.meta.url), "utf8");
+  const html = await readFile(new URL("../kai_agent/web/templates/embed.html", import.meta.url), "utf8");
   assert.doesNotMatch(html, /type="file"|Attach files|Paste a log|artifact-dropzone|snippet-editor/);
   assert.match(html, /configuration and recent logs automatically/);
   assert.match(ids["mode-description"].textContent, /read automatically/);

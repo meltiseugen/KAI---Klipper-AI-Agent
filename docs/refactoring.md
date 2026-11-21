@@ -1,10 +1,11 @@
 # Layout migration and validation
 
-The project now uses the requested flat Python package: `klipperai_agent/`.
+The project now uses the requested flat Python package: `kai_agent/`.
 Both flat and `src/` layouts are valid; installed-wheel testing protects this
-choice against checkout-only import behavior. CLI names and HTTP routes are retained. Internal
-Python module paths changed deliberately; update integrations importing the old
-flat modules. The already-removed `klippyai_agent` package is not restored.
+choice against checkout-only import behavior. Fresh installations use the
+`kai-agent` and `kai-detect-profile` commands, `KAI_*` environment variables and
+the `/kai/` public URL. Internal Python imports use `kai_agent`; old branding
+aliases are not installed.
 
 | Previous module | New owners |
 | --- | --- |
@@ -39,9 +40,9 @@ so the old editable `src/` path is replaced:
 ```sh
 python -m pip install -e '.[dev]'
 python -m pytest
-ruff check klipperai_agent tests tools
-ruff format --check klipperai_agent tests tools
-mypy klipperai_agent --ignore-missing-imports
+ruff check kai_agent tests tools
+ruff format --check kai_agent tests tools
+mypy kai_agent --ignore-missing-imports
 python tools/project_map.py --check
 uv build
 node --test tests/*.test.mjs  # JS runtime checks, no npm dependencies
@@ -56,6 +57,6 @@ Windows when it is not on PATH; all host writes and service commands use fixture
 See [frontend and installer ownership](frontend-and-installation.md).
 
 Install the built wheel in a clean environment outside the repository and verify
-`python -m klipperai_agent`, both profile CLI names, root/embed HTML and bundled
+`python -m kai_agent`, both profile CLI names, root/embed HTML and bundled
 assets. Unit tests and wheel smoke tests do not validate a physical printer,
 nginx deployment or live OpenAI model.

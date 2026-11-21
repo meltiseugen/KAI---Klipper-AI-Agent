@@ -13,23 +13,23 @@ from test_agent import tool_context as tool_context
 from test_shutdown import START, stats
 from test_shutdown_agent import reader
 
-import klipperai_agent.bootstrap.container as container_module
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.tools.shutdown import ShutdownArguments, ShutdownTool
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.diagnostics.collector import DiagnosticsCollector
-from klipperai_agent.diagnostics.host_history import summarize_history
-from klipperai_agent.domain.host_history import HostSample, PressureSample
-from klipperai_agent.domain.shutdown import HostObservation
-from klipperai_agent.infrastructure.host.system import CommandResult, HostSystemCollector
-from klipperai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
-from klipperai_agent.infrastructure.moonraker_state import (
+import kai_agent.bootstrap.container as container_module
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.tools.shutdown import ShutdownArguments, ShutdownTool
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.diagnostics.collector import DiagnosticsCollector
+from kai_agent.diagnostics.host_history import summarize_history
+from kai_agent.domain.host_history import HostSample, PressureSample
+from kai_agent.domain.shutdown import HostObservation
+from kai_agent.infrastructure.host.system import CommandResult, HostSystemCollector
+from kai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
+from kai_agent.infrastructure.moonraker_state import (
     CORE_OBJECTS,
     collect_core_state,
     public_fields,
 )
-from klipperai_agent.runtime.settings import Settings, _load_klipperai_cfg_values
+from kai_agent.runtime.settings import Settings, _load_kai_cfg_values
 
 
 def test_opt_in_settings_config_and_environment_validation(tmp_path, monkeypatch):
@@ -38,14 +38,14 @@ def test_opt_in_settings_config_and_environment_validation(tmp_path, monkeypatch
     config.write_text(
         "[system]\nadditional_journal_units: crowsnest.service, nginx.service\n[flight_recorder]\nhost_flight_recorder_enabled: true\nhost_flight_recorder_interval_seconds: 5\nhost_flight_recorder_max_samples: 24\n"
     )
-    settings = Settings(**_load_klipperai_cfg_values(config))
+    settings = Settings(**_load_kai_cfg_values(config))
     assert settings.additional_journal_units == ["crowsnest.service", "nginx.service"]
     assert settings.host_flight_recorder_enabled and settings.host_flight_recorder_max_samples == 24
     monkeypatch.setenv(
-        "KLIPPERAI_ADDITIONAL_JOURNAL_UNITS", "crowsnest.service,nginx.service,crowsnest.service"
+        "KAI_ADDITIONAL_JOURNAL_UNITS", "crowsnest.service,nginx.service,crowsnest.service"
     )
     assert Settings().additional_journal_units == settings.additional_journal_units
-    monkeypatch.setenv("KLIPPERAI_LOG_TAIL_LINES_OVERRIDES", '{"klippy": 10}')
+    monkeypatch.setenv("KAI_LOG_TAIL_LINES_OVERRIDES", '{"klippy": 10}')
     assert Settings().log_tail_lines_overrides == {"klippy": 10}
     for value in (
         2,

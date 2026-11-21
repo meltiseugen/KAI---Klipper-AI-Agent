@@ -17,14 +17,14 @@ def test_generated_environment_config_and_unit_boot_without_touching_printer(tmp
     original = printer.read_bytes()
     checkout = tmp_path / "checkout"
     checkout.mkdir()
-    (checkout / "pyproject.toml").write_text('[project]\nname="klipperai"\n')
+    (checkout / "pyproject.toml").write_text('[project]\nname="kai"\n')
     (checkout / ".git").mkdir()
     (config / "moonraker.conf").write_text("[server]\n")
     for name in ("settings", "service"):
         (tmp_path / f"{name}.sh").write_text(
             (ROOT / f"deployment/installer/{name}.sh")
             .read_text()
-            .replace("/etc/klipperai", etc.as_posix())
+            .replace("/etc/kai", etc.as_posix())
             .replace("/etc/systemd/system", etc.as_posix())
         )
     port = free_port()
@@ -41,14 +41,14 @@ TEST_ROOT="$2"
 TEST_PORT="$3"
 PROJECT_NAME=integration
 TIMESTAMP=test
-SERVICE_NAME=klipperai-agent
+SERVICE_NAME=kai-agent
 detect_default_install_user() { echo printer; }
 id() { if [[ "${1:-}" == -u ]]; then echo 1000; fi; }
 home_for_user() { echo "$TEST_ROOT"; }
 group_for_user() { echo printer; }
 detect_printer_data_root() { echo "$TEST_ROOT/printer"; }
 detect_moonraker_config_path() { echo "$TEST_ROOT/printer/config/moonraker.conf"; }
-detect_git_origin() { echo https://example.invalid/klipperai; }
+detect_git_origin() { echo https://example.invalid/kai; }
 detect_git_primary_branch() { echo main; }
 detect_octoeverywhere_root() { :; }
 detect_octoeverywhere_service_name() { :; }
@@ -57,8 +57,8 @@ run_as_user() { "$@"; }
 prompt_default() {
   case "$1" in
     'Project checkout path to install from') echo "$TEST_ROOT/checkout";;
-    'Local KlipperAI data directory') echo "$TEST_ROOT/app-data";;
-    'Local KlipperAI bind port') echo "$TEST_PORT";;
+    'Local KAI data directory') echo "$TEST_ROOT/app-data";;
+    'Local KAI bind port') echo "$TEST_PORT";;
     'Moonraker URL') echo http://127.0.0.1:1;;
     *) printf '%s' "$2";;
   esac
@@ -84,20 +84,20 @@ write_systemd_service
         tmp_path.as_posix(),
         str(port),
     )
-    env = etc / "klipperai.env"
-    cfg = config / "klipperai/klipperai.cfg"
-    unit = (etc / "klipperai-agent.service").read_text()
+    env = etc / "kai.env"
+    cfg = config / "kai/kai.cfg"
+    unit = (etc / "kai-agent.service").read_text()
     assert f"WorkingDirectory={checkout.as_posix()}" in unit
     assert f"EnvironmentFile=-{env.as_posix()}" in unit
-    assert f"ExecStart={checkout.as_posix()}/.venv/bin/klipperai-agent" in unit
-    assert "LoadCredentialEncrypted=klipperai-provider-master:" in unit
+    assert f"ExecStart={checkout.as_posix()}/.venv/bin/kai-agent" in unit
+    assert "LoadCredentialEncrypted=kai-provider-master:" in unit
     assert "enable_write_actions: false" in cfg.read_text()
     assert "test-key-must-never-be-written" not in env.read_text() + cfg.read_text() + unit
     generated = dict(shlex.split(line)[0].split("=", 1) for line in env.read_text().splitlines())
-    generated["KLIPPERAI_PORT"] = str(port)
+    generated["KAI_PORT"] = str(port)
     with daemon(tmp_path, generated) as base:
         with http(base, "/") as response:
-            assert b'data-api-base="/klipperai/api"' in response.read()
+            assert b'data-api-base="/kai/api"' in response.read()
         with http(base, "/api/ui-sessions", {}) as response:
             session = json.load(response)["session_id"]
         with http(base, "/api/bootstrap?session_id=" + session) as response:
@@ -106,11 +106,11 @@ write_systemd_service
 
 
 def test_uninstall_removes_code_selector_but_preserves_other_dropins(tmp_path, run_shell):
-    unit = tmp_path / "klipperai-agent.service"
+    unit = tmp_path / "kai-agent.service"
     unit.write_text("managed unit")
-    dropins = tmp_path / "klipperai-agent.service.d"
+    dropins = tmp_path / "kai-agent.service.d"
     dropins.mkdir()
-    selector = dropins / "50-klipperai-release.conf"
+    selector = dropins / "50-kai-release.conf"
     selector.write_text("managed code selector")
     override = dropins / "90-operator.conf"
     override.write_text("operator settings to preserve")
@@ -130,5 +130,5 @@ remove_agent_service
     assert override.read_text() == "operator settings to preserve"
     assert (
         commands.read_text().splitlines()
-        == ["list-unit-files klipperai-agent", "disable --now klipperai-agent", "daemon-reload"] * 2
+        == ["list-unit-files kai-agent", "disable --now kai-agent", "daemon-reload"] * 2
     )

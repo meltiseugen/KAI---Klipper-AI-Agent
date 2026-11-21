@@ -1,12 +1,12 @@
-# Installing Python 3.10 For KlipperAI
+# Installing Python 3.10 For KAI
 
-KlipperAI requires Python `3.10+`.
+KAI requires Python `3.10+`.
 
 This repository includes a helper script for Linux printer hosts that need Python `3.10` installed before `./install.sh` can create the project virtual environment.
 
 ## Quick Path
 
-From the KlipperAI checkout:
+From the KAI checkout:
 
 ```bash
 chmod +x ./deployment/python/install-python310.sh
@@ -85,4 +85,4 @@ python3.10 -m venv --help
 
 - A source build can take a while on SBC hardware.
 - `ENABLE_OPTIMIZATIONS=1` is optional. It produces a more optimized interpreter, but the build takes longer and uses more CPU and memory.
-- The KlipperAI installer will recreate an existing `.venv` if it was previously built with Python `3.9` or older.
+- The KAI installer will recreate an existing `.venv` if it was previously built with Python `3.9` or older.

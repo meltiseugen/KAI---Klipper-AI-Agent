@@ -15,12 +15,12 @@ from tools import deploy
 @pytest.mark.parametrize(
     "host,install,url",
     [
-        ("-oProxyCommand=bad", "/home/pi/KlipperAI", "http://127.0.0.1:8811/readyz"),
+        ("-oProxyCommand=bad", "/home/pi/KAI", "http://127.0.0.1:8811/readyz"),
         ("printer", "/home/pi/../printer", "http://127.0.0.1:8811/readyz"),
         ("printer", "/home/pi/a b", "http://127.0.0.1:8811/readyz"),
-        ("printer", "/home/pi/KlipperAI", "https://example.com/readyz"),
-        ("printer", "/home/pi/KlipperAI", "http://secret@localhost/readyz"),
-        ("printer", "/home/pi/KlipperAI", "http://localhost/readyz?secret=yes"),
+        ("printer", "/home/pi/KAI", "https://example.com/readyz"),
+        ("printer", "/home/pi/KAI", "http://secret@localhost/readyz"),
+        ("printer", "/home/pi/KAI", "http://localhost/readyz?secret=yes"),
     ],
 )
 def test_deploy_rejects_ambiguous_targets_before_any_command(monkeypatch, host, install, url):
@@ -38,11 +38,11 @@ def test_workspace_build_upload_activate_and_private_cleanup(tmp_path, monkeypat
         calls.append(command)
         if "input" in kwargs:
             bundles.append(kwargs["input"])
-        return SimpleNamespace(stdout="/tmp/klipperai-deploy.abcdefgh\n")
+        return SimpleNamespace(stdout="/tmp/kai-deploy.abcdefgh\n")
 
     monkeypatch.setattr(deploy, "run", execute)
     monkeypatch.setattr(deploy.subprocess, "run", lambda command, **kwargs: cleanup.append(command))
-    deploy.deploy("pi@printer", "/home/pi/KlipperAI", "http://127.0.0.1:8811/readyz")
+    deploy.deploy("pi@printer", "/home/pi/KAI", "http://127.0.0.1:8811/readyz")
     assert not any(command[0] == "scp" for command in calls)
     assert len(bundles) == 1
     with tarfile.open(fileobj=io.BytesIO(bundles[0])) as archive:
@@ -59,18 +59,18 @@ def test_workspace_build_upload_activate_and_private_cleanup(tmp_path, monkeypat
     activate = calls[-1]
     assert activate[:3] == ["ssh", "-t", "pi@printer"]
     assert "-m deployment.update" in activate[-1] and checksum in activate[-1]
-    assert cleanup == [["ssh", "pi@printer", "rm -rf -- /tmp/klipperai-deploy.abcdefgh"]]
+    assert cleanup == [["ssh", "pi@printer", "rm -rf -- /tmp/kai-deploy.abcdefgh"]]
 
 
 def test_dry_run_rollback_and_failed_remote_paths(tmp_path, monkeypatch):
     wheel, _ = wheel_file(tmp_path)
     monkeypatch.setattr(deploy, "run", lambda *a, **k: pytest.fail("dry run contacted host"))
     deploy.deploy(
-        "printer", "/home/pi/KlipperAI", "http://localhost:8811/readyz", wheel=wheel, dry_run=True
+        "printer", "/home/pi/KAI", "http://localhost:8811/readyz", wheel=wheel, dry_run=True
     )
     with pytest.raises(ValueError, match="Choose"):
         deploy.deploy(
-            "printer", "/home/pi/KlipperAI", "http://localhost/readyz", wheel=wheel, rollback=True
+            "printer", "/home/pi/KAI", "http://localhost/readyz", wheel=wheel, rollback=True
         )
     calls = []
     monkeypatch.setattr(deploy, "build_wheel", lambda _: pytest.fail("rollback built code"))
@@ -78,13 +78,13 @@ def test_dry_run_rollback_and_failed_remote_paths(tmp_path, monkeypatch):
         deploy,
         "run",
         lambda command, **kwargs: (
-            calls.append(command) or SimpleNamespace(stdout="/tmp/klipperai-deploy.abc")
+            calls.append(command) or SimpleNamespace(stdout="/tmp/kai-deploy.abc")
         ),
     )
     monkeypatch.setattr(deploy.subprocess, "run", lambda *a, **k: None)
     deploy.deploy(
         "printer",
-        "/home/pi/KlipperAI",
+        "/home/pi/KAI",
         "http://localhost/readyz",
         rollback=True,
         non_interactive=True,
@@ -94,7 +94,7 @@ def test_dry_run_rollback_and_failed_remote_paths(tmp_path, monkeypatch):
     assert len([command for command in calls if "tar -xf" in command[-1]]) == 1
     monkeypatch.setattr(deploy, "run", lambda *a, **k: SimpleNamespace(stdout="/home/pi"))
     with pytest.raises(ValueError, match="temporary"):
-        deploy.deploy("printer", "/home/pi/KlipperAI", "http://localhost/readyz", rollback=True)
+        deploy.deploy("printer", "/home/pi/KAI", "http://localhost/readyz", rollback=True)
 
 
 def test_deploy_cleans_only_its_staging_directory_on_transport_failure(monkeypatch):
@@ -102,14 +102,14 @@ def test_deploy_cleans_only_its_staging_directory_on_transport_failure(monkeypat
 
     def execute(command, **kwargs):
         if "mktemp" in command[-1]:
-            return SimpleNamespace(stdout="/tmp/klipperai-deploy.abc")
+            return SimpleNamespace(stdout="/tmp/kai-deploy.abc")
         raise RuntimeError("transport failed")
 
     monkeypatch.setattr(deploy, "run", execute)
     monkeypatch.setattr(deploy.subprocess, "run", lambda command, **kwargs: calls.append(command))
     with pytest.raises(RuntimeError, match="transport"):
-        deploy.deploy("printer", "/home/pi/KlipperAI", "http://localhost/readyz", rollback=True)
-    assert calls == [["ssh", "printer", "rm -rf -- /tmp/klipperai-deploy.abc"]]
+        deploy.deploy("printer", "/home/pi/KAI", "http://localhost/readyz", rollback=True)
+    assert calls == [["ssh", "printer", "rm -rf -- /tmp/kai-deploy.abc"]]
 
 
 def test_builder_and_profile_use_current_workspace(tmp_path, monkeypatch):
@@ -125,13 +125,13 @@ def test_builder_and_profile_use_current_workspace(tmp_path, monkeypatch):
     monkeypatch.setattr(deploy, "ROOT", tmp_path)
     (tmp_path / ".local").mkdir()
     (tmp_path / ".local/deploy-targets.json").write_text(
-        json.dumps({"test": {"host": "printer", "install_dir": "/home/pi/KlipperAI"}})
+        json.dumps({"test": {"host": "printer", "install_dir": "/home/pi/KAI"}})
     )
     monkeypatch.setattr(deploy.sys, "argv", ["deploy", "test", "--dry-run"])
     received = []
     monkeypatch.setattr(deploy, "deploy", lambda *a, **k: received.append((a, k)))
     deploy.main()
-    assert received[0][0][:2] == ("printer", "/home/pi/KlipperAI")
+    assert received[0][0][:2] == ("printer", "/home/pi/KAI")
     assert received[0][1]["dry_run"] is True
 
 
@@ -148,7 +148,7 @@ def test_remote_cli_rejects_nonlocal_probe_before_service_actions(monkeypatch, u
     monkeypatch.setattr(
         update.sys,
         "argv",
-        ["update", "--install-dir", "/home/pi/KlipperAI", "--rollback", "--url", url],
+        ["update", "--install-dir", "/home/pi/KAI", "--rollback", "--url", url],
     )
     with pytest.raises(SystemExit) as result:
         update.main()

@@ -4,14 +4,14 @@ from types import SimpleNamespace
 
 import pytest
 
-import klipperai_agent.application.request_context as services_module
-from klipperai_agent.application.chat import (
+import kai_agent.application.request_context as services_module
+from kai_agent.application.chat import (
     ChatService,
 )
-from klipperai_agent.application.request_context import _infer_inline_question_artifact
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.contracts.api import ChatHistoryMessage, ChatRequest
-from klipperai_agent.profile.models import PrinterProfile
+from kai_agent.application.request_context import _infer_inline_question_artifact
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.contracts.api import ChatHistoryMessage, ChatRequest
+from kai_agent.profile.models import PrinterProfile
 
 
 class _FakeGraph:
@@ -59,7 +59,7 @@ async def test_chat_service_routes_config_request_to_config_graph() -> None:
                 {
                     "feature": "fan",
                     "title": "Fan config",
-                    "target_file": "klipperai/fan.cfg",
+                    "target_file": "kai/fan.cfg",
                     "config": "[fan]\npin: PA1\n",
                     "rationale": "test",
                     "assumptions": [],
@@ -491,9 +491,9 @@ def _service(sessions, diagnosis_graph=None, root_path="") -> ChatService:
 @pytest.mark.asyncio
 async def test_create_ui_session_and_invalid_session_errors() -> None:
     sessions = InMemorySessionStore(ttl_seconds=60)
-    service = _service(sessions, root_path="/klippyai")
+    service = _service(sessions, root_path="/kai")
     created = await service.create_ui_session()
-    assert created.embed_path == f"/klippyai/embed?session={created.session_id}"
+    assert created.embed_path == f"/kai/embed?session={created.session_id}"
 
     with pytest.raises(ValueError, match="Invalid or expired"):
         await service.bootstrap("missing")
@@ -581,7 +581,7 @@ def test_history_and_inline_artifact_edge_cases() -> None:
     ]
     context = services_module._format_conversation_context(history, max_pairs=1)
     assert "...[truncated]..." in context
-    assert "KlipperAI: answer" in context
+    assert "KAI: answer" in context
     blank = ChatHistoryMessage.construct(role="user", text=" ")
     assert services_module._format_conversation_context([blank], max_pairs=1) == ""
 

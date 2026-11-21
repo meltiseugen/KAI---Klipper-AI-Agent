@@ -14,7 +14,7 @@ def test_navigation_preserves_other_entries_order_and_unchanged_bytes(mainsail_m
     other = [{"title": "Other", "href": "/other", "position": 99}, "custom"]
     original = json.dumps(other + [entry.payload()], indent=4).encode()
     assert module.update_navigation(original, entry) is original
-    duplicated = json.dumps([entry.payload(), *other, {"title": "KlipperAI"}]).encode()
+    duplicated = json.dumps([entry.payload(), *other, {"title": "KAI"}]).encode()
     assert json.loads(module.update_navigation(duplicated, entry)) == [entry.payload(), *other]
     assert json.loads(module.update_navigation(duplicated, entry, remove=True)) == other
     absent = json.dumps(other).encode()
@@ -96,7 +96,7 @@ def test_failed_write_and_editor_race_leave_original_or_editor_contents(
     monkeypatch.setattr(m.io.os, "replace", Mock(side_effect=PermissionError("read only")))
     assert m.cli.main(m.args) == 1
     assert m.files.path.read_bytes() == b"[]\n"
-    assert not list(m.files.theme.glob(".klipperai-*"))
+    assert not list(m.files.theme.glob(".kai-*"))
     monkeypatch.setattr(m.io.os, "replace", original_replace)
     original_chmod = os.chmod
 
@@ -107,7 +107,7 @@ def test_failed_write_and_editor_race_leave_original_or_editor_contents(
     monkeypatch.setattr(m.io.os, "chmod", edit_during_staging)
     assert m.cli.main(m.args) == 1
     assert m.files.path.read_bytes() == b'[{"title":"New unrelated entry"}]'
-    assert not list(m.files.theme.glob(".klipperai-*"))
+    assert not list(m.files.theme.glob(".kai-*"))
 
 
 def test_links_are_refused_and_file_ownership_is_preserved(mainsail_maintenance, monkeypatch):

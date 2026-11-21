@@ -1,6 +1,6 @@
 # Performance on constrained printer hosts
 
-KlipperAI shares the host with Klipper and Moonraker. Its local work must remain
+KAI shares the host with Klipper and Moonraker. Its local work must remain
 bounded while the external LLM performs the investigation. The agent, automatic
 config/log collection, read-only tools and manual proposal review remain enabled.
 No local model, embedding server, vector database or new runtime dependency was
@@ -48,7 +48,7 @@ thresholds on shared CI hosts.
 | Area | Behavior |
 | --- | --- |
 | Interactive investigations | One complete investigation per application process. A second tab receives a retryable conflict before starting another run. Cancellation releases capacity. Recovery waits for the same capacity while keeping its lease alive. |
-| Current host logs | Read at most the last 256 KiB per file and return at most the requested line count. Drop a partial first line. Collect at most 16 current logs, prioritizing Klippy, Moonraker and KlipperAI. Gaps and omitted files are reported. Existing exclusions and redaction remain effective. |
+| Current host logs | Read at most the last 256 KiB per file and return at most the requested line count. Drop a partial first line. Collect at most 16 current logs, prioritizing Klippy, Moonraker and KAI. Gaps and omitted files are reported. Existing exclusions and redaction remain effective. |
 | Configuration | Read in bounded chunks and reject files over 1,000,000 decoded characters before parsing them. Prefer a conventional `printer.cfg` containing `[printer]`; explicit configured roots take precedence. Nonstandard-root discovery retains its fallback. Active includes still load automatically. |
 | Config excerpts | Runtime composition retains the existing 100-document and 24,000-character excerpt limits. Full-document expansion remains hash-checked and capped at 1,000,000 characters. Collection errors are evidence gaps. |
 | Sidebar reads | The summary endpoint queries metadata and pending state without loading saved turns. Agent cross-chat recall retains its separate evidence-bearing recent-history read. |

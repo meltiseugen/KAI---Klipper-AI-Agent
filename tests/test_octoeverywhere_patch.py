@@ -7,18 +7,18 @@ from types import SimpleNamespace
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "integrations/octoeverywhere/apply-local-klipperai-route-patch.sh"
+SCRIPT = ROOT / "integrations/octoeverywhere/apply-local-kai-route-patch.sh"
 RoutePatch = runpy.run_path(str(SCRIPT.with_name("route_patch.py")))["RoutePatch"]
 
 
-@pytest.mark.parametrize("prefix", ["/klipperai", "/assistant/printer"])
+@pytest.mark.parametrize("prefix", ["/kai", "/assistant/printer"])
 def test_patch_routes_round_trip_and_idempotence(oe_checkout, run_shell, prefix):
     root, router, ui = oe_checkout
     original_router, original_ui = router.read_text(), ui.read_text()
-    args = [SCRIPT.as_posix(), "--oe-root", root.as_posix(), "--klipperai-prefix", prefix]
+    args = [SCRIPT.as_posix(), "--oe-root", root.as_posix(), "--kai-prefix", prefix]
     run_shell(*args)
     patched_router, patched_ui = router.read_text(), ui.read_text()
-    assert "KlipperAI local route patch start" in patched_ui
+    assert "KAI local route patch start" in patched_ui
     namespace = {}
     exec(compile(patched_router, str(router), "exec"), namespace)
     cls = namespace["MoonrakerApiRouter"]
@@ -59,7 +59,7 @@ def test_patch_refuses_upstream_drift_without_changing_either_file(oe_checkout, 
     elif damage == "ui-anchor":
         ui.write_text("// upstream changed its initialization\n")
     else:
-        ui.write_text(ui.read_text() + "// KlipperAI local route patch start\n")
+        ui.write_text(ui.read_text() + "// KAI local route patch start\n")
     before = router.read_bytes(), ui.read_bytes()
     result = run_shell(SCRIPT.as_posix(), "--oe-root", root.as_posix(), check=False)
     assert result.returncode != 0

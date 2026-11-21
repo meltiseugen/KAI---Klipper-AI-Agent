@@ -5,9 +5,9 @@ from types import SimpleNamespace
 
 import pytest
 
-import klipperai_agent.cli.detect_profile as detect_profile
-from klipperai_agent.infrastructure.moonraker import MoonrakerError
-from klipperai_agent.profile.models import PrinterProfile
+import kai_agent.cli.detect_profile as detect_profile
+from kai_agent.infrastructure.moonraker import MoonrakerError
+from kai_agent.profile.models import PrinterProfile
 
 
 class _Moonraker:
@@ -24,7 +24,7 @@ class _Moonraker:
 
 @pytest.mark.asyncio
 async def test_run_detection_collects_writes_and_reports(monkeypatch, tmp_path, capsys) -> None:
-    cfg = tmp_path / "klippyai.cfg"
+    cfg = tmp_path / "kai.cfg"
     cfg.write_text("[server]\n", encoding="utf-8")
     config_dir = tmp_path / "printer_data" / "config"
     config_dir.mkdir(parents=True)

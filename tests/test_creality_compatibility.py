@@ -162,11 +162,12 @@ create_python_virtual_environment
     )
 
 
-@pytest.mark.parametrize("version,success", [(249, False), (250, True)])
+@pytest.mark.parametrize("version,success", [(246, False), (247, True), (249, True), (250, True)])
 def test_credential_preflight_requires_real_supported_systemd(
     tmp_path, run_shell, version, success
 ):
     for name, body in (
+        ("systemctl", f"printf 'systemd {version}\\n'"),
         ("systemd-creds", f"printf 'systemd {version}\\n'"),
         ("systemd-run", "exit 99"),
     ):
@@ -184,6 +185,7 @@ PROJECT_NAME=test
 SCRIPT_DIR="$1"
 require_linux() { :; }
 ensure_prerequisites() { :; }
+run_root() { "$@"; }
 preflight
 """,
         "test",
@@ -193,7 +195,7 @@ preflight
     )
     assert (result.returncode == 0) is success
     if not success:
-        assert "systemd 250 or newer" in result.stderr
+        assert "systemd 247 or newer" in result.stderr
 
 
 def test_root_service_account_remains_an_explicit_install_blocker(run_shell):
@@ -219,7 +221,7 @@ configure_paths
 
 def test_root_ssh_update_is_blocked_before_any_host_mutation(monkeypatch):
     monkeypatch.setattr(
-        update.sys, "argv", ["update", "--install-dir", "/usr/data/KlipperAI", "--rollback"]
+        update.sys, "argv", ["update", "--install-dir", "/usr/data/KAI", "--rollback"]
     )
     monkeypatch.setattr(update.sys, "platform", "linux")
     monkeypatch.setattr(update.os, "geteuid", lambda: 0, raising=False)

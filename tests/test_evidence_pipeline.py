@@ -11,18 +11,18 @@ from test_agent import ScriptedModel, answer
 from test_agent import tool_context as tool_context
 from test_investigations import persistent_service as persistent_service
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits, ToolCall
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.tools.base import Tool, ToolArguments
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.diagnostics.collector import DiagnosticsCollector
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.providers.models import DiagnosisLLMOutput
-from klipperai_agent.runtime.settings import Settings
-from klipperai_agent.workflows.engine import build_diagnosis_graph
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits, ToolCall
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.tools.base import Tool, ToolArguments
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.diagnostics.collector import DiagnosticsCollector
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.providers.models import DiagnosisLLMOutput
+from kai_agent.runtime.settings import Settings
+from kai_agent.workflows.engine import build_diagnosis_graph
 
 
 class Choice(ToolArguments):

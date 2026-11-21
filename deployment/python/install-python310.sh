@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-PROJECT_NAME="KlipperAI Python"
+PROJECT_NAME="KAI Python"
 PYTHON_VERSION="${PYTHON_VERSION:-3.10.20}"
 PYTHON_SERIES="${PYTHON_VERSION%.*}"
 INSTALL_PREFIX="${INSTALL_PREFIX:-/usr/local}"
@@ -149,7 +149,7 @@ build_from_source() {
   fi
 
   install_build_dependencies
-  WORK_DIR="$(mktemp -d /tmp/klipperai-python310.XXXXXX)"
+  WORK_DIR="$(mktemp -d /tmp/kai-python310.XXXXXX)"
   trap cleanup EXIT
 
   download_python_source
@@ -196,7 +196,7 @@ main() {
   fi
 
   verify_install
-  log "Next step: rerun ./install.sh from the KlipperAI checkout."
+  log "Next step: rerun ./install.sh from the KAI checkout."
 }
 
 main "$@"

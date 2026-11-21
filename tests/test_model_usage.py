@@ -6,14 +6,14 @@ from unittest.mock import AsyncMock
 import httpx
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.investigation import InvestigationResult, PendingInvestigation
-from klipperai_agent.providers.json_client import OpenAIJsonClient
-from klipperai_agent.providers.responses import OpenAIAgentModel, ProviderError, ResponsesClient
-from klipperai_agent.runtime.model_usage import model_request, track_model_usage
-from klipperai_agent.web.streaming import ChatEventStream
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.investigation import InvestigationResult, PendingInvestigation
+from kai_agent.providers.json_client import OpenAIJsonClient
+from kai_agent.providers.responses import OpenAIAgentModel, ProviderError, ResponsesClient
+from kai_agent.runtime.model_usage import model_request, track_model_usage
+from kai_agent.web.streaming import ChatEventStream
 from tests.test_investigations import persistent_service as persistent_service
 
 
@@ -79,7 +79,7 @@ async def test_legacy_client_counts_requests_with_and_without_a_completed_respon
         httpx.Response(503),
     ]
     monkeypatch.setattr(
-        "klipperai_agent.providers.json_client.httpx.AsyncClient",
+        "kai_agent.providers.json_client.httpx.AsyncClient",
         lambda **kwargs: real_client(
             **kwargs, transport=httpx.MockTransport(lambda _: responses.pop(0))
         ),

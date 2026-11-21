@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.evidence import ArtifactInput
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.evidence import ArtifactInput
 
 EXAMPLES = Path(__file__).resolve().parents[1] / "examples/failures"
 CASES = json.loads((EXAMPLES / "cases.json").read_text())

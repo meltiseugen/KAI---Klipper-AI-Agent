@@ -17,16 +17,16 @@ import tracemalloc
 from pathlib import Path
 from typing import Callable
 
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.domain.investigation import (
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.domain.investigation import (
     Investigation,
     InvestigationResult,
     InvestigationTurn,
 )
-from klipperai_agent.domain.knowledge import CachedDocument
-from klipperai_agent.infrastructure.host.logs import HostLogCollector
-from klipperai_agent.infrastructure.investigations import SqliteInvestigationRepository
-from klipperai_agent.knowledge.retrieval import search_documents
+from kai_agent.domain.knowledge import CachedDocument
+from kai_agent.infrastructure.host.logs import HostLogCollector
+from kai_agent.infrastructure.investigations import SqliteInvestigationRepository
+from kai_agent.knowledge.retrieval import search_documents
 
 
 def measure(operation: Callable[[], object], repeats: int) -> dict[str, float]:
@@ -99,7 +99,7 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, choices=range(1, 11), default=3)
     parser.add_argument("--output", type=Path)
     options = parser.parse_args()
-    with tempfile.TemporaryDirectory(prefix="klipperai-resource-benchmark-") as directory:
+    with tempfile.TemporaryDirectory(prefix="kai-resource-benchmark-") as directory:
         results = {
             "platform": platform.platform(),
             "python": platform.python_version(),

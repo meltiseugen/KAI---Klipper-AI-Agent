@@ -86,7 +86,7 @@ class PatchFiles:
 
     @staticmethod
     def stage(item: FileChange, data: bytes) -> Path:
-        fd, name = tempfile.mkstemp(prefix=".klipperai-", dir=item.path.parent)
+        fd, name = tempfile.mkstemp(prefix=".kai-", dir=item.path.parent)
         path = Path(name)
         try:
             with os.fdopen(fd, "wb") as stream:
@@ -115,7 +115,7 @@ class PatchFiles:
             backup = Path(tempfile.mkdtemp(prefix="change-", dir=backup_root))
             for item in plan.files:
                 (backup / item.path.name).write_bytes(item.original)
-            print(f"[KlipperAI OE] Backup: {backup}")
+            print(f"[KAI OE] Backup: {backup}")
             self.state.mark("restart-pending")
             self.verify(plan)
             for item in plan.changes:

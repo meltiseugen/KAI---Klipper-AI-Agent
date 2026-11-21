@@ -5,7 +5,7 @@ This backlog is organized around the current chosen architecture:
 - standalone host daemon
 - Moonraker underneath
 - supported Mainsail custom-navigation entry in `v1`
-- same-origin KlipperAI page at `/klipperai/`
+- same-origin KAI page at `/kai/`
 - bounded class-based agent orchestration with read-only tools and optional web search
 
 ## Refactoring And Agent Runtime
@@ -70,10 +70,10 @@ This backlog is organized around the current chosen architecture:
 
 ## Milestone 3: Mainsail Integration
 
-- [x] Add a stable same-origin KlipperAI page at `/klipperai/`
-- [x] Add a low-coupling Mainsail custom-navigation link that opens KlipperAI
+- [x] Add a stable same-origin KAI page at `/kai/`
+- [x] Add a low-coupling Mainsail custom-navigation link that opens KAI
 - [x] Add installer support for writing `.theme/navi.json`
-- [x] Ensure same-origin routing for `/klipperai/` behind nginx
+- [x] Ensure same-origin routing for `/kai/` behind nginx
 - [x] Improve the standalone page so it feels more at home inside the printer UI flow
 - [x] Retire the optional native drawer patch; keep the left-menu link opening a new tab
 
@@ -91,7 +91,7 @@ This backlog is organized around the current chosen architecture:
 - [x] Create a config analysis workflow for active printer configuration
 - [x] Detect common config mistakes such as missing includes, invalid pin descriptions, and conflicting sections (static checks; physical pin/firmware validation remains manual)
 - [x] Build typed proposal objects for generated config changes
-- [x] Support managed include fragments under a KlipperAI-owned directory through manual create/include plans
+- [x] Support managed include fragments under a KAI-owned directory through manual create/include plans
 - [x] Support patch generation against existing config files
 - [x] Add conservative static review before proposals are shown; full firmware/hardware validation remains future work
 - [x] Add deeper feature-specific generation beyond scaffold-level proposals (parameterized probe, mesh and shaper drafts plus a functional status macro)
@@ -139,7 +139,7 @@ This backlog is organized around the current chosen architecture:
 
 - [x] Add a Linux CI pipeline for lint, type checks, and tests
 - [x] Add integration tests for installer, env generation, and service boot
-- [x] Add a smoke test for reverse-proxy routing at `/klipperai/`
+- [x] Add a smoke test for reverse-proxy routing at `/kai/`
 - [x] Add example artifacts for known printer failures
 - [x] Add versioning, changelog, and release notes conventions
 - [x] Add packaging guidance for a one-line remote installer in a future release

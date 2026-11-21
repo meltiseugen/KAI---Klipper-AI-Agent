@@ -1,4 +1,4 @@
-from klipperai_agent.agent.tools.text_search import line_matches, match_page
+from kai_agent.agent.tools.text_search import line_matches, match_page
 
 
 def test_literal_search_never_interprets_regex_and_long_lines_keep_the_actual_match():

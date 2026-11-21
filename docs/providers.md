@@ -1,23 +1,23 @@
 # Provider and credential management
 
-Open **Provider settings** in KlipperAI. OpenAI is the supported provider.
+Open **Provider settings** in KAI. OpenAI is the supported provider.
 The agent requires an active API key for every Chat or Debug request, including
 configuration audits. Without a key the page provides setup, connection status
 and saved information; it does not generate assistant replies. The panel manages the
 service's shared provider configuration; access uses the same trusted proxy/LAN
 boundary as the rest of the application, not a separate administrator account.
-Use HTTPS for remote access and protect every `/klipperai/api/` route.
+Use HTTPS for remote access and protect every `/kai/api/` route.
 
 ## Setup and rotation
 
 1. Select OpenAI, enter a new key, and set the model IDs and limits.
-2. Choose **Validate and save**. KlipperAI checks access to each distinct model
+2. Choose **Validate and save**. KAI checks access to each distinct model
    through OpenAI's model metadata endpoint before committing anything.
-3. Manually restart the KlipperAI service. The panel distinguishes saved settings
+3. Manually restart the KAI service. The panel distinguishes saved settings
    from the active provider and explicitly shows pending changes. No restart or
    printer-write endpoint is added.
 4. Check a real request after restarting. When rotating, revoke the old key in
-   the OpenAI account only after the replacement works. KlipperAI cannot revoke it.
+   the OpenAI account only after the replacement works. KAI cannot revoke it.
 
 **Check access** validates without saving. The key field clears after either
 operation, on reload, and when closing the panel. Re-enter a replacement key after
@@ -34,8 +34,8 @@ or credential values to the UI. Conflicting edits return 409; reload before savi
 ## Private storage and configuration precedence
 
 The installer uses `<data_dir>/private/providers.sqlite3`; direct development runs
-default to `~/.config/klipperai/providers.sqlite3`. `provider_storage_dir` /
-`KLIPPERAI_PROVIDER_STORAGE_DIR` can select a dedicated private directory.
+default to `~/.config/kai/providers.sqlite3`. `provider_storage_dir` /
+`KAI_PROVIDER_STORAGE_DIR` can select a dedicated private directory.
 The directory is mode 0700 and the file is mode 0600 on POSIX.
 It must be outside the checkout, printer configuration, G-code and log directories.
 Symlink directories/files, hardlinked files and special files are rejected.
@@ -53,7 +53,7 @@ backups can still retain old keys. There are no credential-read/export endpoints
 
 Before the first save, existing `llm_provider`, `openai_model`,
 `agent_max_output_tokens`, `web_search_enabled`, and the protected
-legacy `KLIPPERAI_OPENAI_API_KEY` environment value supply defaults. A legacy key
+legacy `KAI_OPENAI_API_KEY` environment value supply defaults. A legacy key
 is imported into encrypted storage on startup when a master is available. Subsequently that
 saved policy takes precedence over those environment/config defaults, including
 an explicitly removed key. Other runtime settings remain unchanged.

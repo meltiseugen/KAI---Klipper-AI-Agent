@@ -31,9 +31,9 @@ are retained. Replaced option comments may move to adjacent comment lines.
 This is an option merge, not a deletion/rename or whole-file replacement system.
 The existing proposed-section comparison remains available separately.
 
-New fragments use `klipperai/<feature>.cfg`, relative to the printer config root.
+New fragments use `kai/<feature>.cfg`, relative to the printer config root.
 The directory is reserved by convention for assistant-drafted fragments; the user
-creates and maintains it in their editor. KlipperAI never creates that directory
+creates and maintains it in their editor. KAI never creates that directory
 or writes printer files. Each plan includes a create/update patch and, if needed,
 an explicit include patch relative to the actual root file's directory. Existing
 wildcard includes are reused, and includes are inserted before SAVE_CONFIG.
@@ -71,7 +71,7 @@ Scaffolds feed the model, which evaluates their assumptions and drafts the final
 proposal subject to the same manual review. They are not a separate assistant.
 
 Additional purpose-specific drafts now cover `START_PRINT`, `END_PRINT`,
-`KLIPPERAI_PREFLIGHT`, BLTouch and ADXL345/LIS2DW resonance setup. Start requires
+`KAI_PREFLIGHT`, BLTouch and ADXL345/LIS2DW resonance setup. Start requires
 explicit slicer temperatures and contains no guessed purge coordinates or mesh
 profile. End waits for queued moves and turns off heaters without inventing a
 park/retract move. BLTouch retains observed options and keeps unknown pins/offsets

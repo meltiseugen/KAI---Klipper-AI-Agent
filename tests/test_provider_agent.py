@@ -3,10 +3,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.provider_settings import ProviderLimitError
+from kai_agent.agent.models import AgentLimits
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.provider_settings import ProviderLimitError
 from tests.test_agent_integration import agent_service as agent_service
 
 

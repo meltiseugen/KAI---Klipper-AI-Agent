@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def source_version() -> str:
-    tree = ast.parse((ROOT / "klipperai_agent/domain/version.py").read_text())
+    tree = ast.parse((ROOT / "kai_agent/domain/version.py").read_text())
     return next(
         ast.literal_eval(node.value)
         for node in tree.body
@@ -58,7 +58,7 @@ def check(directory: Path, tag: str | None = None) -> list[Path]:
             "tools/deploy.py",
             "CHANGELOG.md",
             "docs/RELEASING.md",
-            "klipperai_agent/web/templates/embed.html",
+            "kai_agent/web/templates/embed.html",
         }
         if not required <= names:
             raise ValueError("Source archive is missing installation/release files.")

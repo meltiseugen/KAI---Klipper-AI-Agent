@@ -18,12 +18,12 @@ from host_lock import MaintenanceBusy, locked  # noqa: E402
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Maintain the KlipperAI Mainsail sidebar link")
+    parser = argparse.ArgumentParser(description="Maintain the KAI Mainsail sidebar link")
     parser.add_argument("--config-dir", type=Path)
-    parser.add_argument("--state-dir", type=Path, default=os.getenv("KLIPPERAI_MAINSAIL_STATE_DIR"))
+    parser.add_argument("--state-dir", type=Path, default=os.getenv("KAI_MAINSAIL_STATE_DIR"))
     parser.add_argument("--settings-file", type=Path)
-    parser.add_argument("--href", default="/klipperai/")
-    parser.add_argument("--title", default="KlipperAI")
+    parser.add_argument("--href", default="/kai/")
+    parser.add_argument("--title", default="KAI")
     parser.add_argument("--target", default="_blank")
     parser.add_argument("--position", type=int, default=85)
     parser.add_argument("--icon", default="")
@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
     for name in ("check", "remove", "reconcile", "validate", "install-hook", "remove-hook"):
         mode.add_argument("--" + name, action="store_true")
     args = parser.parse_args(argv)
-    units = Path(os.getenv("KLIPPERAI_SYSTEMD_DIR", "/etc/systemd/system"))
+    units = Path(os.getenv("KAI_SYSTEMD_DIR", "/etc/systemd/system"))
     try:
         if args.remove_hook:
             remove_hook(units)
@@ -47,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.config_dir is None or not args.config_dir.is_dir():
             raise ValueError("--config-dir must name an existing printer config directory")
         config = args.config_dir.resolve()
-        state = (args.state_dir or config.parent / ".klipperai-mainsail").resolve()
+        state = (args.state_dir or config.parent / ".kai-mainsail").resolve()
         files = NavigationFile(config, state)
         if args.validate:
             print("Mainsail navigation options are valid.")
@@ -66,7 +66,7 @@ def main(argv: list[str] | None = None) -> int:
                 install_hook(config, state, entry, units, user, args.interval)
                 disabled.unlink(missing_ok=True)
             elif args.reconcile and disabled.exists():
-                print("[KlipperAI Mainsail] Auto-reapply paused by navigation removal.")
+                print("[KAI Mainsail] Auto-reapply paused by navigation removal.")
                 return 0
             else:
                 if args.remove:
@@ -75,15 +75,15 @@ def main(argv: list[str] | None = None) -> int:
                 if not args.remove:
                     disabled.unlink(missing_ok=True)
                 print(
-                    "[KlipperAI Mainsail] Navigation updated."
+                    "[KAI Mainsail] Navigation updated."
                     if changed
-                    else "[KlipperAI Mainsail] Navigation already matches."
+                    else "[KAI Mainsail] Navigation already matches."
                 )
         if args.install_hook:
             start_hook()
         return 0
     except MaintenanceBusy as exc:
-        print(f"[KlipperAI Mainsail] {exc}")
+        print(f"[KAI Mainsail] {exc}")
         return 0 if args.reconcile else 1
     except (
         OSError,
@@ -94,7 +94,7 @@ def main(argv: list[str] | None = None) -> int:
         RuntimeError,
         subprocess.SubprocessError,
     ) as exc:
-        print(f"[KlipperAI Mainsail] Maintenance failed: {exc}")
+        print(f"[KAI Mainsail] Maintenance failed: {exc}")
         return 1
 
 

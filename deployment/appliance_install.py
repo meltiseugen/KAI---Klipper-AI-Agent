@@ -21,13 +21,13 @@ from deployment.appliance_service import ApplianceService
 
 def init_script(install: Path) -> str:
     return (
-        "#!/bin/sh\n# Managed KlipperAI native service; no printer service control.\n"
+        "#!/bin/sh\n# Managed KAI native service; no printer service control.\n"
         + "export PATH=/opt/bin:/opt/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin\n"
         + "BASE="
         + shlex.quote(str(install))
         + "\n"
-        + 'if [ -L "$BASE/.klipperai-releases/current" ]; then\n'
-        + '  cd "$BASE/.klipperai-releases/current" || exit 1\n'
+        + 'if [ -L "$BASE/.kai-releases/current" ]; then\n'
+        + '  cd "$BASE/.kai-releases/current" || exit 1\n'
         + 'else cd "$BASE" || exit 1; fi\n'
         + "exec "
         + shlex.quote(str(install / ".venv/bin/python"))
@@ -38,7 +38,7 @@ def init_script(install: Path) -> str:
 
 
 def provision(args: argparse.Namespace, raw_key: bytes) -> ApplianceConfig:
-    from klipperai_agent.cli.credentials import initialize_credentials
+    from kai_agent.cli.credentials import initialize_credentials
 
     install = args.install_dir.resolve()
     if (install / RECEIPT).exists():
@@ -51,11 +51,7 @@ def provision(args: argparse.Namespace, raw_key: bytes) -> ApplianceConfig:
             raise ValueError("Keep the existing native service credential and environment paths.")
     else:
         runtime = getattr(args, "runtime_dir", None) or next(
-            (
-                path
-                for path in (Path("/run/klipperai"), Path("/tmp/klipperai-runtime"))
-                if ram_backed(path)
-            ),
+            (path for path in (Path("/run/kai"), Path("/tmp/kai-runtime")) if ram_backed(path)),
             None,
         )
         if runtime is None or not ram_backed(runtime):
@@ -84,7 +80,7 @@ def provision(args: argparse.Namespace, raw_key: bytes) -> ApplianceConfig:
     try:
         initialize_credentials(args, raw_key)
     finally:
-        (config.runtime / "klipperai-provider-master").unlink(missing_ok=True)
+        (config.runtime / "kai-provider-master").unlink(missing_ok=True)
         if original_directory is None:
             os.environ.pop("CREDENTIALS_DIRECTORY", None)
         else:
@@ -105,8 +101,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--install-dir", required=True, type=Path)
     parser.add_argument("--environment-file", required=True, type=Path)
-    parser.add_argument("--state-dir", default=Path("/usr/data/klipperai-host"), type=Path)
-    parser.add_argument("--host-key-dir", default=Path("/usr/data/.klipperai-host-key"), type=Path)
+    parser.add_argument("--state-dir", default=Path("/usr/data/kai-host"), type=Path)
+    parser.add_argument("--host-key-dir", default=Path("/usr/data/.kai-host-key"), type=Path)
     parser.add_argument(
         "--runtime-dir", type=Path, help="Verified tmpfs/ramfs location; normally auto-detected."
     )
@@ -132,7 +128,7 @@ def main() -> None:
             file=sys.stderr,
         )
         raise SystemExit(1) from None
-    print("Native KlipperAI init service and encrypted credentials are ready.")
+    print("Native KAI init service and encrypted credentials are ready.")
 
 
 if __name__ == "__main__":

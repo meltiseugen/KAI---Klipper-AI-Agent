@@ -1,9 +1,9 @@
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.runtime.settings import Settings
-from klipperai_agent.web.security import RequestSecurity, same_origin
+import kai_agent.web.app as app_module
+from kai_agent.runtime.settings import Settings
+from kai_agent.web.security import RequestSecurity, same_origin
 from tests.test_app import _FakeContainer
 
 

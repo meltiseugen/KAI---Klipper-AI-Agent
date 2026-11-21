@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-import klipperai_agent.runtime.logging as runtime_logging
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.runtime.logging as runtime_logging
+from kai_agent.runtime.settings import Settings
 
 
 def _settings(tmp_path: Path) -> Settings:
@@ -23,10 +23,10 @@ def test_configure_runtime_logging_with_file_sink(tmp_path) -> None:
     original_handlers = list(root.handlers)
     try:
         log_path = runtime_logging.configure_runtime_logging(_settings(tmp_path))
-        assert log_path.resolve() == (tmp_path / "data" / "logs" / "klipperai.log").resolve()
+        assert log_path.resolve() == (tmp_path / "data" / "logs" / "kai.log").resolve()
         assert root.level == logging.DEBUG
         assert len(root.handlers) == 2
-        logging.getLogger("klipperai_agent.test").info("hello")
+        logging.getLogger("kai_agent.test").info("hello")
         for handler in root.handlers:
             handler.flush()
         assert "hello" in log_path.read_text(encoding="utf-8")

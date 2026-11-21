@@ -5,10 +5,10 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.application.providers import ProviderManagement
-from klipperai_agent.domain.provider_settings import ProviderLimitError, ProviderPolicy
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.application.providers import ProviderManagement
+from kai_agent.domain.provider_settings import ProviderLimitError, ProviderPolicy
+from kai_agent.runtime.settings import Settings
 from tests.test_agent_integration import agent_service as agent_service
 from tests.test_provider_management import store_at
 
@@ -28,13 +28,13 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
     monkeypatch.setattr(
         app_module,
         "get_settings",
-        lambda: Settings(data_dir=tmp_path / "data", root_path="/klipperai"),
+        lambda: Settings(data_dir=tmp_path / "data", root_path="/kai"),
     )
     monkeypatch.setattr(app_module, "build_container", lambda _: container)
     with TestClient(app_module.create_app(), base_url="https://testserver") as client:
         session = client.post("/api/ui-sessions").json()["session_id"]
         params = {"session_id": session}
-        base = "/klipperai/api/providers"
+        base = "/kai/api/providers"
         assert client.get(base, params={"session_id": "bad"}).status_code == 403
         assert (
             "provider-management" in client.get("/api/bootstrap", params=params).json()["features"]
@@ -92,7 +92,7 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
 
 @pytest.mark.asyncio
 async def test_private_payload_preserves_provider_items():
-    from klipperai_agent.providers.responses import private_payload
+    from kai_agent.providers.responses import private_payload
 
     reasoning = {"type": "reasoning", "encrypted_content": "private-key"}
     payload = private_payload(

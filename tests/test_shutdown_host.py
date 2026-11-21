@@ -13,10 +13,10 @@ import httpx
 import pytest
 from test_shutdown import START, stats
 
-from klipperai_agent.infrastructure.host import shutdown_logs
-from klipperai_agent.infrastructure.host.shutdown import ShutdownCollector, _current_fields
-from klipperai_agent.infrastructure.host.system import CommandResult, SystemCommandRunner
-from klipperai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
+from kai_agent.infrastructure.host import shutdown_logs
+from kai_agent.infrastructure.host.shutdown import ShutdownCollector, _current_fields
+from kai_agent.infrastructure.host.system import CommandResult, SystemCommandRunner
+from kai_agent.infrastructure.moonraker import MoonrakerClient, MoonrakerError
 
 
 def test_log_discovery_reads_current_and_rotated_gzip_with_limits(tmp_path, monkeypatch):

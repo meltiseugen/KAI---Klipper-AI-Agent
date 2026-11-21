@@ -4,7 +4,7 @@ import vm from "node:vm";
 
 const template = await readFile(new URL("../integrations/octoeverywhere/navigation.js", import.meta.url), "utf8");
 const prefix = "/assistant/printer/";
-const html = '<!doctype html><body data-api-base="/assistant/printer/api">KlipperAI</body>';
+const html = '<!doctype html><body data-api-base="/assistant/printer/api">KAI</body>';
 
 async function scenario({ connected = true, target = "_blank", pathname = "/", loaded = false, blocked = false, badHistory = false, badHtml = false, failed = false } = {}) {
   const calls = { writes: [], popupWrites: [], fetched: [], assigned: [], replaced: [], logs: [] };

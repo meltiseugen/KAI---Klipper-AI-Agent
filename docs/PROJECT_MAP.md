@@ -23,9 +23,9 @@ search, then inspect the implementation and its tests.
 | Browser drafts, HTTP, rendering | `web/static/store.js`, `transport.js`, `message-view.js`, `shell-view.js` | `chat-ui.test.mjs` |
 | Result cards, follow-ups and recovery notices | `web/static/result-cards.js`, `ui-errors.js`, `web/chat_readiness.py`, `contracts/api.py` | `embedded-experience.test.mjs`, `test_embedded_experience.py` |
 | Credential redaction, private storage and deployment trust | `domain/redaction.py`, `web/security.py`, `infrastructure/private_files.py`, `runtime/logging.py`, [security guide](security.md) | `test_security*.py`, `test_installer.py` |
-| Settings, flags, defaults | `runtime/settings.py`, `deployment/config/klipperai.cfg.example`, `install.sh` | `test_settings.py` |
+| Settings, flags, defaults | `runtime/settings.py`, `deployment/config/kai.cfg.example`, `install.sh` | `test_settings.py` |
 | Provider setup/rotation, model profiles and usage safety | `application/providers.py`, `bootstrap/providers.py`, `infrastructure/provider_store.py`, `providers/usage.py`, `web/providers.py`, `web/static/providers.js`, [provider guide](providers.md) | `test_provider_management.py`, `test_provider_web.py`, `providers-ui.test.mjs` |
-| Encrypted credentials, master delivery and installer migration | `infrastructure/credential_cipher.py`, `cli/credentials.py`, `deployment/installer/credentials.sh`, [storage guide](credential-storage.md) | `test_credential_storage.py`, `test_credential_installer.py`, `test_security_deployment.py` |
+| Encrypted credentials, systemd 247/250+ master delivery and installer migration | `infrastructure/credential_cipher.py`, `cli/credentials.py`, `deployment/installer/credentials.sh`, `deployment/systemd_legacy.py`, `deployment/systemd_legacy_install.py`, [storage guide](credential-storage.md) | `test_credential_storage.py`, `test_credential_installer.py`, `test_systemd_legacy_credentials.py`, `test_security_deployment.py` |
 | Dependency creation/shutdown | `bootstrap/container.py` | `test_container.py`, `test_agent_integration.py` |
 | Active includes and placeholders | `config/collector.py`, `parser.py`, `models.py` | `test_printerconfig*.py` |
 | Active config audits, managed fragments and manual file patches | `config/analysis.py`, `config/patches.py`, `agent/tools/config_analysis.py`, [assistant guide](config-assistant.md) | `test_config_analysis.py`, `test_config_patches.py`, `config-assistant-ui.test.mjs` |
@@ -58,7 +58,7 @@ search, then inspect the implementation and its tests.
 | Mainsail sidebar repair at boot and after theme changes | `integrations/mainsail/navigation.py`, `navigation_file.py`, `nav_cli.py`, `nav_hook.py`, `integrations/host_lock.py` | `test_mainsail_navigation.py`, `test_mainsail_auto_reapply.py`, `test_installer.py` |
 | OctoEverywhere routing and update coordination | `integrations/octoeverywhere/route_patch.py`, `router.template`, `navigation.js`, `maintenance.py`, `patch_files.py`, `maintenance_state.py`, `update_coordinator.py`, `install-auto-reapply.sh` | `test_octoeverywhere*.py`, `octoeverywhere-ui.test.mjs` |
 
-Python paths above are relative to `klipperai_agent/`; test paths are relative to
+Python paths above are relative to `kai_agent/`; test paths are relative to
 `tests/`. Top-level deployment/integration paths are relative to the repository.
 
 ## Generated discovery artifacts

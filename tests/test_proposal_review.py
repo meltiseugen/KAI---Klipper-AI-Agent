@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import pytest
 
-from klipperai_agent.application.proposal_review import ProposalReviewService
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.config.review import ProposalReviewer
-from klipperai_agent.domain.investigation import InvestigationResult
-from klipperai_agent.domain.proposals import ConfigProposal
+from kai_agent.application.proposal_review import ProposalReviewService
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.config.review import ProposalReviewer
+from kai_agent.domain.investigation import InvestigationResult
+from kai_agent.domain.proposals import ConfigProposal
 
 
 def proposal(**kwargs):

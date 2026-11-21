@@ -7,11 +7,11 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.application.hardware_validation import validate_hardware
-from klipperai_agent.application.knowledge import PrinterKnowledge
-from klipperai_agent.providers.probe import probe_provider
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.application.hardware_validation import validate_hardware
+from kai_agent.application.knowledge import PrinterKnowledge
+from kai_agent.providers.probe import probe_provider
+from kai_agent.runtime.settings import Settings
 from tests.knowledge_helpers import setup, snapshot
 from tests.test_agent_integration import agent_service as agent_service
 from tests.test_firmware_knowledge import pdf_document, pinned

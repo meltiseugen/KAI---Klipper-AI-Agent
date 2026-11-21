@@ -9,25 +9,25 @@ from unittest.mock import AsyncMock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.agent.models import AgentLimits, ModelTurn, ToolCall
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.application.chat import ChatService
-from klipperai_agent.application.investigations import InvestigationMemory
-from klipperai_agent.application.proposal_review import ProposalReviewService
-from klipperai_agent.application.sessions import InMemorySessionStore
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.domain.investigation import (
+import kai_agent.web.app as app_module
+from kai_agent.agent.models import AgentLimits, ModelTurn, ToolCall
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.application.chat import ChatService
+from kai_agent.application.investigations import InvestigationMemory
+from kai_agent.application.proposal_review import ProposalReviewService
+from kai_agent.application.sessions import InMemorySessionStore
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.domain.investigation import (
     Evidence,
     Investigation,
     InvestigationResult,
     InvestigationTurn,
 )
-from klipperai_agent.domain.messages import ChatHistoryMessage
-from klipperai_agent.domain.repositories import InvestigationConflict
-from klipperai_agent.infrastructure.investigations import SqliteInvestigationRepository
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.domain.messages import ChatHistoryMessage
+from kai_agent.domain.repositories import InvestigationConflict
+from kai_agent.infrastructure.investigations import SqliteInvestigationRepository
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.runtime.settings import Settings
 
 
 def repository(tmp_path):
@@ -197,7 +197,7 @@ def persistent_service(tmp_path):
 async def test_chat_uses_persisted_history_and_returns_historical_sources(
     tmp_path, persistent_service
 ):
-    from klipperai_agent.contracts.api import ChatRequest
+    from kai_agent.contracts.api import ChatRequest
 
     service, model = persistent_service
     session = await service.create_ui_session()
@@ -317,7 +317,7 @@ def test_concurrent_conversation_updates_return_conflict(monkeypatch, tmp_path, 
 
 @pytest.mark.asyncio
 async def test_legacy_workflow_receives_labeled_memory(persistent_service):
-    from klipperai_agent.contracts.api import ChatRequest
+    from kai_agent.contracts.api import ChatRequest
 
     service, _ = persistent_service
     session = await service.create_ui_session()

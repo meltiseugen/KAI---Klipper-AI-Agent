@@ -5,21 +5,28 @@ write_systemd_service() {
   local temp_file
   local unit_dir="/etc/systemd/system"
   local unit_path="$unit_dir/${SERVICE_NAME}.service"
+  local credential_directive="LoadCredentialEncrypted=kai-provider-master:/etc/kai/credentials/provider-master.cred"
+  local credential_dependency=""
+  if [[ "${KAI_CREDENTIAL_BACKEND:-systemd}" == legacy-systemd ]]; then
+    credential_directive="LoadCredential=kai-provider-master:/run/kai-credentials.sock"
+    credential_dependency=$'Requires=kai-credentials.socket\nAfter=kai-credentials.socket'
+  fi
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
 [Unit]
-Description=KlipperAI agent
+Description=KAI agent
 After=network-online.target moonraker.service
 Wants=network-online.target
+$credential_dependency
 
 [Service]
 Type=simple
 User=$INSTALL_USER
 WorkingDirectory=$INSTALL_DIR
-EnvironmentFile=-/etc/klipperai/klipperai.env
-LoadCredentialEncrypted=klipperai-provider-master:/etc/klipperai/credentials/provider-master.cred
-ExecStart=$INSTALL_DIR/.venv/bin/klipperai-agent
+EnvironmentFile=-/etc/kai/kai.env
+$credential_directive
+ExecStart=$INSTALL_DIR/.venv/bin/kai-agent
 Restart=on-failure
 RestartSec=3
 NoNewPrivileges=yes

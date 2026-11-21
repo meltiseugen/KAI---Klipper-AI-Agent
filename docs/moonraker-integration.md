@@ -1,6 +1,6 @@
 # Moonraker integration
 
-KlipperAI registers as the `klipperai` agent over Moonraker's local Unix socket.
+KAI registers as the `kai` agent over Moonraker's local Unix socket.
 The daemon identifies on every connection, publishes fixed capability metadata,
 subscribes to available printer objects and reconnects after connection loss.
 This uses Moonraker's documented [extension API](https://moonraker.readthedocs.io/en/latest/external_api/extensions/)
@@ -10,7 +10,7 @@ No Moonraker plugin or Klipper macro is required.
 ## Host setup
 
 Defaults suit the standalone Linux daemon on the printer host. Optional settings
-in `klipperai.cfg` are:
+in `kai.cfg` are:
 
 ```ini
 [moonraker]
@@ -20,12 +20,12 @@ moonraker_socket_path:
 
 An empty path uses `<printer_data_root>/comms/moonraker.sock`. An explicit path
 supports installations with a different Moonraker data directory. The environment
-equivalents are `KLIPPERAI_MOONRAKER_AGENT_ENABLED` and
-`KLIPPERAI_MOONRAKER_SOCKET_PATH`. Restart KlipperAI manually after changes.
+equivalents are `KAI_MOONRAKER_AGENT_ENABLED` and
+`KAI_MOONRAKER_SOCKET_PATH`. Restart KAI manually after changes.
 
 The service account needs access to that socket. The local socket trusts OS
 permissions and does not require a Moonraker API key. Leave its permissions under
-the printer host's existing account boundary. Only one agent named `klipperai`
+the printer host's existing account boundary. Only one agent named `kai`
 can register with a Moonraker instance at a time; stop duplicate daemons if
 registration keeps failing. The UI reports reconnecting while a socket is absent,
 inaccessible or unsupported; chat HTTP reads remain available independently.
@@ -81,9 +81,9 @@ are rejected. Unknown methods return JSON-RPC `-32601`, bad arguments `-32602`.
 
 | Method | Result |
 | --- | --- |
-| `klipperai.capabilities` | Schema/version, supported methods/events, `printer_access: read_only`, notification version |
-| `klipperai.status` | Connection/registration/subscription flags, Klipper state, public status, observation time, stale flag and sanitized error |
-| `klipperai.create_ui_session` | `session_id`, relative `embed_path` with configured prefix, UTC `expires_at` |
+| `kai.capabilities` | Schema/version, supported methods/events, `printer_access: read_only`, notification version |
+| `kai.status` | Connection/registration/subscription flags, Klipper state, public status, observation time, stale flag and sanitized error |
+| `kai.create_ui_session` | `session_id`, relative `embed_path` with configured prefix, UTC `expires_at` |
 
 For example, send this JSON-RPC request to Moonraker:
 
@@ -93,8 +93,8 @@ For example, send this JSON-RPC request to Moonraker:
   "id": 1,
   "method": "server.extensions.request",
   "params": {
-    "agent": "klipperai",
-    "method": "klipperai.create_ui_session",
+    "agent": "kai",
+    "method": "kai.create_ui_session",
     "arguments": {}
   }
 }
@@ -106,7 +106,7 @@ that limit. Session IDs are returned only to the requesting client and never
 stored in Moonraker's database or included in broadcasts. As with HTTP sessions,
 they are not account authentication; see [deployment security](security.md).
 
-After identification, `connection.send_event` broadcasts `klipperai_ready` with
+After identification, `connection.send_event` broadcasts `kai_ready` with
 the capability document via Moonraker's `notify_agent_event`. This announces
 extension availability, not printer readiness. The notification version and
 supported-event list define a discovery contract for future public notifications.
@@ -115,15 +115,15 @@ printer-control methods.
 
 ## Public database item
 
-`server.database.post_item` writes namespace `klipperai`, key `integration`:
+`server.database.post_item` writes namespace `kai`, key `integration`:
 
 ```json
 {
   "schema_version": 1,
-  "agent": "klipperai",
+  "agent": "kai",
   "version": "0.1.0",
-  "methods": ["klipperai.capabilities", "klipperai.status", "klipperai.create_ui_session"],
-  "events": ["klipperai_ready"],
+  "methods": ["kai.capabilities", "kai.status", "kai.create_ui_session"],
+  "events": ["kai_ready"],
   "printer_access": "read_only",
   "notifications_version": 1
 }
@@ -131,8 +131,8 @@ printer-control methods.
 
 This item is replaced idempotently on registration and leaves other namespace
 keys intact. It contains no credentials, sessions, prompts or conversation data.
-It can remain after KlipperAI stops: use `server.extensions.list` to discover
-connected agents and `klipperai.status` for live state. Database permission errors
+It can remain after KAI stops: use `server.extensions.list` to discover
+connected agents and `kai.status` for live state. Database permission errors
 set `metadata_registered: false`; observation continues and metadata is retried
 on the next connection.
 
@@ -160,7 +160,7 @@ HTTP and DOM tests cover session-protected snapshots/SSE, live/stale badges,
 session renewal and page lifecycle. These fixtures do not prove behavior on a
 physical printer or through an actual browser/proxy.
 
-On a host, check `server.extensions.list` for `klipperai`, open the UI to verify
+On a host, check `server.extensions.list` for `kai`, open the UI to verify
 the event badge and inspect the public database item. Confirm updates during
 normal printer activity and recovery following an independently planned service
 restart. Live provider and printer checks must be recorded separately from the

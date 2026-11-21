@@ -6,30 +6,30 @@ write_env_file() {
   temp_file="$(mktemp)"
 
   {
-    printf 'KLIPPERAI_ENVIRONMENT="%s"\n' "$(escape_env_value "production")"
-    printf 'KLIPPERAI_CONFIG_FILE="%s"\n' "$(escape_env_value "$KLIPPERAI_CFG_PATH")"
-    printf 'KLIPPERAI_SERVICE_USER="%s"\n' "$(escape_env_value "$INSTALL_USER")"
-    printf 'KLIPPERAI_PROJECT_CHECKOUT_PATH="%s"\n' "$(escape_env_value "$INSTALL_DIR")"
-    printf 'KLIPPERAI_NGINX_SERVER_BLOCK_PATH="%s"\n' "$(escape_env_value "$KLIPPERAI_NGINX_SERVER_BLOCK_PATH")"
-    printf 'KLIPPERAI_HOST="%s"\n' "$(escape_env_value "127.0.0.1")"
-    printf 'KLIPPERAI_MOONRAKER_URL="%s"\n' "$(escape_env_value "$KLIPPERAI_MOONRAKER_URL")"
-    printf 'KLIPPERAI_MANAGED_CONFIG_DIR_NAME="%s"\n' "$(escape_env_value "$KLIPPERAI_MANAGED_CONFIG_DIR_NAME")"
-    printf 'KLIPPERAI_SESSION_TTL_SECONDS="%s"\n' "$(escape_env_value "3600")"
-    printf 'KLIPPERAI_MOONRAKER_SERVICE_NAME="%s"\n' "$(escape_env_value "$KLIPPERAI_MOONRAKER_SERVICE_NAME")"
-    printf 'KLIPPERAI_KLIPPER_SERVICE_NAME="%s"\n' "$(escape_env_value "$KLIPPERAI_KLIPPER_SERVICE_NAME")"
-    printf 'KLIPPERAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KLIPPERAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT")"
-    printf 'KLIPPERAI_JOURNAL_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KLIPPERAI_JOURNAL_ARTIFACT_CHAR_LIMIT")"
-    printf 'KLIPPERAI_SYSTEM_COMMAND_TIMEOUT_SECONDS="%s"\n' "$(escape_env_value "$KLIPPERAI_SYSTEM_COMMAND_TIMEOUT_SECONDS")"
-    printf 'KLIPPERAI_PROVIDER_STORAGE_DIR="%s"\n' "$(escape_env_value "$KLIPPERAI_DATA_DIR/private")"
+    printf 'KAI_ENVIRONMENT="%s"\n' "$(escape_env_value "production")"
+    printf 'KAI_CONFIG_FILE="%s"\n' "$(escape_env_value "$KAI_CFG_PATH")"
+    printf 'KAI_SERVICE_USER="%s"\n' "$(escape_env_value "$INSTALL_USER")"
+    printf 'KAI_PROJECT_CHECKOUT_PATH="%s"\n' "$(escape_env_value "$INSTALL_DIR")"
+    printf 'KAI_NGINX_SERVER_BLOCK_PATH="%s"\n' "$(escape_env_value "$KAI_NGINX_SERVER_BLOCK_PATH")"
+    printf 'KAI_HOST="%s"\n' "$(escape_env_value "127.0.0.1")"
+    printf 'KAI_MOONRAKER_URL="%s"\n' "$(escape_env_value "$KAI_MOONRAKER_URL")"
+    printf 'KAI_MANAGED_CONFIG_DIR_NAME="%s"\n' "$(escape_env_value "$KAI_MANAGED_CONFIG_DIR_NAME")"
+    printf 'KAI_SESSION_TTL_SECONDS="%s"\n' "$(escape_env_value "3600")"
+    printf 'KAI_MOONRAKER_SERVICE_NAME="%s"\n' "$(escape_env_value "$KAI_MOONRAKER_SERVICE_NAME")"
+    printf 'KAI_KLIPPER_SERVICE_NAME="%s"\n' "$(escape_env_value "$KAI_KLIPPER_SERVICE_NAME")"
+    printf 'KAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT")"
+    printf 'KAI_JOURNAL_ARTIFACT_CHAR_LIMIT="%s"\n' "$(escape_env_value "$KAI_JOURNAL_ARTIFACT_CHAR_LIMIT")"
+    printf 'KAI_SYSTEM_COMMAND_TIMEOUT_SECONDS="%s"\n' "$(escape_env_value "$KAI_SYSTEM_COMMAND_TIMEOUT_SECONDS")"
+    printf 'KAI_PROVIDER_STORAGE_DIR="%s"\n' "$(escape_env_value "$KAI_DATA_DIR/private")"
   } >"$temp_file"
 
-  run_root install -d -m 755 /etc/klipperai
-  if [[ -e /etc/klipperai/klipperai.env ]]; then
-    run_root chmod 600 /etc/klipperai/klipperai.env
-    run_root install -m 600 /etc/klipperai/klipperai.env "/etc/klipperai/klipperai.env.bak.${TIMESTAMP}"
-    log "Backed up /etc/klipperai/klipperai.env with owner-only permissions."
+  run_root install -d -m 755 /etc/kai
+  if [[ -e /etc/kai/kai.env ]]; then
+    run_root chmod 600 /etc/kai/kai.env
+    run_root install -m 600 /etc/kai/kai.env "/etc/kai/kai.env.bak.${TIMESTAMP}"
+    log "Backed up /etc/kai/kai.env with owner-only permissions."
   fi
-  run_root install -m 600 "$temp_file" /etc/klipperai/klipperai.env
+  run_root install -m 600 "$temp_file" /etc/kai/kai.env
   rm -f "$temp_file"
 }
 
@@ -38,18 +38,18 @@ write_cfg_file() {
   temp_file="$(mktemp)"
 
   cat >"$temp_file" <<EOF
-# KlipperAI runtime configuration
+# KAI runtime configuration
 #
 # This file is intended to be easy to edit from Mainsail.
 #
 # Notes:
-# - Restart klipperai-agent after editing this file.
-# - Hidden install metadata is stored in /etc/klipperai/klipperai.env.
+# - Restart kai-agent after editing this file.
+# - Hidden install metadata is stored in /etc/kai/kai.env.
 # - API keys use encrypted private storage; never place keys in this file or the environment file.
 
 [install]
-printer_data_root: $KLIPPERAI_PRINTER_DATA_ROOT  # Printer data root. Example: /home/biqu/printer_data
-mainsail_config_dir: $KLIPPERAI_MAINSAIL_CONFIG_DIR  # Config dir that contains the managed klipperai/ folder. Example: /home/biqu/printer_data/config
+printer_data_root: $KAI_PRINTER_DATA_ROOT  # Printer data root. Example: /home/biqu/printer_data
+mainsail_config_dir: $KAI_MAINSAIL_CONFIG_DIR  # Config dir that contains the managed kai/ folder. Example: /home/biqu/printer_data/config
 
 [printer_identity]
 firmware_flavor:  # Main firmware flavor. Examples: Kalico, Klipper
@@ -73,11 +73,11 @@ root_config_file:  # Root Klipper config entry point. Examples: printer.cfg, mac
 ignore_globs:  # Comma-separated exclude globs. Examples: backups/**, archive/**, timelapse/**
 
 [server]
-port: $KLIPPERAI_PORT  # Local agent port. Examples: 8811, 9911
-root_path: $KLIPPERAI_ROOT_PATH  # Public reverse-proxy path. Examples: /klipperai, /ai
-data_dir: $KLIPPERAI_DATA_DIR  # Local runtime data directory. Examples: /var/lib/klipperai, /srv/klipperai/data
-checkpoint_db: $KLIPPERAI_CHECKPOINT_DB  # Legacy reserved path; investigation storage uses data_dir/investigations.sqlite3. Examples: /var/lib/klipperai/checkpoints.sqlite, /srv/klipperai/checkpoints.sqlite
-enable_write_actions: $KLIPPERAI_ENABLE_WRITE_ACTIONS  # Compatibility setting; runtime always keeps printer writes disabled.
+port: $KAI_PORT  # Local agent port. Examples: 8811, 9911
+root_path: $KAI_ROOT_PATH  # Public reverse-proxy path. Examples: /kai, /ai
+data_dir: $KAI_DATA_DIR  # Local runtime data directory. Examples: /var/lib/kai, /srv/kai/data
+checkpoint_db: $KAI_CHECKPOINT_DB  # Legacy reserved path; investigation storage uses data_dir/investigations.sqlite3. Examples: /var/lib/kai/checkpoints.sqlite, /srv/kai/checkpoints.sqlite
+enable_write_actions: $KAI_ENABLE_WRITE_ACTIONS  # Compatibility setting; runtime always keeps printer writes disabled.
 
 [security]
 security_allowed_hosts: *  # Optional printer/proxy Host allowlist; see docs/security.md.
@@ -89,8 +89,8 @@ memory_cross_chat: true  # Reuse dated evidence from other chats about this prin
 memory_retention_days: 90  # Retain application-owned investigation records for this many days.
 
 [llm]
-llm_provider: $KLIPPERAI_LLM_PROVIDER  # Chat and Debug require a configured API key.
-openai_model: $KLIPPERAI_OPENAI_MODEL  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
+llm_provider: $KAI_LLM_PROVIDER  # Chat and Debug require a configured API key.
+openai_model: $KAI_OPENAI_MODEL  # OpenAI model when provider = openai. Examples: gpt-5.4-mini, gpt-5.5
 
 [agent]
 agent_enabled: true  # Use iterative tool calling with the OpenAI provider.
@@ -105,21 +105,21 @@ agent_max_result_chars: 16000
 agent_max_output_tokens: 6000
 
 [logs]
-collect_host_logs: $KLIPPERAI_COLLECT_HOST_LOGS  # Whether to collect host logs. Examples: true, false
-logs_dir_path: $KLIPPERAI_LOGS_DIR_PATH  # Directory that contains printer-host logs. Examples: /home/biqu/printer_data/logs, /srv/printer_data/logs
-agent_log_file_name: $KLIPPERAI_AGENT_LOG_FILE_NAME  # Runtime log in data_dir/logs, separate from collected printer logs.
-agent_log_level: $KLIPPERAI_AGENT_LOG_LEVEL  # Runtime log verbosity. Examples: INFO, DEBUG, WARNING
-log_tail_lines_default: $KLIPPERAI_LOG_TAIL_LINES_DEFAULT  # Default tail length when no override exists. Examples: 100, 200
-excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: klipperai.log, crowsnest, *_debug.log
+collect_host_logs: $KAI_COLLECT_HOST_LOGS  # Whether to collect host logs. Examples: true, false
+logs_dir_path: $KAI_LOGS_DIR_PATH  # Directory that contains printer-host logs. Examples: /home/biqu/printer_data/logs, /srv/printer_data/logs
+agent_log_file_name: $KAI_AGENT_LOG_FILE_NAME  # Runtime log in data_dir/logs, separate from collected printer logs.
+agent_log_level: $KAI_AGENT_LOG_LEVEL  # Runtime log verbosity. Examples: INFO, DEBUG, WARNING
+log_tail_lines_default: $KAI_LOG_TAIL_LINES_DEFAULT  # Default tail length when no override exists. Examples: 100, 200
+excluded_logs:  # Comma-separated denylist by name, stem, or glob. Examples: kai.log, crowsnest, *_debug.log
 
 [log_tail_lines]
 klippy: 100  # Tail lines for klippy.log
 moonraker: 200  # Tail lines for moonraker.log
-klipperai: 100  # Tail lines for a legacy shared klipperai.log, if present.
+kai: 100  # Tail lines for a legacy shared kai.log, if present.
 
 [system]
-collect_systemd_diagnostics: $KLIPPERAI_COLLECT_SYSTEMD_DIAGNOSTICS  # Whether to collect systemctl and journal diagnostics. Examples: true, false
-journal_lines: $KLIPPERAI_JOURNAL_LINES  # Journal lines to include per service. Examples: 100, 200, 400
+collect_systemd_diagnostics: $KAI_COLLECT_SYSTEMD_DIAGNOSTICS  # Whether to collect systemctl and journal diagnostics. Examples: true, false
+journal_lines: $KAI_JOURNAL_LINES  # Journal lines to include per service. Examples: 100, 200, 400
 additional_journal_units:  # Opt-in, at most six literal .service names. Example: crowsnest.service, nginx.service
 
 [flight_recorder]
@@ -128,8 +128,8 @@ host_flight_recorder_interval_seconds: 10  # 5-300 seconds.
 host_flight_recorder_max_samples: 1440  # 12-8640 samples; default approximately four hours, also byte-limited.
 EOF
 
-  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KLIPPERAI_MANAGED_CONFIG_DIR_PATH"
-  backup_file "$KLIPPERAI_CFG_PATH"
-  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KLIPPERAI_CFG_PATH"
+  run_root install -d -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 755 "$KAI_MANAGED_CONFIG_DIR_PATH"
+  backup_file "$KAI_CFG_PATH"
+  run_root install -o "$INSTALL_USER" -g "$INSTALL_GROUP" -m 664 "$temp_file" "$KAI_CFG_PATH"
   rm -f "$temp_file"
 }

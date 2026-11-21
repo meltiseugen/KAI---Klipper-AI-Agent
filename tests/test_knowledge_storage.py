@@ -8,10 +8,10 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.application.knowledge import PrinterKnowledge
-from klipperai_agent.domain.knowledge import KnowledgeConflict, KnowledgeSetup
-from klipperai_agent.infrastructure.knowledge import SqliteKnowledgeRepository
-from klipperai_agent.knowledge.sources import document_source
+from kai_agent.application.knowledge import PrinterKnowledge
+from kai_agent.domain.knowledge import KnowledgeConflict, KnowledgeSetup
+from kai_agent.infrastructure.knowledge import SqliteKnowledgeRepository
+from kai_agent.knowledge.sources import document_source
 from tests.knowledge_helpers import documents, researcher, setup
 
 
@@ -184,7 +184,7 @@ async def test_review_requires_current_identity_and_evidence_then_invalidates_on
 async def test_reference_urls_without_provider_missing_discovery_and_job_deadline(
     tmp_path, monkeypatch
 ):
-    import klipperai_agent.application.knowledge as service_module
+    import kai_agent.application.knowledge as service_module
 
     fetch = AsyncMock(return_value=(b"reference", "reference", "text"))
     service = PrinterKnowledge(repository(tmp_path), SimpleNamespace(fetch=fetch), {})

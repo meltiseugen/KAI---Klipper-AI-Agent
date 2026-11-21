@@ -7,20 +7,20 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.config.collector import MAX_CONFIG_CHARS, ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigReadError
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.domain.investigation import (
+from kai_agent.config.collector import MAX_CONFIG_CHARS, ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigReadError
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.domain.investigation import (
     Evidence,
     Investigation,
     InvestigationResult,
     InvestigationTurn,
     PendingInvestigation,
 )
-from klipperai_agent.domain.repositories import InvestigationConflict
-from klipperai_agent.infrastructure.host.logs import MAX_LOG_FILES, MAX_TAIL_BYTES, HostLogCollector
-from klipperai_agent.infrastructure.investigations import SqliteInvestigationRepository
-from klipperai_agent.web.streaming import ChatEventStream
+from kai_agent.domain.repositories import InvestigationConflict
+from kai_agent.infrastructure.host.logs import MAX_LOG_FILES, MAX_TAIL_BYTES, HostLogCollector
+from kai_agent.infrastructure.investigations import SqliteInvestigationRepository
+from kai_agent.web.streaming import ChatEventStream
 from tests.test_agent_integration import agent_service as agent_service
 
 

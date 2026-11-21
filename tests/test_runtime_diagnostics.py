@@ -6,15 +6,15 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.agent.models import AgentLimits, ModelTurn
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.profile.models import PrinterProfile
-from klipperai_agent.providers.models import DiagnosisLLMOutput
-from klipperai_agent.workflows.engine import build_diagnosis_graph
+from kai_agent.agent.models import AgentLimits, ModelTurn
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.profile.models import PrinterProfile
+from kai_agent.providers.models import DiagnosisLLMOutput
+from kai_agent.workflows.engine import build_diagnosis_graph
 
 
 @pytest.mark.asyncio

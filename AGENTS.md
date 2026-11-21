@@ -1,4 +1,4 @@
-# Working in KlipperAI
+# Working in KAI
 
 Start with [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). It maps user-visible changes
 to implementations and tests. Consult [docs/architecture.md](docs/architecture.md)
@@ -6,7 +6,7 @@ for the agent loop and ownership boundaries. Search
 [docs/generated/code-index.json](docs/generated/code-index.json) for exact symbol
 locations; do not rediscover the entire repository for a focused change.
 
-Application code uses the flat `klipperai_agent/` package. There is no `src/`
+Application code uses the flat `kai_agent/` package. There is no `src/`
 wrapper. Preserve unrelated staged/unstaged changes. Python 3.10 and Pydantic v1
 remain supported; avoid adding Rust-backed runtime dependencies for printer hosts.
 
@@ -30,8 +30,8 @@ Before finishing:
 1. Run `python -m pytest` (100% statement coverage is required; do not lower it).
    If Windows temp/cache permissions interfere, use
    `python -m pytest -p no:cacheprovider --basetemp=.local/test-run-N` with a fresh N.
-2. Run `ruff check klipperai_agent tests tools` and `ruff format --check klipperai_agent tests tools`.
-3. Run `mypy klipperai_agent --ignore-missing-imports`.
+2. Run `ruff check kai_agent tests tools` and `ruff format --check kai_agent tests tools`.
+3. Run `mypy kai_agent --ignore-missing-imports`.
 4. After changing Python code, run `python tools/project_map.py`, then
    `python tools/project_map.py --check`. The generator also rejects import cycles.
 5. For packaging changes, build and smoke-test an installed wheel outside the checkout.

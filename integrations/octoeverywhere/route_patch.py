@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 class RoutePatch:
-    def __init__(self, prefix: str = "/klipperai", port: str = "8811", target: str = "_blank"):
+    def __init__(self, prefix: str = "/kai", port: str = "8811", target: str = "_blank"):
         if not re.fullmatch(r"/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*", prefix):
             raise ValueError(
                 "Prefix must contain non-empty path segments (letters, numbers, _ or -)"
@@ -43,14 +43,11 @@ class RoutePatch:
         return result
 
     def remove(self, router: str, ui: str) -> tuple[str, str]:
-        for brand in ("KlipperAI", "KlippyAI"):
-            for part in ("init", "helper", "map"):
-                marker = f"# {brand} local route patch {part}"
-                router = self.remove_block(
-                    router, marker + " start", marker + " end", part != "map"
-                )
-            marker = f"// {brand} local route patch"
-            ui = self.remove_block(ui, marker + " start", marker + " end")
+        for part in ("init", "helper", "map"):
+            marker = f"# KAI local route patch {part}"
+            router = self.remove_block(router, marker + " start", marker + " end", part != "map")
+        marker = "// KAI local route patch"
+        ui = self.remove_block(ui, marker + " start", marker + " end")
         compile(router, "moonrakerapirouter.py", "exec")
         return router, ui
 
@@ -65,9 +62,7 @@ class RoutePatch:
     def apply(self, router: str, ui: str) -> tuple[str, str]:
         router, ui = self.remove(router, ui)
         blocks = (self.templates / "router.template").read_text(encoding="utf-8")
-        blocks = blocks.replace("@@klipperai_prefix@@", self.prefix).replace(
-            "@@klipperai_port@@", self.port
-        )
+        blocks = blocks.replace("@@kai_prefix@@", self.prefix).replace("@@kai_port@@", self.port)
         init, helper, mapping = blocks.split("\n@@BLOCK@@\n")
         # Insert mapping first; the helper also contains relativeUrlLower.
         router = self.insert(

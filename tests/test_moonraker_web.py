@@ -5,10 +5,10 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-import klipperai_agent.web.moonraker as routes_module
-from klipperai_agent.domain.moonraker import MoonrakerObservation
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+import kai_agent.web.moonraker as routes_module
+from kai_agent.domain.moonraker import MoonrakerObservation
+from kai_agent.runtime.settings import Settings
 from tests.test_agent_integration import agent_service as agent_service
 
 
@@ -46,7 +46,7 @@ def test_routes_session_checks_lifecycle_and_bootstrap(monkeypatch, tmp_path, ag
     monkeypatch.setattr(
         app_module,
         "get_settings",
-        lambda: Settings(data_dir=tmp_path, printer_data_root=tmp_path, root_path="/klipperai"),
+        lambda: Settings(data_dir=tmp_path, printer_data_root=tmp_path, root_path="/kai"),
     )
     monkeypatch.setattr(app_module, "build_container", lambda settings: container)
 
@@ -60,7 +60,7 @@ def test_routes_session_checks_lifecycle_and_bootstrap(monkeypatch, tmp_path, ag
         session = client.post("/api/ui-sessions").json()["session_id"]
         params = {"session_id": session}
         assert "moonraker-events" in client.get("/api/bootstrap", params=params).json()["features"]
-        base = "/klipperai/api/moonraker"
+        base = "/kai/api/moonraker"
         assert client.get(base, params=params).json() == state.snapshot()
         response = client.get(base + "/events", params=params)
         assert response.text == "event: status\ndata: {}\n\n"

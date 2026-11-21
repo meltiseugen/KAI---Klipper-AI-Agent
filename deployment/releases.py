@@ -16,8 +16,8 @@ from typing import Callable, Protocol
 
 from deployment.artifacts import inspect_wheel
 
-SERVICE = "klipperai-agent.service"
-DROPIN = Path("/etc/systemd/system/klipperai-agent.service.d/50-klipperai-release.conf")
+SERVICE = "kai-agent.service"
+DROPIN = Path("/etc/systemd/system/kai-agent.service.d/50-kai-release.conf")
 
 
 class ServiceControl(Protocol):
@@ -55,8 +55,8 @@ class ReleaseUpdater:
         self.install = install.resolve()
         self.python = self.install / ".venv/bin/python"
         if not self.python.is_file() or not (self.install / "pyproject.toml").is_file():
-            raise ValueError("Use the existing KlipperAI checkout with its installed .venv.")
-        self.root = self.install / ".klipperai-releases"
+            raise ValueError("Use the existing KAI checkout with its installed .venv.")
+        self.root = self.install / ".kai-releases"
         if self.root.is_symlink():
             raise ValueError("Release storage must not be a symlink.")
         self.root.mkdir(mode=0o700, exist_ok=True)
@@ -85,7 +85,7 @@ class ReleaseUpdater:
             or not target.is_dir()
         ):
             raise ValueError("Release target must be an existing managed release directory.")
-        with (target / "klipperai_agent/build-info.json").open() as handle:
+        with (target / "kai_agent/build-info.json").open() as handle:
             metadata = json.loads(handle.read(4097))
         if not isinstance(metadata, dict) or metadata.get("build") != target.name:
             raise ValueError("Release identity does not match its directory.")
@@ -135,7 +135,7 @@ class ReleaseUpdater:
                 env=environment,
                 cwd=target,
             )
-            package = target / "klipperai_agent"
+            package = target / "kai_agent"
             self.verify(target)
             # A complete marker is written only after successful preflight.
             (package / "build-info.json").write_text(json.dumps(metadata) + "\n")
@@ -155,7 +155,7 @@ class ReleaseUpdater:
             [
                 str(self.python),
                 "-c",
-                "from klipperai_agent.web.app import create_app; from klipperai_agent.runtime.release import release_info; print(release_info())",
+                "from kai_agent.web.app import create_app; from kai_agent.runtime.release import release_info; print(release_info())",
             ],
             env=environment,
             cwd=target,
@@ -239,7 +239,7 @@ class ReleaseUpdater:
             # Legacy checkouts may predate /readyz. Their process is restarted;
             # report the failure without claiming that legacy readiness passed.
             raise RuntimeError(
-                "Activation failed; previous code selection was restored and KlipperAI restarted. Inspect its journal if it remains unavailable."
+                "Activation failed; previous code selection was restored and KAI restarted. Inspect its journal if it remains unavailable."
             ) from failure
         self.prune()
 

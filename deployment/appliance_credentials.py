@@ -9,8 +9,8 @@ from pathlib import Path
 from Cryptodome.Cipher import AES
 
 HEADER = b"KAIHOST1"
-CONTEXT = b"klipperai/appliance-master/v1"
-MASTER_NAME = "klipperai-provider-master"
+CONTEXT = b"kai/appliance-master/v1"
+MASTER_NAME = "kai-provider-master"
 
 
 def protect_process() -> None:

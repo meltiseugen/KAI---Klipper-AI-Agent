@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import pytest
 
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.diagnostics.shutdown import parse_shutdowns, summarize_statistics
-from klipperai_agent.diagnostics.shutdown_assessment import assess_shutdown
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.domain.shutdown import HostObservation, LogExcerpt
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.diagnostics.shutdown import parse_shutdowns, summarize_statistics
+from kai_agent.diagnostics.shutdown_assessment import assess_shutdown
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.domain.shutdown import HostObservation, LogExcerpt
 
 START = "Start printer at Thu Oct 15 10:00:00 2026 (1792058400.0 100.0)"
 

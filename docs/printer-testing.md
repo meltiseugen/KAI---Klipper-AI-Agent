@@ -6,7 +6,7 @@ service. The installed receipt selects the backend; no sudo or systemd is needed
 native hosts. See [native Creality installation](creality-compatibility.md).
 
 Install once using [the host installer](HOST_INSTALL.md). The SSH account must own
-the checkout. Standard systemd hosts also require sudo access for the KlipperAI
+the checkout. Standard systemd hosts also require sudo access for the KAI
 unit. OpenSSH (`ssh`) and Python are needed on the development machine; the printer
 needs tar (including BusyBox tar). A single SSH tar stream transfers the bundle,
 so a remote scp/SFTP server is not required.
@@ -20,7 +20,7 @@ ports and connection options belong in your OpenSSH config, not in this file.
 {
   "printer": {
     "host": "biqu@printer.local",
-    "install_dir": "/home/biqu/KlippyAI",
+    "install_dir": "/home/biqu/KAI",
     "url": "http://127.0.0.1:8811/readyz"
   }
 }
@@ -40,20 +40,20 @@ python -m tools.deploy printer --rollback
 ```
 
 You can also use `python -m tools.deploy biqu@printer.local --install-dir
-/home/biqu/KlippyAI` directly. `--wheel dist/klipperai-<version>-py3-none-any.whl`
+/home/biqu/KAI` directly. `--wheel dist/kai-<version>-py3-none-any.whl`
 deploys an already built package. `--non-interactive` disables the SSH terminal and
 uses noninteractive sudo; configure the operator's SSH/sudo access first.
 
 The command sends only a wheel and its deployment helpers to a private temporary
-directory. It checks the SHA-256, stages code under `.klipperai-releases/` and checks
+directory. It checks the SHA-256, stages code under `.kai-releases/` and checks
 dependencies and imports. Standard hosts use a fixed systemd drop-in; native init
 hosts select the same code pointer directly. The service stops briefly while the
 selection changes, then starts.
 `/readyz` must report the exact build and read-only printer access. A failed start
-restores the previous selection and restarts KlipperAI. Readiness is an application
+restores the previous selection and restarts KAI. Readiness is an application
 boot check; it does not claim that the printer or provider is connected.
 
-Only KlipperAI's unit or recorded native process is stopped/started. The updater preserves runtime
+Only KAI's unit or recorded native process is stopped/started. The updater preserves runtime
 configuration, provider keys/master credentials and application history, and does
 not edit printer configuration. It retains the current and previous code packages;
 dependencies are shared rather than copying a virtual environment per update.
@@ -79,10 +79,10 @@ Code rollback does not undo dependency or database schema changes. Releases must
 document these changes and their recovery procedure. Do not rerun the full guided
 installer merely to update code: it generates configuration again.
 
-Use `journalctl -u klipperai-agent.service -n 100 --no-pager` to inspect startup
+Use `journalctl -u kai-agent.service -n 100 --no-pager` to inspect startup
 failures. `/readyz` reports `version` and a wheel hash prefix (`build`); an editable
 checkout reports `build: source`. On a power loss or forced kill during deployment,
-inspect `.klipperai-releases/current` and the service before retrying. Automatic
+inspect `.kai-releases/current` and the service before retrying. Automatic
 recovery handles reported failures and normal termination signals, not power loss.
 
 The deploy command is an operator tool. The LLM has no deployment, shell, service

@@ -2,7 +2,7 @@
 # POSIX-only: this module must work before Bash or Python has been installed.
 
 bootstrap_error() {
-  printf '[KlipperAI] error: %s\n' "$*" >&2
+  printf '[KAI] error: %s\n' "$*" >&2
   return 1
 }
 
@@ -28,16 +28,16 @@ bootstrap_is_creality() {
 bootstrap_manager() {
   bootstrap_opt_path
   if bootstrap_is_creality && bootstrap_command_path opkg >/dev/null; then
-    KLIPPERAI_PACKAGE_MANAGER=opkg
+    KAI_PACKAGE_MANAGER=opkg
   elif bootstrap_command_path apt-get >/dev/null; then
-    KLIPPERAI_PACKAGE_MANAGER=apt-get
+    KAI_PACKAGE_MANAGER=apt-get
   elif bootstrap_command_path opkg >/dev/null; then
-    KLIPPERAI_PACKAGE_MANAGER=opkg
+    KAI_PACKAGE_MANAGER=opkg
   elif bootstrap_command_path apk >/dev/null; then
-    KLIPPERAI_PACKAGE_MANAGER=apk
+    KAI_PACKAGE_MANAGER=apk
   elif bootstrap_is_creality; then
     bootstrap_entware || return 1
-    KLIPPERAI_PACKAGE_MANAGER=opkg
+    KAI_PACKAGE_MANAGER=opkg
   else
     bootstrap_error 'No supported package manager found (apt-get, opkg or apk).'
     return 1
@@ -47,13 +47,13 @@ bootstrap_manager() {
 bootstrap_packages() {
   [ "$#" -gt 0 ] || return 0
   bootstrap_manager || return 1
-  printf '[KlipperAI] Installing missing prerequisites with %s: %s\n' "$KLIPPERAI_PACKAGE_MANAGER" "$*"
-  if [ "${KLIPPERAI_PACKAGE_INDEX_FOR:-}" != "$KLIPPERAI_PACKAGE_MANAGER" ]; then
-    bootstrap_run_root "$KLIPPERAI_PACKAGE_MANAGER" update || return 1
-    KLIPPERAI_PACKAGE_INDEX_FOR="$KLIPPERAI_PACKAGE_MANAGER"
-    export KLIPPERAI_PACKAGE_INDEX_FOR
+  printf '[KAI] Installing missing prerequisites with %s: %s\n' "$KAI_PACKAGE_MANAGER" "$*"
+  if [ "${KAI_PACKAGE_INDEX_FOR:-}" != "$KAI_PACKAGE_MANAGER" ]; then
+    bootstrap_run_root "$KAI_PACKAGE_MANAGER" update || return 1
+    KAI_PACKAGE_INDEX_FOR="$KAI_PACKAGE_MANAGER"
+    export KAI_PACKAGE_INDEX_FOR
   fi
-  case "$KLIPPERAI_PACKAGE_MANAGER" in
+  case "$KAI_PACKAGE_MANAGER" in
     apt-get) bootstrap_run_root apt-get install -y "$@" ;;
     opkg) bootstrap_run_root opkg install "$@" ;;
     apk) bootstrap_run_root apk add "$@" ;;

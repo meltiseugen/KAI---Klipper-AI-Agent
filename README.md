@@ -1,10 +1,10 @@
-# KlipperAI
+# KAI
 
-KlipperAI is a Moonraker-integrated assistant for Klipper and Kalico printers. The project is built around a standalone host daemon, a thin Mainsail integration, and a same-origin web UI that can be opened directly from Mainsail without forking or patching Mainsail for `v1`.
+KAI is a Moonraker-integrated assistant for Klipper and Kalico printers. The project is built around a standalone host daemon, a thin Mainsail integration, and a same-origin web UI that can be opened directly from Mainsail without forking or patching Mainsail for `v1`.
 
 The goal is not to create another printer control plane. The goal is to make troubleshooting, configuration work, and guided printer improvements faster and safer by combining deterministic diagnostics with LLM-assisted reasoning.
 
-## What KlipperAI Aims To Fix
+## What KAI Aims To Fix
 
 Klipper installations are powerful, but the failure modes are often scattered across different places:
 
@@ -14,7 +14,7 @@ Klipper installations are powerful, but the failure modes are often scattered ac
 - the active config tree may contain subtle include and pin mistakes
 - UI users often know what they want to achieve, but not the exact Klipper config they need
 
-KlipperAI is meant to close that gap by giving the user one assistant that can:
+KAI is meant to close that gap by giving the user one assistant that can:
 
 - inspect logs and explain what failed
 - connect symptoms to likely root causes
@@ -29,7 +29,7 @@ The chosen product shape is:
 - standalone Linux daemon on the printer host
 - Moonraker underneath as the printer-facing boundary
 - supported Mainsail custom-navigation link or button in `v1`
-- full-page KlipperAI UI served on the same origin at `/klipperai/`
+- full-page KAI UI served on the same origin at `/kai/`
 
 That gives the project:
 
@@ -60,11 +60,11 @@ This repository is an early implementation. What exists today:
 - private server-side credential setup/rotation, per-task model profiles and persistent provider usage limits
 - deterministic [runtime diagnostic rules](docs/runtime-diagnostics.md) for MCU, heater, homing/probe, TMC driver, motion-limit, config-loading and service failures
 - host-side current `*.log` collection with configurable line-tail excerpts
-- private runtime file logging to `<data_dir>/logs/klipperai.log`
+- private runtime file logging to `<data_dir>/logs/kai.log`
 - optional `systemctl` and `journalctl` diagnostics for Moonraker/Klipper and explicitly selected broader service journals
 - default-off bounded [host flight recorder](docs/host-diagnostics.md) for incident CPU/process, memory/swap and pressure history
 - [typed diagnostic context and API evidence blocks](docs/evidence-contract.md), with source IDs, collection dates, impact ranking and separate confidence hints
-- one-time printer-profile detection during install, persisted into `klipperai.cfg`
+- one-time printer-profile detection during install, persisted into `kai.cfg`
 - firmware flavor detection for mainline Klipper, Kalico, and custom forks
 - addon and hardware hint detection for common probes, CAN toolhead boards, and companion services
 - persisted capability and geometry detection for probe type, accelerometer, filament sensor, build volume, extruder count, bed mesh, and input shaper state
@@ -76,7 +76,7 @@ This repository is an early implementation. What exists today:
 See [Chat and Debug modes](docs/agent-modes.md) for context contents, limits and
 the behavior of the single-pass compatibility workflow.
 See [provider management](docs/providers.md) for setup, rotation, model routing,
-request/token limits and activation through a manual KlipperAI restart.
+request/token limits and activation through a manual KAI restart.
 See [Moonraker integration](docs/moonraker-integration.md) for socket setup, live
 state, non-secret database metadata and the session-bootstrap extension methods.
 See [shutdown investigations](docs/shutdown-investigations.md) for supported failure
@@ -102,7 +102,7 @@ What does not exist yet:
 - send only the configured last lines from each collected log file
 - use a separate bounded current/rotated Klippy log search for shutdown investigations
 - collect `systemctl show` snapshots and recent `journalctl` lines for `moonraker.service` and `klipper.service`
-- write private KlipperAI runtime logs under `<data_dir>/logs/`
+- write private KAI runtime logs under `<data_dir>/logs/`
 - include the active Klipper config tree as LLM context during diagnostics, not only during config-generation requests
 - detect common faults deterministically before involving an LLM
 - explain likely causes in plain language
@@ -124,15 +124,15 @@ What does not exist yet:
 - detect firmware flavor from Moonraker update metadata and Klipper repo origin
 - summarize host model, distribution, and static printer identity hints
 - infer probe type, accelerometer, filament sensor, camera stack, mainboard MCU hints, toolhead board hints, and common addons once during install
-- persist detected identity into `[printer_identity]` in `klipperai.cfg`
+- persist detected identity into `[printer_identity]` in `kai.cfg`
 - persist detected capabilities into `[printer_capabilities]`
 - load the saved printer profile at runtime instead of re-detecting on every request
 
 ### Embedded UI
 
 - open from Mainsail through a supported custom-navigation entry
-- serve a stable standalone page at `/klipperai/`
-- keep the embedded iframe route available at `/klipperai/embed`
+- serve a stable standalone page at `/kai/`
+- keep the embedded iframe route available at `/kai/embed`
 - keep all provider API keys server-side only
 
 ### Workflow Engine
@@ -145,11 +145,11 @@ OpenAI requests use a bounded tool loop by default. The model can inspect eviden
 
 ## Architecture
 
-- `klipperai-agent`: standalone Python daemon on the printer host
+- `kai-agent`: standalone Python daemon on the printer host
 - `Moonraker`: canonical source for printer state, managed files, and future integration points
 - `Mainsail integration`: supported custom-nav link in `v1`, optional native patch for advanced installs
-- `KlipperAI UI`: chat-style assistant UI served from the same origin
-- `KlipperAI agent`: LLM-led investigation with read-only evidence tools and manual proposal review
+- `KAI UI`: chat-style assistant UI served from the same origin
+- `KAI agent`: LLM-led investigation with read-only evidence tools and manual proposal review
 
 Start discovery at [docs/PROJECT_MAP.md](docs/PROJECT_MAP.md). Runtime and sequence diagrams live in [docs/architecture.md](docs/architecture.md); tool extension and settings are in [docs/agent-development.md](docs/agent-development.md). Memory and manual proposal review are documented in [docs/investigations.md](docs/investigations.md). See [docs/refactoring.md](docs/refactoring.md) for the layout migration and reinstall instructions. Mainsail integration is covered in [docs/mainsail-shell.md](docs/mainsail-shell.md).
 
@@ -165,7 +165,7 @@ Planned provider support is tracked in [BACKLOG.md](BACKLOG.md).
 
 ### Recommended Path On A Klipper Host
 
-Put the repository on the Linux host that already runs Moonraker and Mainsail or Fluidd. The installer detects standard Linux versus rooted Creality/KE hosts and installs missing application prerequisites automatically. Standard hosts use systemd 250+ with encrypted credentials and an unprivileged account. Native Creality hosts use their init scripts with host-key encryption and RAM-only credential delivery; see [native setup and updates](docs/creality-compatibility.md).
+Put the repository on the Linux host that already runs Moonraker and Mainsail or Fluidd. The installer detects standard Linux versus rooted Creality/KE hosts and installs missing application prerequisites automatically. Standard hosts use systemd 247+ with encrypted credentials and an unprivileged account. Debian 11/BTT CB1 uses a root-only credential socket; systemd 250+ uses its built-in encrypted loader. Neither requires an OS upgrade. See [credential storage](docs/credential-storage.md). Native Creality hosts use their init scripts with host-key encryption and RAM-only credential delivery; see [native setup and updates](docs/creality-compatibility.md).
 
 Then run:
 
@@ -201,30 +201,30 @@ The installer can now patch the Mainsail nginx server block automatically. By de
 The installer currently guides the user through:
 
 - choosing the Linux service user
-- confirming the project checkout path, default `/home/<service-user>/KlipperAI`
+- confirming the project checkout path, default `/home/<service-user>/KAI`
 - selecting the LLM provider
 - entering the provider API key when needed
 - selecting the model name
-- pointing KlipperAI at Moonraker, default `http://127.0.0.1:7125`
+- pointing KAI at Moonraker, default `http://127.0.0.1:7125`
 - confirming the printer data root, default `/home/<service-user>/printer_data`
 - confirming the Mainsail config directory, default `/home/<service-user>/printer_data/config`
 - creating a Python virtual environment
 - installing the package
-- writing `/etc/klipperai/klipperai.env` for non-secret bootstrap/install metadata
+- writing `/etc/kai/kai.env` for non-secret bootstrap/install metadata
 - provisioning an encrypted master credential and AES-256-GCM provider-key storage using the selected host backend; see [credential storage and recovery](docs/credential-storage.md)
-- writing `printer_data/config/klipperai/klipperai.cfg`
+- writing `printer_data/config/kai/kai.cfg`
 - detecting printer profile data once and persisting it into `[printer_identity]` and `[printer_capabilities]`
-- writing `printer_data/config/klipperai/klipperai-moonraker.cfg`
-- appending an include like `[include klipperai/klipperai-moonraker.cfg]` to `moonraker.conf`
-- adding `klipperai-agent` to `printer_data/moonraker.asvc`
+- writing `printer_data/config/kai/kai-moonraker.cfg`
+- appending an include like `[include kai/kai-moonraker.cfg]` to `moonraker.conf`
+- adding `kai-agent` to `printer_data/moonraker.asvc`
 - generating and enabling the appropriate systemd or native init service
-- generating an nginx location snippet for `/klipperai/`
+- generating an nginx location snippet for `/kai/`
 - optionally patching the selected Mainsail nginx server block to include that snippet
-- writing private KlipperAI runtime logs to `<data_dir>/logs/klipperai.log`
+- writing private KAI runtime logs to `<data_dir>/logs/kai.log`
 - optionally installing a Mainsail navigation link in `.theme/navi.json`
-- when OctoEverywhere is detected, optionally applying the local OE `/klipperai/` route patch automatically
+- when OctoEverywhere is detected, optionally applying the local OE `/kai/` route patch automatically
 
-KlipperAI requires Python `3.10+`. On older apt-based hosts, setup invokes the
+KAI requires Python `3.10+`. On older apt-based hosts, setup invokes the
 [Python helper](docs/python310-install.md) automatically with one build job, beside
 the distro Python. It can recreate an older `.venv` and install a local virtualenv
 helper when the embedded Python lacks `venv` support.
@@ -233,9 +233,9 @@ The installer always asks for the service user first. Path defaults are then der
 
 After installation, the recommended `v1` flow is:
 
-1. reverse-proxy KlipperAI on the same origin at `/klipperai/`
+1. reverse-proxy KAI on the same origin at `/kai/`
 2. let the installer add a supported Mainsail custom-nav entry
-3. open KlipperAI from that Mainsail link
+3. open KAI from that Mainsail link
 
 Important limitations:
 
@@ -254,7 +254,7 @@ for the module map, access routes, and verification commands.
 
 ### Recommended Mainsail Integration
 
-The supported low-coupling integration is a custom navigation entry in Mainsail's `.theme/navi.json` that points to `/klipperai/` and opens KlipperAI in a new browser tab by default.
+The supported low-coupling integration is a custom navigation entry in Mainsail's `.theme/navi.json` that points to `/kai/` and opens KAI in a new browser tab by default.
 
 The repository includes:
 
@@ -273,8 +273,8 @@ Example navigation entry:
 ```json
 [
   {
-    "title": "KlipperAI",
-    "href": "/klipperai/",
+    "title": "KAI",
+    "href": "/kai/",
     "target": "_blank",
     "position": 85
   }
@@ -284,28 +284,28 @@ Example navigation entry:
 This is the recommended `v1` path because it uses Mainsail's documented custom-navigation support instead of patching or forking Mainsail just to surface the assistant UI.
 
 The former optional topbar/drawer source patch has been retired; the left-menu
-link continues to open KlipperAI in a new tab. No custom Mainsail build is needed.
+link continues to open KAI in a new tab. No custom Mainsail build is needed.
 See [Mainsail routing and page verification](docs/mainsail-shell.md) for nginx
 configuration, existing-installation follow-up and manual checks.
 
 ### Optional OctoEverywhere Host Patch
 
-If you want the main OctoEverywhere printer portal to open KlipperAI at
-`/klipperai/` without using a Shared Connection URL, the repository now includes
+If you want the main OctoEverywhere printer portal to open KAI at
+`/kai/` without using a Shared Connection URL, the repository now includes
 an unsupported host-side patch bundle in
 [integrations/octoeverywhere/README.md](integrations/octoeverywhere/README.md).
 
 This patch modifies the local OctoEverywhere checkout, not Mainsail itself. It
-adds a `/klipperai/... -> 127.0.0.1:8811/...` route inside OctoEverywhere's
-Moonraker-side router and overrides the `KlipperAI` sidebar click behavior when
-loaded via `*.octoeverywhere.com`, with support for opening KlipperAI in a new
+adds a `/kai/... -> 127.0.0.1:8811/...` route inside OctoEverywhere's
+Moonraker-side router and overrides the `KAI` sidebar click behavior when
+loaded via `*.octoeverywhere.com`, with support for opening KAI in a new
 tab. If the installer detects an OctoEverywhere checkout, it can offer to apply
 this patch automatically. On rooted Creality Nebula Pad-style layouts, the
 OctoEverywhere checkout is commonly `/usr/data/octoeverywhere`.
 
 Use it only if you are comfortable carrying a local OctoEverywhere patch. The
 optional systemd path/timer hook coordinates Moonraker-managed OE updates: it
-removes only KlipperAI's marked blocks when an update is pending, then reapplies
+removes only KAI's marked blocks when an update is pending, then reapplies
 them after the update. Unrelated edits in those OE files are preserved.
 
 ### Manual Development Install
@@ -317,7 +317,7 @@ py -3.10 -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -e .[dev]
 Copy-Item .env.example .env
-python -m klipperai_agent
+python -m kai_agent
 ```
 
 #### Linux
@@ -327,34 +327,34 @@ python3.10 -m venv .venv  # or any newer python3.x
 source .venv/bin/activate
 pip install -e .[dev]
 cp .env.example .env
-python -m klipperai_agent
+python -m kai_agent
 ```
 
 Then open the standalone UI in a browser:
 
 - local dev: `http://127.0.0.1:8811/`
-- reverse-proxied install: `/klipperai/`
+- reverse-proxied install: `/kai/`
 
 ## Runtime Configuration
 
-KlipperAI now uses two configuration surfaces:
+KAI now uses two configuration surfaces:
 
-- `printer_data/config/klipperai/klipperai.cfg` for host-editable runtime settings
-- `/etc/klipperai/klipperai.env` for non-secret bootstrap/install metadata; provider keys use [encrypted private storage](docs/credential-storage.md)
+- `printer_data/config/kai/kai.cfg` for host-editable runtime settings
+- `/etc/kai/kai.env` for non-secret bootstrap/install metadata; provider keys use [encrypted private storage](docs/credential-storage.md)
 
 The installer also creates Moonraker integration files:
 
-- `printer_data/config/klipperai/klipperai-moonraker.cfg` for the `update_manager` entry
-- `printer_data/moonraker.asvc` to allow Moonraker to restart `klipperai-agent` from frontends such as Mainsail
-- an include like `[include klipperai/klipperai-moonraker.cfg]` in `moonraker.conf`
+- `printer_data/config/kai/kai-moonraker.cfg` for the `update_manager` entry
+- `printer_data/moonraker.asvc` to allow Moonraker to restart `kai-agent` from frontends such as Mainsail
+- an include like `[include kai/kai-moonraker.cfg]` in `moonraker.conf`
 
-`klipperai.cfg` is loaded at service start. After editing it from Mainsail, restart the agent with:
+`kai.cfg` is loaded at service start. After editing it from Mainsail, restart the agent with:
 
 ```bash
-sudo systemctl restart klipperai-agent
+sudo systemctl restart kai-agent
 ```
 
-The main `klipperai.cfg` values are:
+The main `kai.cfg` values are:
 
 - `firmware_flavor`: installer-detected firmware flavor
 - `firmware_version`: installer-detected firmware version
@@ -370,16 +370,16 @@ The main `klipperai.cfg` values are:
 - `canbus_enabled`: installer-detected CAN presence flag
 - `addons`: installer-detected addon list
 - `root_config_file`: under `[config_context]`, the detected active root config file, overrideable when your root file is not the standard `printer.cfg`
-- `ignore_globs`: under `[config_context]`, optional ignore patterns for KlipperAI context collection, such as backups or archived config directories
+- `ignore_globs`: under `[config_context]`, optional ignore patterns for KAI context collection, such as backups or archived config directories
 - `printer_data_root`: printer data directory, usually `/home/<service-user>/printer_data` or `/usr/data/printer_data` on rooted Creality/Nebula-style images
 - `mainsail_config_dir`: Mainsail-editable config directory, usually `/home/<service-user>/printer_data/config` or `/usr/data/printer_data/config`
-- `root_path`: public reverse-proxy path, usually `/klipperai`
-- `port`: local KlipperAI bind port, default `8811`
-- `data_dir`: local KlipperAI data directory
+- `root_path`: public reverse-proxy path, usually `/kai`
+- `port`: local KAI bind port, default `8811`
+- `data_dir`: local KAI data directory
 - `llm_provider`: `openai`; Chat and Debug require an active API key
-- `openai_model`: default OpenAI model name, editable in `klipperai.cfg`
+- `openai_model`: default OpenAI model name, editable in `kai.cfg`
 - `logs_dir_path`: host log directory path, usually `/home/<service-user>/printer_data/logs` or `/usr/data/printer_data/logs`
-- `agent_log_file_name`, `agent_log_level`: control the KlipperAI runtime log file name and level
+- `agent_log_file_name`, `agent_log_level`: control the KAI runtime log file name and level
 - `log_tail_lines_default`: default number of lines to include from each current host log file
 - `[log_tail_lines]`: per-log overrides keyed by log stem, for example `klippy = 100` and `moonraker = 200`
 - `excluded_logs`: optional denylist for current host log files by name, stem, or glob
@@ -393,34 +393,34 @@ The main `klipperai.cfg` values are:
 
 Environment-file values are intentionally hidden from the Mainsail-editable config:
 
-- `KLIPPERAI_CONFIG_FILE`: points the service at `klipperai.cfg`
-- `KLIPPERAI_SERVICE_USER`: hidden install metadata for the service account
-- `KLIPPERAI_PROJECT_CHECKOUT_PATH`: hidden install metadata for the checkout path
-- `KLIPPERAI_NGINX_SERVER_BLOCK_PATH`: hidden install metadata for the patched nginx server block
-- `KLIPPERAI_HOST`: hidden local bind host, default `127.0.0.1`
-- `KLIPPERAI_MOONRAKER_URL`: hidden Moonraker base URL, usually `http://127.0.0.1:7125`
-- `KLIPPERAI_MANAGED_CONFIG_DIR_NAME`: hidden internal managed-config directory name
-- `KLIPPERAI_SESSION_TTL_SECONDS`: hidden UI session lifetime
-- `KLIPPERAI_MOONRAKER_SERVICE_NAME`, `KLIPPERAI_KLIPPER_SERVICE_NAME`: hidden systemd unit names for diagnostics
-- `KLIPPERAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT`, `KLIPPERAI_JOURNAL_ARTIFACT_CHAR_LIMIT`: hidden clip limits for captured diagnostics
-- `KLIPPERAI_SYSTEM_COMMAND_TIMEOUT_SECONDS`: hidden timeout for local diagnostics commands
-- `KLIPPERAI_OPENAI_API_KEY`: server-side API key for OpenAI
+- `KAI_CONFIG_FILE`: points the service at `kai.cfg`
+- `KAI_SERVICE_USER`: hidden install metadata for the service account
+- `KAI_PROJECT_CHECKOUT_PATH`: hidden install metadata for the checkout path
+- `KAI_NGINX_SERVER_BLOCK_PATH`: hidden install metadata for the patched nginx server block
+- `KAI_HOST`: hidden local bind host, default `127.0.0.1`
+- `KAI_MOONRAKER_URL`: hidden Moonraker base URL, usually `http://127.0.0.1:7125`
+- `KAI_MANAGED_CONFIG_DIR_NAME`: hidden internal managed-config directory name
+- `KAI_SESSION_TTL_SECONDS`: hidden UI session lifetime
+- `KAI_MOONRAKER_SERVICE_NAME`, `KAI_KLIPPER_SERVICE_NAME`: hidden systemd unit names for diagnostics
+- `KAI_SYSTEM_STATUS_ARTIFACT_CHAR_LIMIT`, `KAI_JOURNAL_ARTIFACT_CHAR_LIMIT`: hidden clip limits for captured diagnostics
+- `KAI_SYSTEM_COMMAND_TIMEOUT_SECONDS`: hidden timeout for local diagnostics commands
+- `KAI_OPENAI_API_KEY`: server-side API key for OpenAI
 
-See [deployment/config/klipperai.cfg.example](deployment/config/klipperai.cfg.example) and [.env.example](.env.example) for the current examples.
-For Moonraker integration, see [deployment/moonraker/klipperai-moonraker.cfg.example](deployment/moonraker/klipperai-moonraker.cfg.example).
+See [deployment/config/kai.cfg.example](deployment/config/kai.cfg.example) and [.env.example](.env.example) for the current examples.
+For Moonraker integration, see [deployment/moonraker/kai-moonraker.cfg.example](deployment/moonraker/kai-moonraker.cfg.example).
 
-The installer auto-populates `[printer_identity]` and `[printer_capabilities]` once. If KlipperAI misidentifies the printer hardware, capabilities, or firmware flavor, edit those sections in `klipperai.cfg` and restart the service.
+The installer auto-populates `[printer_identity]` and `[printer_capabilities]` once. If KAI misidentifies the printer hardware, capabilities, or firmware flavor, edit those sections in `kai.cfg` and restart the service.
 
-If you are upgrading from an older install that still has a `[printer_geometry]` section in `klipperai.cfg`, remove that section before restarting `klipperai-agent`.
+If you are upgrading from an older install that still has a `[printer_geometry]` section in `kai.cfg`, remove that section before restarting `kai-agent`.
 
-Config collection defaults to the active root config file and its include tree. If your config root is nonstandard or you want KlipperAI to skip backup/archive folders, set those under `[config_context]`.
+Config collection defaults to the active root config file and its include tree. If your config root is nonstandard or you want KAI to skip backup/archive folders, set those under `[config_context]`.
 
 If you want to repopulate the saved printer profile sections from the current host state later, run:
 
 ```bash
-source /home/<service-user>/KlipperAI/.venv/bin/activate
-klipperai-detect-profile \
-  --config-file /home/<service-user>/printer_data/config/klipperai/klipperai.cfg \
+source /home/<service-user>/KAI/.venv/bin/activate
+kai-detect-profile \
+  --config-file /home/<service-user>/printer_data/config/kai/kai.cfg \
   --moonraker-url http://127.0.0.1:7125 \
   --printer-data-root /home/<service-user>/printer_data \
   --overwrite
@@ -443,7 +443,7 @@ The security stance is:
 
 ## Repository Layout
 
-- `klipperai_agent/`: flat Python package, split by responsibility
+- `kai_agent/`: flat Python package, split by responsibility
 - `docs/PROJECT_MAP.md`: task-to-code navigation and generated symbol/test indexes
 - `tools/project_map.py`: regenerate architecture discovery artifacts
 - `tests/`: unit tests for deterministic logic
@@ -468,15 +468,15 @@ and packaging conventions are in [the release guide](docs/RELEASING.md).
 - OpenAI is the provider. Without an API key, the web page offers setup, connection status and saved information; Chat and Debug remain unavailable.
 - Requests use an iterative LLM agent that selects tools and follows up on their results. Deterministic checks and templates supply evidence to the model. Conversations, dated evidence and explicitly confirmed memory persist in application-owned SQLite storage. Interrupted investigations resume only when an LLM provider is ready; provider reasoning and HTTP calls are not replayed.
 - Host log collection currently targets current `.log` files directly under `printer_data/logs` and sends the configured last lines from each file.
-- KlipperAI writes a private rotating runtime log at `<data_dir>/logs/klipperai.log` (normally `/var/lib/klipperai/logs/klipperai.log`). This file is no longer automatically exposed through Mainsail.
+- KAI writes a private rotating runtime log at `<data_dir>/logs/kai.log` (normally `/var/lib/kai/logs/kai.log`). This file is no longer automatically exposed through Mainsail.
 - Systemd diagnostics collect `systemctl show` and bounded journals for Moonraker/Klipper, plus journals for explicitly selected additional services. Diagnostics also include fresh core Moonraker state and loaded-config metadata. See [host diagnostics](docs/host-diagnostics.md) for bounds and real-incident replay versus live validation.
 - Config assistant currently inspects `printer_data/config`, follows the active root config include tree, and can return typed config proposals in chat across the main supported feature categories.
 - The runtime does not apply or write those proposals back to printer files.
 - Printer-profile detection currently runs once during install and uses Moonraker `printer`, `machine`, and `update_manager` APIs together with config parsing and Klipper repo-origin hints.
 - Diagnostics prompts now include the current Klipper config snapshot in addition to logs, system context, and the saved printer profile.
-- Runtime profile awareness now comes from the saved `[printer_identity]` and `[printer_capabilities]` sections in `klipperai.cfg`.
-- Host-editable runtime config now lives in `printer_data/config/klipperai/klipperai.cfg`, which is intended to be editable from Mainsail.
-- The current UI can be opened directly at `/klipperai/` or embedded via `/klipperai/embed`.
+- Runtime profile awareness now comes from the saved `[printer_identity]` and `[printer_capabilities]` sections in `kai.cfg`.
+- Host-editable runtime config now lives in `printer_data/config/kai/kai.cfg`, which is intended to be editable from Mainsail.
+- The current UI can be opened directly at `/kai/` or embedded via `/kai/embed`.
 
 ## Status And Roadmap
 

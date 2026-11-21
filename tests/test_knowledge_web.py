@@ -4,10 +4,10 @@ from unittest.mock import AsyncMock
 
 from fastapi.testclient import TestClient
 
-import klipperai_agent.web.app as app_module
-from klipperai_agent.application.knowledge import PrinterKnowledge
-from klipperai_agent.domain.knowledge import KnowledgeConflict
-from klipperai_agent.runtime.settings import Settings
+import kai_agent.web.app as app_module
+from kai_agent.application.knowledge import PrinterKnowledge
+from kai_agent.domain.knowledge import KnowledgeConflict
+from kai_agent.runtime.settings import Settings
 from tests.knowledge_helpers import documents, researcher
 from tests.test_agent_integration import agent_service as agent_service
 from tests.test_knowledge_storage import repository
@@ -24,9 +24,7 @@ def test_session_protected_refresh_saved_details_downloads_and_restart(
         researcher(),
     )
     agent_service.knowledge = knowledge
-    settings = Settings(
-        data_dir=tmp_path / "data", printer_data_root=tmp_path, root_path="/klipperai"
-    )
+    settings = Settings(data_dir=tmp_path / "data", printer_data_root=tmp_path, root_path="/kai")
     container = SimpleNamespace(
         sessions=agent_service.sessions, chat_service=agent_service, aclose=knowledge.aclose
     )
@@ -35,10 +33,10 @@ def test_session_protected_refresh_saved_details_downloads_and_restart(
     with TestClient(app_module.create_app()) as client:
         session = client.post("/api/ui-sessions").json()["session_id"]
         params = {"session_id": session}
-        base = "/klipperai/api/knowledge"
+        base = "/kai/api/knowledge"
         assert client.get(base, params={"session_id": "bad"}).status_code == 403
         assert "printer-knowledge" in client.get("/api/bootstrap", params=params).json()["features"]
-        page = client.get("/klipperai/").text
+        page = client.get("/kai/").text
         assert "Build printer knowledge" in page and "class PrinterKnowledgePanel" in page
         status = client.get(base, params=params)
         assert status.headers["cache-control"] == "no-store"
@@ -83,7 +81,7 @@ def test_session_protected_refresh_saved_details_downloads_and_restart(
         assert client.get(base + "/documents/" + document_id, params=params).content == b"reference"
         doc = store.documents()[0]
         doc.content = "FAN0 pin PA8"
-        from klipperai_agent.domain.knowledge import FanMapping
+        from kai_agent.domain.knowledge import FanMapping
 
         doc.fan_mappings = [FanMapping(connector="FAN0", pin="PA8", quote=doc.content)]
         store.save_document(doc, b"reference")

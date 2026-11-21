@@ -12,7 +12,7 @@ from tests.test_release_artifacts import wheel_file
 
 
 def installation(tmp_path):
-    install = tmp_path / "KlipperAI"
+    install = tmp_path / "KAI"
     (install / ".venv/bin").mkdir(parents=True)
     (install / ".venv/bin/python").touch()
     (install / "pyproject.toml").touch()
@@ -21,8 +21,8 @@ def installation(tmp_path):
 
 def managed(updater, name):
     target = updater.root / name
-    (target / "klipperai_agent").mkdir(parents=True)
-    (target / "klipperai_agent/build-info.json").write_text(json.dumps({"build": name}))
+    (target / "kai_agent").mkdir(parents=True)
+    (target / "kai_agent/build-info.json").write_text(json.dumps({"build": name}))
     return target
 
 
@@ -33,7 +33,7 @@ def transaction(tmp_path, monkeypatch):
     def execute(command, **kwargs):
         commands.append(command)
         if "--target" in command:
-            (Path(command[command.index("--target") + 1]) / "klipperai_agent").mkdir()
+            (Path(command[command.index("--target") + 1]) / "kai_agent").mkdir()
 
     updater = releases.ReleaseUpdater(
         installation(tmp_path),
@@ -111,7 +111,7 @@ def test_prepared_release_is_rechecked_and_incomplete_stage_is_preserved(transac
     commands.clear()
     assert updater.prepare(wheel, digest) == target
     assert len(commands) == 2 and commands[0][-2:] == ["pip", "check"]
-    (target / "klipperai_agent/build-info.json").unlink()
+    (target / "kai_agent/build-info.json").unlink()
     with pytest.raises(OSError):
         updater.prepare(wheel, digest)
     assert target.is_dir()  # Never remove unrecognized content from an earlier interruption.
@@ -188,7 +188,7 @@ def test_dropin_refuses_to_replace_existing_operator_configuration(tmp_path, mon
     updater = releases.ReleaseUpdater(installation(tmp_path), "http://localhost/readyz")
     if os.name == "nt":
         # Linux systemd values cannot contain a Windows drive prefix.
-        updater.current = PurePosixPath("/home/printer/KlipperAI/.klipperai-releases/current")
+        updater.current = PurePosixPath("/home/printer/KAI/.kai-releases/current")
     dropin = tmp_path / "managed.conf"
     monkeypatch.setattr(releases, "DROPIN", dropin)
     dropin.write_text("operator override")

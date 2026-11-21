@@ -5,19 +5,19 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.diagnostics.evidence import config_evidence, diagnostic_evidence, link_findings
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.artifacts import (
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.diagnostics.evidence import config_evidence, diagnostic_evidence, link_findings
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.artifacts import (
     CollectedArtifact,
     normalize_artifact,
     normalize_input,
     public_evidence_blocks,
 )
-from klipperai_agent.domain.evidence import ArtifactInput, IssueFinding, SourceCitation
-from klipperai_agent.domain.investigation import Evidence
-from klipperai_agent.domain.redaction import redact_text
+from kai_agent.domain.evidence import ArtifactInput, IssueFinding, SourceCitation
+from kai_agent.domain.investigation import Evidence
+from kai_agent.domain.redaction import redact_text
 
 STAMP = "2026-10-27T12:00:00+00:00"
 

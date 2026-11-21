@@ -26,7 +26,7 @@ class MaintenanceState:
         fd, temporary = tempfile.mkstemp(prefix=".oe-state-", dir=self.directory)
         try:
             with os.fdopen(fd, "wb") as stream:
-                stream.write(b"Pending KlipperAI OctoEverywhere maintenance.\n")
+                stream.write(b"Pending KAI OctoEverywhere maintenance.\n")
                 stream.flush()
                 os.fsync(stream.fileno())
             os.replace(temporary, self.path(name))

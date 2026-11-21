@@ -3,17 +3,17 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-const source = await readFile(new URL("../klipperai_agent/web/static/agent.js", import.meta.url), "utf8");
-const investigation = await readFile(new URL("../klipperai_agent/web/static/investigation.js", import.meta.url), "utf8");
-const manifest = JSON.parse(await readFile(new URL("../klipperai_agent/web/static/scripts.json", import.meta.url), "utf8"));
-const bundle = await Promise.all(manifest.map(name => readFile(new URL(`../klipperai_agent/web/static/${name}`, import.meta.url), "utf8")));
+const source = await readFile(new URL("../kai_agent/web/static/agent.js", import.meta.url), "utf8");
+const investigation = await readFile(new URL("../kai_agent/web/static/investigation.js", import.meta.url), "utf8");
+const manifest = JSON.parse(await readFile(new URL("../kai_agent/web/static/scripts.json", import.meta.url), "utf8"));
+const bundle = await Promise.all(manifest.map(name => readFile(new URL(`../kai_agent/web/static/${name}`, import.meta.url), "utf8")));
 new vm.Script(bundle.join("\n"));
 
 function element(tag) {
   return { tag, children: [], listeners: {}, appendChild(child) { this.children.push(child); }, setAttribute() {}, addEventListener(name, fn) { this.listeners[name] = fn; } };
 }
 const context = vm.createContext({ TextDecoder, document: { createElement: element } });
-vm.runInContext(await readFile(new URL("../klipperai_agent/web/static/model-usage.js", import.meta.url), "utf8"), context);
+vm.runInContext(await readFile(new URL("../kai_agent/web/static/model-usage.js", import.meta.url), "utf8"), context);
 vm.runInContext(`${source}\nglobalThis.Reader = ChatStreamReader; globalThis.Activity = AgentActivity;`, context);
 vm.runInContext(`${investigation}\nglobalThis.messages = investigationMessages; globalThis.Review = ProposalReviewCard; globalThis.Evidence = InvestigationEvidence;`, context);
 

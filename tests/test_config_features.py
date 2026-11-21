@@ -1,10 +1,10 @@
 import pytest
 
-from klipperai_agent.config.models import ConfigRequestTarget
-from klipperai_agent.config.requests import ConfigPromptPayload
-from klipperai_agent.config.templates.catalog import ProposalCatalog
-from klipperai_agent.config.templates.features import feature_proposal
-from klipperai_agent.profile.models import PrinterProfile
+from kai_agent.config.models import ConfigRequestTarget
+from kai_agent.config.requests import ConfigPromptPayload
+from kai_agent.config.templates.catalog import ProposalCatalog
+from kai_agent.config.templates.features import feature_proposal
+from kai_agent.profile.models import PrinterProfile
 from tests.test_config_analysis import snapshot
 
 

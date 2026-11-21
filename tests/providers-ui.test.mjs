@@ -32,7 +32,7 @@ test("provider panel loads, submits transient credentials, and shows pending res
   assert.equal(calls[1].body.api_key, "private-replacement");
   assert.equal(calls[1].body.policy.search.model, "search-model");
   assert.equal(ids["providers-key"].value, "");
-  assert.match(ids["providers-status"].textContent, /Restart KlipperAI manually/);
+  assert.match(ids["providers-status"].textContent, /Restart KAI manually/);
   assert.doesNotMatch(ids["providers-status"].textContent, /private-replacement/);
   ids["providers-key"].value = "another-key";
   await ids["providers-validate"].click();

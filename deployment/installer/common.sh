@@ -121,7 +121,7 @@ normalize_root_path() {
   value="/${value#/}"
   value="${value%/}"
   if [[ -z "$value" ]]; then
-    value="/klipperai"
+    value="/kai"
   fi
   printf '%s' "$value"
 }

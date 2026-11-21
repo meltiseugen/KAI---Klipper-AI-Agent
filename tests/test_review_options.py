@@ -5,16 +5,16 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.application.proposal_review import ProposalReviewService
-from klipperai_agent.application.review_firmware import read_review_firmware
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.option_review import review_options, value_problem
-from klipperai_agent.config.option_rules import OptionRule
-from klipperai_agent.config.review import ProposalReviewer
-from klipperai_agent.config.review_parser import parse_review_config
-from klipperai_agent.domain.investigation import InvestigationResult
-from klipperai_agent.domain.proposals import ReviewFirmware
-from klipperai_agent.profile.models import PrinterProfile
+from kai_agent.application.proposal_review import ProposalReviewService
+from kai_agent.application.review_firmware import read_review_firmware
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.option_review import review_options, value_problem
+from kai_agent.config.option_rules import OptionRule
+from kai_agent.config.review import ProposalReviewer
+from kai_agent.config.review_parser import parse_review_config
+from kai_agent.domain.investigation import InvestigationResult
+from kai_agent.domain.proposals import ReviewFirmware
+from kai_agent.profile.models import PrinterProfile
 from tests.test_proposal_review import proposal
 
 

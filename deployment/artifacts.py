@@ -1,4 +1,4 @@
-"""Validate an operator-supplied KlipperAI wheel before staging any code."""
+"""Validate an operator-supplied KAI wheel before staging any code."""
 
 from __future__ import annotations
 
@@ -16,8 +16,8 @@ def inspect_wheel(path: Path, expected_sha256: str) -> dict[str, str]:
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     if not re.fullmatch(r"[a-f0-9]{64}", expected_sha256) or digest != expected_sha256:
         raise ValueError("Wheel checksum mismatch.")
-    if not path.name.startswith("klipperai-") or not path.name.endswith("-py3-none-any.whl"):
-        raise ValueError("Deploy a universal KlipperAI wheel built on the development machine.")
+    if not path.name.startswith("kai-") or not path.name.endswith("-py3-none-any.whl"):
+        raise ValueError("Deploy a universal KAI wheel built on the development machine.")
     with zipfile.ZipFile(path) as wheel:
         total = 0
         for member in wheel.infolist():
@@ -30,8 +30,8 @@ def inspect_wheel(path: Path, expected_sha256: str) -> dict[str, str]:
                 or not name.parts
             ):
                 raise ValueError("Unsafe wheel member path.")
-            if name.parts[0] not in {"klipperai_agent", "deployment"} and not re.fullmatch(
-                r"klipperai-[A-Za-z0-9.+_-]+\.dist-info", name.parts[0]
+            if name.parts[0] not in {"kai_agent", "deployment"} and not re.fullmatch(
+                r"kai-[A-Za-z0-9.+_-]+\.dist-info", name.parts[0]
             ):
                 raise ValueError("Wheel contains files outside the application package.")
             if stat.S_ISLNK(member.external_attr >> 16):
@@ -45,7 +45,7 @@ def inspect_wheel(path: Path, expected_sha256: str) -> dict[str, str]:
         if len(metadata_paths) != 1:
             raise ValueError("Wheel must have exactly one distribution metadata document.")
         metadata = Parser().parsestr(wheel.read(metadata_paths[0]).decode("utf-8"))
-        if metadata["Name"] != "klipperai" or not re.fullmatch(
+        if metadata["Name"] != "kai" or not re.fullmatch(
             r"[0-9]+\.[0-9]+\.[0-9]+(?:(?:a|b|rc)[0-9]+)?", metadata["Version"] or ""
         ):
             raise ValueError("Unexpected distribution name/version.")

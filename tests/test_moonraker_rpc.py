@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from klipperai_agent.infrastructure.moonraker_rpc import MoonrakerRpc, RpcError
+from kai_agent.infrastructure.moonraker_rpc import MoonrakerRpc, RpcError
 from tests.moonraker_helpers import SocketPeer, methods, until
 
 
@@ -24,10 +24,10 @@ async def test_rpc_correlates_responses_and_serves_bounded_methods():
     assert await second == {"objects": []}
     remote.feed({"method": "notify_klippy_ready", "params": []})
     for identifier, method, params in (
-        (1, "klipperai.capabilities", {}),
-        ("external", "klipperai.create_ui_session", {}),
+        (1, "kai.capabilities", {}),
+        ("external", "kai.create_ui_session", {}),
         (2, "printer.gcode.script", {"script": "G28"}),
-        (3, "klipperai.status", {"filename": "private"}),
+        (3, "kai.status", {"filename": "private"}),
     ):
         remote.feed({"id": identifier, "method": method, "params": params})
     await until(lambda: len(remote.sent) == 6)
@@ -35,16 +35,16 @@ async def test_rpc_correlates_responses_and_serves_bounded_methods():
     assert remote.sent[2]["result"]["printer_access"] == "read_only"
     session = remote.sent[3]["result"]
     assert api.sessions.exists(session["session_id"])
-    assert session["embed_path"].startswith("/klipperai/embed?session=")
+    assert session["embed_path"].startswith("/kai/embed?session=")
     assert remote.sent[4]["error"]["code"] == -32601
     assert remote.sent[5]["error"]["code"] == -32602
     # Bad IDs and uncorrelated responses cannot create a new request or session.
-    remote.feed({"id": True, "method": "klipperai.create_ui_session"})
+    remote.feed({"id": True, "method": "kai.create_ui_session"})
     remote.feed({"id": "unknown", "result": {}})
     peer.dispatch = AsyncMock(side_effect=RuntimeError("private exception"))
-    remote.feed({"id": 4, "method": "klipperai.status"})
+    remote.feed({"id": 4, "method": "kai.status"})
     await until(lambda: len(remote.sent) == 7)
-    assert remote.sent[-1]["error"] == {"code": -32603, "message": "KlipperAI method failed."}
+    assert remote.sent[-1]["error"] == {"code": -32603, "message": "KAI method failed."}
     await peer.aclose()
     assert remote.closed and not peer._pending
     with pytest.raises(RpcError, match="closed"):

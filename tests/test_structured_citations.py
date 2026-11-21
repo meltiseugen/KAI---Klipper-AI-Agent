@@ -8,17 +8,17 @@ from test_agent import tool_context as tool_context
 from test_evidence_pipeline import wire_diagnostics
 from test_investigations import persistent_service as persistent_service
 
-from klipperai_agent.agent.claim_citations import resolve_claims
-from klipperai_agent.agent.models import AgentLimits, ModelTurn
-from klipperai_agent.agent.response_contracts import CitedClaim
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.models import ConfigDocument, ConfigPlaceholder, ConfigSnapshot
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.diagnostics.evidence import config_evidence, link_findings
-from klipperai_agent.diagnostics.rules import RuleEngine
-from klipperai_agent.domain.artifacts import normalize_artifact
-from klipperai_agent.domain.evidence import SourceCitation
-from klipperai_agent.domain.investigation import Evidence
+from kai_agent.agent.claim_citations import resolve_claims
+from kai_agent.agent.models import AgentLimits, ModelTurn
+from kai_agent.agent.response_contracts import CitedClaim
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.models import ConfigDocument, ConfigPlaceholder, ConfigSnapshot
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.diagnostics.evidence import config_evidence, link_findings
+from kai_agent.diagnostics.rules import RuleEngine
+from kai_agent.domain.artifacts import normalize_artifact
+from kai_agent.domain.evidence import SourceCitation
+from kai_agent.domain.investigation import Evidence
 
 
 def source(**updates):

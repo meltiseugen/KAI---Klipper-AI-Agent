@@ -11,8 +11,8 @@ install_access_integrations() {
     fi
   fi
 
-  if [[ "${KLIPPERAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
-    log "Starting the native KlipperAI init service."
+  if [[ "${KAI_SERVICE_MANAGER:-systemd}" == appliance ]]; then
+    log "Starting the native KAI init service."
     start_appliance_service
   else
     log "Reloading systemd and enabling the service."
@@ -21,7 +21,7 @@ install_access_integrations() {
   fi
 
   if [[ "$INSTALL_OCTOEVERYWHERE_PATCH" == "yes" ]]; then
-    log "Applying OctoEverywhere /klipperai integration patch."
+    log "Applying OctoEverywhere /kai integration patch."
     install_octoeverywhere_integration
   fi
 
@@ -29,4 +29,5 @@ install_access_integrations() {
     log "Installing OctoEverywhere patch auto-reapply timer."
     install_octoeverywhere_auto_reapply
   fi
+  finish_moonraker_integration
 }

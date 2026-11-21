@@ -92,7 +92,7 @@ their rotations too. Disabling `collect_host_logs` removes filesystem log tools
 from both advertised schemas and dispatch. Credential redaction occurs before
 searchable log text or citations reach the model.
 
-KlipperAI still persists public investigation outcomes/evidence in its own application
+KAI still persists public investigation outcomes/evidence in its own application
 storage. That is application bookkeeping, not a model-controlled file-writing tool.
 Configuration proposals remain text for the user to review and edit manually.
 

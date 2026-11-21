@@ -2,7 +2,7 @@
 
 Printer knowledge now records source-reviewed bus pinmux, explicit physical
 connector observations, exact-commit firmware references and page-scoped PDF
-evidence. These features write only KlipperAI application storage. Printer
+evidence. These features write only KAI application storage. Printer
 configuration and physical verification remain manual.
 
 ## Hardware buses and component diagnostics
@@ -123,7 +123,7 @@ mesh and measured input-shaper values:
 
 Observed unique section files are retained as targets. All drafts receive the
 existing static/manual review, comparison, patch and stale-revision handling.
-No generated macro or calibration command is executed by KlipperAI.
+No generated macro or calibration command is executed by KAI.
 
 ## Validation and provenance
 

@@ -31,7 +31,7 @@ done
     assert result.stdout == ""
 
 
-@pytest.mark.parametrize("prefix", ["/klipperai", "/assistant/printer"])
+@pytest.mark.parametrize("prefix", ["/kai", "/assistant/printer"])
 def test_nginx_snippet_preserves_prefix_queries_and_streaming(tmp_path, run_shell, prefix):
     target = tmp_path / "nginx.conf"
     bash(
@@ -40,8 +40,8 @@ def test_nginx_snippet_preserves_prefix_queries_and_streaming(tmp_path, run_shel
 set -euo pipefail
 source "$1/deployment/installer/nginx.sh"
 OUTPUT="$2"
-KLIPPERAI_ROOT_PATH="$3"
-KLIPPERAI_PORT=8899
+KAI_ROOT_PATH="$3"
+KAI_PORT=8899
 backup_file() { :; }
 run_root() { [[ "$1" == install ]] || return 1; cp "${@: -2:1}" "$OUTPUT"; }
 write_nginx_snippet
@@ -69,7 +69,7 @@ write_nginx_snippet
 
 def test_nginx_include_is_at_server_scope_and_idempotent(tmp_path, run_shell):
     server = tmp_path / "mainsail.conf"
-    include = "include /etc/klipperai/nginx-location.conf;"
+    include = "include /etc/kai/nginx-location.conf;"
     server.write_text(
         "# server { ignored }\nserver {\n"
         f"    location /other {{\n        {include}\n    }}\n"
@@ -81,7 +81,7 @@ def test_nginx_include_is_at_server_scope_and_idempotent(tmp_path, run_shell):
 set -euo pipefail
 source "$1/deployment/installer/common.sh"
 source "$1/deployment/installer/nginx.sh"
-KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
+KAI_NGINX_SERVER_BLOCK_PATH="$2"
 PROJECT_NAME=test
 TIMESTAMP=test
 run_root() { "$@"; }
@@ -119,9 +119,9 @@ source "$1/deployment/installer/common.sh"
 source "$1/deployment/installer/nginx.sh"
 PROJECT_NAME=test
 TIMESTAMP=test
-KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
-KLIPPERAI_ROOT_PATH=/klipperai
-KLIPPERAI_PORT=8811
+KAI_NGINX_SERVER_BLOCK_PATH="$2"
+KAI_ROOT_PATH=/kai
+KAI_PORT=8811
 PATCH_NGINX_INCLUDE=yes
 run_root() { "$@"; }
 reload_nginx() { return 1; }
@@ -154,9 +154,9 @@ source "$1/deployment/installer/common.sh"
 source "$1/deployment/installer/nginx.sh"
 PROJECT_NAME=test
 TIMESTAMP=test
-KLIPPERAI_NGINX_SERVER_BLOCK_PATH="$2"
-KLIPPERAI_ROOT_PATH=/klipperai
-KLIPPERAI_PORT=8811
+KAI_NGINX_SERVER_BLOCK_PATH="$2"
+KAI_ROOT_PATH=/kai
+KAI_PORT=8811
 PATCH_NGINX_INCLUDE="$4"
 run_root() { "$@"; }
 reload_nginx() { echo reloaded; }
@@ -167,7 +167,7 @@ configure_nginx "$3"
         snippet.as_posix(),
         "yes" if automatic else "no",
     )
-    assert "location ^~ /klipperai/" in snippet.read_text()
+    assert "location ^~ /kai/" in snippet.read_text()
     assert ("reloaded" in result.stdout) is automatic
     if automatic:
         assert f"include {snippet.as_posix()};" in server.read_text()
@@ -228,7 +228,7 @@ def test_mainsail_navigation_is_idempotent_and_preserves_printer_files(tmp_path,
     assert json.loads(nav.read_text()) == [
         existing,
         {
-            "title": "KlipperAI",
+            "title": "KAI",
             "href": "/assistant/printer/",
             "target": "_blank",
             "position": 85,
@@ -247,11 +247,12 @@ INSTALL_MAINSAIL_NAV=yes
 INSTALL_MAINSAIL_AUTO_REAPPLY=yes
 INSTALL_OCTOEVERYWHERE_PATCH=no
 INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY=no
-SERVICE_NAME=klipperai-agent
+SERVICE_NAME=kai-agent
 log() { :; }
 run_root() { :; }
 install_mainsail_custom_nav() { echo nav; }
 install_mainsail_auto_reapply() { echo hook; }
+finish_moonraker_integration() { :; }
 install_access_integrations
 """,
         ROOT.as_posix(),
@@ -263,12 +264,12 @@ def test_full_uninstall_stops_navigation_repair_before_removing_units(tmp_path, 
     units = tmp_path / "units"
     units.mkdir()
     for suffix in ("path", "timer", "service"):
-        (units / f"klipperai-mainsail-reapply.{suffix}").touch()
+        (units / f"kai-mainsail-reapply.{suffix}").touch()
     result = bash(
         run_shell,
         """
 set -euo pipefail
-export KLIPPERAI_SYSTEMD_DIR="$2"
+export KAI_SYSTEMD_DIR="$2"
 source "$1/uninstall.sh"
 run_root() {
   if [[ "$1" == systemctl ]]; then printf '%s\\n' "$*"; else "$@"; fi
@@ -280,8 +281,6 @@ remove_mainsail_auto_reapply
     )
     assert not list(units.iterdir())
     lines = result.stdout.splitlines()
-    assert (
-        "disable --now klipperai-mainsail-reapply.timer klipperai-mainsail-reapply.path" in lines[0]
-    )
-    assert lines[1] == "systemctl stop klipperai-mainsail-reapply.service"
+    assert "disable --now kai-mainsail-reapply.timer kai-mainsail-reapply.path" in lines[0]
+    assert lines[1] == "systemctl stop kai-mainsail-reapply.service"
     assert lines[-1] == "systemctl daemon-reload"

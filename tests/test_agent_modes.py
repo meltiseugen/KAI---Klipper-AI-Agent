@@ -11,22 +11,22 @@ from test_agent import ScriptedModel, answer, call
 from test_agent import tool_context as tool_context  # Shared read-only fixture.
 from test_investigations import persistent_service as persistent_service
 
-from klipperai_agent.agent.context_budget import fit_result
-from klipperai_agent.agent.models import AgentLimits, ToolCall
-from klipperai_agent.agent.prompts import SYSTEM_PROMPT
-from klipperai_agent.agent.registry import ToolRegistry
-from klipperai_agent.agent.tools.config import InspectConfigTool, ReadConfigTool
-from klipperai_agent.agent.tools.config_search import SearchConfigTool
-from klipperai_agent.agent.tools.diagnostics import ReadDiagnosticTool
-from klipperai_agent.agent.tools.objects import PrinterObjectsTool
-from klipperai_agent.agent.tools.printer import DiagnosticsArguments, DiagnosticsTool
-from klipperai_agent.agent.workflow import AgentWorkflow
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.contracts.api import ChatRequest
-from klipperai_agent.diagnostics.models import DiagnosticsSnapshot
-from klipperai_agent.domain.evidence import ArtifactInput
-from klipperai_agent.domain.investigation import Evidence, InvestigationRequest
+from kai_agent.agent.context_budget import fit_result
+from kai_agent.agent.models import AgentLimits, ToolCall
+from kai_agent.agent.prompts import SYSTEM_PROMPT
+from kai_agent.agent.registry import ToolRegistry
+from kai_agent.agent.tools.config import InspectConfigTool, ReadConfigTool
+from kai_agent.agent.tools.config_search import SearchConfigTool
+from kai_agent.agent.tools.diagnostics import ReadDiagnosticTool
+from kai_agent.agent.tools.objects import PrinterObjectsTool
+from kai_agent.agent.tools.printer import DiagnosticsArguments, DiagnosticsTool
+from kai_agent.agent.workflow import AgentWorkflow
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.contracts.api import ChatRequest
+from kai_agent.diagnostics.models import DiagnosticsSnapshot
+from kai_agent.domain.evidence import ArtifactInput
+from kai_agent.domain.investigation import Evidence, InvestigationRequest
 
 
 @pytest.mark.asyncio

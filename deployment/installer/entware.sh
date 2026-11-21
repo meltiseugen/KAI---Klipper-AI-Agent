@@ -45,7 +45,7 @@ arch mipsel-3.4 160'
       bootstrap_error 'Existing /opt content has no usable opkg; it was preserved.'; exit 1
     fi
   done
-  entware_temp="$(mktemp -d /tmp/klipperai-entware.XXXXXX)" || exit 1
+  entware_temp="$(mktemp -d /tmp/kai-entware.XXXXXX)" || exit 1
   trap 'rm -f "$entware_temp/opkg" "$entware_temp/curl" "$entware_temp/ca.pem" "$entware_temp/wget"; rmdir "$entware_temp"' EXIT
   entware_download "https://bin.entware.net/$entware_feed/installer/opkg" "$entware_temp/opkg" "$entware_hash" || exit 1
   entware_download https://curl.se/ca/cacert-2026-10-20.pem "$entware_temp/ca.pem" 796f1389bfea13c0ed78f663b765baaff54a508e5483786bd6ece73c5e3e3cbe || exit 1
@@ -104,12 +104,12 @@ EOF
     [ ! -f "/etc/$entware_account" ] || [ -e "/opt/etc/$entware_account" ] ||
       ln -s "/etc/$entware_account" "/opt/etc/$entware_account" || exit 1
   done
-  if [ ! -e /etc/init.d/S50unslung ] && [ ! -e /etc/init.d/S49klipperai-entware ]; then
-    cat > /etc/init.d/S49klipperai-entware <<'EOF'
+  if [ ! -e /etc/init.d/S50unslung ] && [ ! -e /etc/init.d/S49kai-entware ]; then
+    cat > /etc/init.d/S49kai-entware <<'EOF'
 #!/bin/sh
-# Entware prerequisites installed by KlipperAI; retained when the app is removed.
+# Entware prerequisites installed by KAI; retained when the app is removed.
 if [ -x /opt/etc/init.d/rc.unslung ]; then exec /opt/etc/init.d/rc.unslung "$@"; fi
 EOF
-    chmod 755 /etc/init.d/S49klipperai-entware
+    chmod 755 /etc/init.d/S49kai-entware
   fi
 )

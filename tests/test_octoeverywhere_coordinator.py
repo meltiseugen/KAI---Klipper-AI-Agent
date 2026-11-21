@@ -115,7 +115,7 @@ def test_cli_modes_and_failed_restart(oe_maintenance, monkeypatch):
     for options in (
         ["--service", "bad;name"],
         ["--moonraker-url", "file:///etc"],
-        ["--klipperai-port", "0"],
+        ["--kai-port", "0"],
     ):
         assert cli.main(args + options + ["--validate"]) == 1
     assert cli.main(args) == 0

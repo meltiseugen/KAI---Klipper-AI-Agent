@@ -3,15 +3,15 @@
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.config.parser import ConfigParser
-from klipperai_agent.domain.knowledge import (
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.config.parser import ConfigParser
+from kai_agent.domain.knowledge import (
     CachedDocument,
     ComponentIdentity,
     FanMapping,
     KnowledgeSetup,
 )
-from klipperai_agent.knowledge.sources import component_key, document_source, mapping_evidence
+from kai_agent.knowledge.sources import component_key, document_source, mapping_evidence
 
 
 def identities():

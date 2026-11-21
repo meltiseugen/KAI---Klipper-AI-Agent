@@ -3,15 +3,15 @@ from dataclasses import replace
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.domain.knowledge import ComponentIdentity, KnowledgeSetup
-from klipperai_agent.domain.proposals import ConfigProposal
-from klipperai_agent.knowledge.eddy import inspect_eddy
-from klipperai_agent.knowledge.fans import inspect_fan_ports as inspect_ports
-from klipperai_agent.knowledge.identity import component_status, profile_setup
-from klipperai_agent.knowledge.pins import config_rows, pin_ownership
-from klipperai_agent.knowledge.retrieval import search_documents
-from klipperai_agent.knowledge.review import review_fan_hardware
-from klipperai_agent.knowledge.sources import mapping_evidence
+from kai_agent.domain.knowledge import ComponentIdentity, KnowledgeSetup
+from kai_agent.domain.proposals import ConfigProposal
+from kai_agent.knowledge.eddy import inspect_eddy
+from kai_agent.knowledge.fans import inspect_fan_ports as inspect_ports
+from kai_agent.knowledge.identity import component_status, profile_setup
+from kai_agent.knowledge.pins import config_rows, pin_ownership
+from kai_agent.knowledge.retrieval import search_documents
+from kai_agent.knowledge.review import review_fan_hardware
+from kai_agent.knowledge.sources import mapping_evidence
 from tests.knowledge_helpers import documents, setup, snapshot
 
 

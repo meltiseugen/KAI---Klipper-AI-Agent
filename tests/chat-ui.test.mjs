@@ -4,9 +4,9 @@ import { loadUI, memoryStorage, jsonResponse } from "./ui-harness.mjs";
 const { ConversationStore, ChatTransport, ChatApplication, ShellView, resolveApiBase, ids, document } = await loadUI();
 for (const [configured, path, expected] of [
   ["/api", "/", "/api"], ["/api", "/embed", "/api"],
-  ["/api", "/klipperai/", "/klipperai/api"], ["", "/klipperai/direct", "/klipperai/api"],
+  ["/api", "/kai/", "/kai/api"], ["", "/kai/direct", "/kai/api"],
   ["/assistant/printer/api/", "/assistant/printer/direct", "/assistant/printer/api"],
-  ["/klipperai/api", "blank", "/klipperai/api"],
+  ["/kai/api", "blank", "/kai/api"],
 ]) assert.equal(resolveApiBase(configured, path), expected);
 
 // All API operations share session renewal and retain the public remote prefix.
@@ -46,7 +46,7 @@ unavailable.restore();
 unavailable.save();
 assert.equal(unavailable.state.conversations.length, 1);
 const legacy = memoryStorage();
-legacy.setItem("klipperai.embed.state.v1", JSON.stringify({ currentThreadId: "legacy", draft: "Draft", messages: [{ role: "user", text: "Old question" }] }));
+legacy.setItem("kai.embed.state.v1", JSON.stringify({ currentThreadId: "legacy", draft: "Draft", messages: [{ role: "user", text: "Old question" }] }));
 const migrated = new ConversationStore(legacy, "Introduction");
 migrated.restore();
 assert.equal(migrated.getCurrentConversation().threadId, "legacy");

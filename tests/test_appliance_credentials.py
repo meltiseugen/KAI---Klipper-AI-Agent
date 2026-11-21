@@ -121,7 +121,7 @@ def test_native_receipt_and_environment_are_metadata_only(tmp_path):
     config.save()
     assert ApplianceConfig.load(install) == config
     config.save()
-    receipt = install / ".klipperai-appliance.json"
+    receipt = install / ".kai-appliance.json"
     data = json.loads(receipt.read_text())
     data["install"] = str(tmp_path / "other")
     receipt.write_text(json.dumps(data))
@@ -129,11 +129,11 @@ def test_native_receipt_and_environment_are_metadata_only(tmp_path):
         ApplianceConfig.load(install)
     env = config.environment
     env.write_text(
-        '# metadata\nKLIPPERAI_CONFIG_FILE="/usr/data/printer_data/config/klipperai/klipperai.cfg"\nKLIPPERAI_SERVICE_USER="root"\n'
+        '# metadata\nKAI_CONFIG_FILE="/usr/data/printer_data/config/kai/kai.cfg"\nKAI_SERVICE_USER="root"\n'
     )
-    assert environment_file(env)["KLIPPERAI_SERVICE_USER"] == "root"
-    env.write_text('KLIPPERAI_CONFIG_FILE="$(touch /outside)"\n')
-    assert environment_file(env)["KLIPPERAI_CONFIG_FILE"] == "$(touch /outside)"
-    env.write_text("KLIPPERAI_OPENAI_API_KEY=private\n")
+    assert environment_file(env)["KAI_SERVICE_USER"] == "root"
+    env.write_text('KAI_CONFIG_FILE="$(touch /outside)"\n')
+    assert environment_file(env)["KAI_CONFIG_FILE"] == "$(touch /outside)"
+    env.write_text("KAI_OPENAI_API_KEY=private\n")
     with pytest.raises(ValueError, match="non-secret"):
         environment_file(env)

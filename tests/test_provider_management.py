@@ -8,21 +8,21 @@ import httpx
 import pytest
 from pydantic import ValidationError
 
-from klipperai_agent.application.providers import ProviderManagement
-from klipperai_agent.bootstrap.providers import effective_settings, provider_management
-from klipperai_agent.domain.provider_settings import (
+from kai_agent.application.providers import ProviderManagement
+from kai_agent.bootstrap.providers import effective_settings, provider_management
+from kai_agent.domain.provider_settings import (
     ModelProfile,
     ProviderConflict,
     ProviderLimitError,
     ProviderPolicy,
     ProviderUpdate,
 )
-from klipperai_agent.infrastructure.provider_store import ProviderStore
-from klipperai_agent.providers.credentials import OpenAICredentialValidator
-from klipperai_agent.providers.json_client import OpenAIJsonClient
-from klipperai_agent.providers.responses import ProviderError, ResponsesClient
-from klipperai_agent.providers.usage import UsageGuard
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.infrastructure.provider_store import ProviderStore
+from kai_agent.providers.credentials import OpenAICredentialValidator
+from kai_agent.providers.json_client import OpenAIJsonClient
+from kai_agent.providers.responses import ProviderError, ResponsesClient
+from kai_agent.providers.usage import UsageGuard
+from kai_agent.runtime.settings import Settings
 
 
 def store_at(tmp_path):
@@ -145,7 +145,7 @@ def test_usage_reservations_are_atomic_persistent_and_do_not_reset_on_rotation(
     store.cooldown(60)
     with pytest.raises(ProviderLimitError, match="cooldown"):
         store.reserve(policy, 1)
-    import klipperai_agent.infrastructure.provider_store as module
+    import kai_agent.infrastructure.provider_store as module
 
     now = module.time.time()
     monkeypatch.setattr(module.time, "time", lambda: now + 86400)
@@ -355,7 +355,7 @@ def test_retired_provider_settings_never_activate_an_old_key_or_discard_saved_po
 def test_private_store_key_is_added_to_runtime_log_redaction(monkeypatch):
     import logging
 
-    from klipperai_agent.runtime.logging import RedactingFormatter, register_provider_secret
+    from kai_agent.runtime.logging import RedactingFormatter, register_provider_secret
 
     handler = logging.StreamHandler()
     formatter = RedactingFormatter("old-key")
@@ -371,7 +371,7 @@ def test_private_store_key_is_added_to_runtime_log_redaction(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_container_legacy_model_and_shared_guard_come_from_saved_policy(tmp_path):
-    from klipperai_agent.bootstrap.container import build_container
+    from kai_agent.bootstrap.container import build_container
 
     settings = Settings(
         data_dir=tmp_path / "data",

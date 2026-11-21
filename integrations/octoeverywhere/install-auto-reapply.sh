@@ -6,15 +6,15 @@ usage() {
   cat <<'EOF'
 Usage: install-auto-reapply.sh [options]
 
-Install a systemd path/timer hook that coordinates the local KlipperAI patch
-with Moonraker-managed OctoEverywhere updates. It removes only KlipperAI's
+Install a systemd path/timer hook that coordinates the local KAI patch
+with Moonraker-managed OctoEverywhere updates. It removes only KAI's
 marked blocks when an update is pending, then reapplies them after the update.
 
 Options:
-  --install-dir PATH      KlipperAI checkout root. Default: auto-detected
+  --install-dir PATH      KAI checkout root. Default: auto-detected
   --oe-root PATH          OctoEverywhere checkout root. Default: /usr/data/octoeverywhere
-  --klipperai-prefix PATH  Public KlipperAI prefix. Default: /klipperai
-  --klipperai-port PORT    Local KlipperAI backend port. Default: 8811
+  --kai-prefix PATH  Public KAI prefix. Default: /kai
+  --kai-port PORT    Local KAI backend port. Default: 8811
   --nav-target VALUE      Sidebar click behavior: _blank or _self. Default: _blank
   --service NAME          OctoEverywhere systemd service. Default: octoeverywhere
   --moonraker-url URL      Moonraker base URL. Default: http://127.0.0.1:7125
@@ -25,7 +25,7 @@ EOF
 }
 
 run_root() {
-  if [ "$(id -u)" -eq 0 ] || [ "${KLIPPERAI_NO_SUDO:-0}" = "1" ]; then
+  if [ "$(id -u)" -eq 0 ] || [ "${KAI_NO_SUDO:-0}" = "1" ]; then
     "$@"
     return
   fi
@@ -40,7 +40,7 @@ run_root() {
 }
 
 die() {
-  printf '[KlipperAI OE auto-reapply] error: %s\n' "$*" >&2
+  printf '[KAI OE auto-reapply] error: %s\n' "$*" >&2
   exit 1
 }
 
@@ -56,19 +56,19 @@ ensure_no_spaces() {
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 INSTALL_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../.." && pwd)
 OE_ROOT="/usr/data/octoeverywhere"
-KLIPPERAI_PREFIX="/klipperai"
-KLIPPERAI_PORT="8811"
+KAI_PREFIX="/kai"
+KAI_PORT="8811"
 NAV_TARGET="_blank"
 OE_SERVICE="octoeverywhere"
 MOONRAKER_URL="http://127.0.0.1:7125"
 OE_UPDATE_MANAGER="octoeverywhere"
 CHECK_INTERVAL="5min"
-RUNNER_PATH="${KLIPPERAI_OE_RUNNER_PATH:-/usr/local/bin/klipperai-octoeverywhere-reapply}"
-SYSTEMD_DIR="${KLIPPERAI_SYSTEMD_DIR:-/etc/systemd/system}"
-STATE_DIR="${KLIPPERAI_STATE_DIR:-/etc/klipperai}"
-REAPPLY_SERVICE_NAME="klipperai-octoeverywhere-reapply.service"
-REAPPLY_TIMER_NAME="klipperai-octoeverywhere-reapply.timer"
-REAPPLY_PATH_NAME="klipperai-octoeverywhere-reapply.path"
+RUNNER_PATH="${KAI_OE_RUNNER_PATH:-/usr/local/bin/kai-octoeverywhere-reapply}"
+SYSTEMD_DIR="${KAI_SYSTEMD_DIR:-/etc/systemd/system}"
+STATE_DIR="${KAI_STATE_DIR:-/etc/kai}"
+REAPPLY_SERVICE_NAME="kai-octoeverywhere-reapply.service"
+REAPPLY_TIMER_NAME="kai-octoeverywhere-reapply.timer"
+REAPPLY_PATH_NAME="kai-octoeverywhere-reapply.path"
 
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -80,12 +80,12 @@ while [ $# -gt 0 ]; do
       OE_ROOT="$2"
       shift 2
       ;;
-    --klipperai-prefix)
-      KLIPPERAI_PREFIX="$2"
+    --kai-prefix)
+      KAI_PREFIX="$2"
       shift 2
       ;;
-    --klipperai-port)
-      KLIPPERAI_PORT="$2"
+    --kai-port)
+      KAI_PORT="$2"
       shift 2
       ;;
     --nav-target)
@@ -120,24 +120,24 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-case "$KLIPPERAI_PREFIX" in
+case "$KAI_PREFIX" in
   "")
-    KLIPPERAI_PREFIX="/klipperai"
+    KAI_PREFIX="/kai"
     ;;
   /*)
     ;;
   *)
-    KLIPPERAI_PREFIX="/$KLIPPERAI_PREFIX"
+    KAI_PREFIX="/$KAI_PREFIX"
     ;;
 esac
 
-if [ "$KLIPPERAI_PREFIX" != "/" ]; then
-  KLIPPERAI_PREFIX="${KLIPPERAI_PREFIX%/}"
+if [ "$KAI_PREFIX" != "/" ]; then
+  KAI_PREFIX="${KAI_PREFIX%/}"
 fi
 
-case "$KLIPPERAI_PORT" in
+case "$KAI_PORT" in
   ''|*[!0-9]*)
-    die "Invalid --klipperai-port value: $KLIPPERAI_PORT"
+    die "Invalid --kai-port value: $KAI_PORT"
     ;;
 esac
 
@@ -154,25 +154,25 @@ ensure_no_spaces "runner path" "$RUNNER_PATH"
 ensure_no_spaces "systemd directory" "$SYSTEMD_DIR"
 ensure_no_spaces "--install-dir" "$INSTALL_DIR"
 ensure_no_spaces "--oe-root" "$OE_ROOT"
-ensure_no_spaces "--klipperai-prefix" "$KLIPPERAI_PREFIX"
+ensure_no_spaces "--kai-prefix" "$KAI_PREFIX"
 ensure_no_spaces "--service" "$OE_SERVICE"
 ensure_no_spaces "--moonraker-url" "$MOONRAKER_URL"
 ensure_no_spaces "--update-manager" "$OE_UPDATE_MANAGER"
 ensure_no_spaces "--interval" "$CHECK_INTERVAL"
 
-[ -f "$INSTALL_DIR/integrations/octoeverywhere/apply-local-klipperai-route-patch.sh" ] || \
+[ -f "$INSTALL_DIR/integrations/octoeverywhere/apply-local-kai-route-patch.sh" ] || \
   die "Patch helper not found under $INSTALL_DIR"
 [ -d "$OE_ROOT" ] || die "OctoEverywhere checkout not found: $OE_ROOT"
 command -v systemctl >/dev/null 2>&1 || die "systemctl is required."
 sh "$INSTALL_DIR/integrations/octoeverywhere/run-maintenance.sh" --validate \
-  --klipperai-prefix "$KLIPPERAI_PREFIX" --klipperai-port "$KLIPPERAI_PORT" \
+  --kai-prefix "$KAI_PREFIX" --kai-port "$KAI_PORT" \
   --nav-target "$NAV_TARGET" --service "$OE_SERVICE" --moonraker-url "$MOONRAKER_URL"
 
 LEGACY_BACKUP_DIR="$STATE_DIR/octoeverywhere-backups/legacy"
 LEGACY_BACKUP_COUNT=0
 for legacy_backup in \
-  "$OE_ROOT"/moonraker_octoeverywhere/moonrakerapirouter.py.klippyai-backup-* \
-  "$OE_ROOT"/moonraker_octoeverywhere/static/oe-ui.js.klippyai-backup-*
+  "$OE_ROOT"/moonraker_octoeverywhere/moonrakerapirouter.py.kai-backup-* \
+  "$OE_ROOT"/moonraker_octoeverywhere/static/oe-ui.js.kai-backup-*
 do
   [ -f "$legacy_backup" ] || continue
   run_root install -d -m 755 "$LEGACY_BACKUP_DIR"
@@ -180,7 +180,7 @@ do
   LEGACY_BACKUP_COUNT=$((LEGACY_BACKUP_COUNT + 1))
 done
 if [ "$LEGACY_BACKUP_COUNT" -gt 0 ]; then
-  printf '[KlipperAI OE auto-reapply] Moved %s legacy backup file(s) out of the OctoEverywhere checkout.\n' "$LEGACY_BACKUP_COUNT"
+  printf '[KAI OE auto-reapply] Moved %s legacy backup file(s) out of the OctoEverywhere checkout.\n' "$LEGACY_BACKUP_COUNT"
 fi
 
 OE_SERVICE_UNIT="$OE_SERVICE"
@@ -208,13 +208,13 @@ set -eu
 
 INSTALL_DIR="$INSTALL_DIR"
 OE_ROOT="$OE_ROOT"
-KLIPPERAI_PREFIX="$KLIPPERAI_PREFIX"
-KLIPPERAI_PORT="$KLIPPERAI_PORT"
+KAI_PREFIX="$KAI_PREFIX"
+KAI_PORT="$KAI_PORT"
 NAV_TARGET="$NAV_TARGET"
 OE_SERVICE="$OE_SERVICE"
 MOONRAKER_URL="$MOONRAKER_URL"
 OE_UPDATE_MANAGER="$OE_UPDATE_MANAGER"
-export KLIPPERAI_STATE_DIR="$STATE_DIR"
+export KAI_STATE_DIR="$STATE_DIR"
 SUSPEND_FILE="$STATE_DIR/octoeverywhere-reapply.suspended"
 
 . "\$INSTALL_DIR/integrations/octoeverywhere/reapply.sh"
@@ -222,7 +222,7 @@ EOF
 
 cat >"$SERVICE_TMP" <<EOF
 [Unit]
-Description=Maintain the configured KlipperAI OctoEverywhere patch
+Description=Maintain the configured KAI OctoEverywhere patch
 After=network-online.target $OE_SERVICE_UNIT
 Wants=network-online.target
 StartLimitIntervalSec=60
@@ -236,7 +236,7 @@ EOF
 
 cat >"$TIMER_TMP" <<EOF
 [Unit]
-Description=Check KlipperAI OctoEverywhere patch contents and pending recovery
+Description=Check KAI OctoEverywhere patch contents and pending recovery
 
 [Timer]
 OnBootSec=30s
@@ -249,7 +249,7 @@ EOF
 
 cat >"$PATH_TMP" <<EOF
 [Unit]
-Description=Watch OctoEverywhere files for KlipperAI patch replacement
+Description=Watch OctoEverywhere files for KAI patch replacement
 
 [Path]
 PathChanged=$OE_ROOT/moonraker_octoeverywhere/moonrakerapirouter.py
@@ -274,11 +274,11 @@ run_root systemctl enable --now "$REAPPLY_PATH_NAME"
 run_root systemctl restart "$REAPPLY_TIMER_NAME" "$REAPPLY_PATH_NAME"
 # Install future retries before the first query: Moonraker may still be starting.
 if ! run_root "$RUNNER_PATH"; then
-  printf '[KlipperAI OE auto-reapply] Initial check failed; path/timer retries remain enabled.\n' >&2
+  printf '[KAI OE auto-reapply] Initial check failed; path/timer retries remain enabled.\n' >&2
 fi
 
-printf '[KlipperAI OE auto-reapply] Installed %s\n' "$RUNNER_PATH"
-printf '[KlipperAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_SERVICE_NAME"
-printf '[KlipperAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_TIMER_NAME"
-printf '[KlipperAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_PATH_NAME"
-printf '[KlipperAI OE auto-reapply] Timer interval: %s\n' "$CHECK_INTERVAL"
+printf '[KAI OE auto-reapply] Installed %s\n' "$RUNNER_PATH"
+printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_SERVICE_NAME"
+printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_TIMER_NAME"
+printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_PATH_NAME"
+printf '[KAI OE auto-reapply] Timer interval: %s\n' "$CHECK_INTERVAL"

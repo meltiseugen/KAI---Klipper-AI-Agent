@@ -4,11 +4,11 @@ from pathlib import Path
 
 import pytest
 
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.profile.collector import PrinterProfileCollector
-from klipperai_agent.profile.persistence import write_profile_to_cfg
-from klipperai_agent.profile.saved import build_profile_from_settings
-from klipperai_agent.runtime.settings import Settings
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.profile.collector import PrinterProfileCollector
+from kai_agent.profile.persistence import write_profile_to_cfg
+from kai_agent.profile.saved import build_profile_from_settings
+from kai_agent.runtime.settings import Settings
 
 
 class _FakeMoonraker:
@@ -99,7 +99,7 @@ async def test_profile_collector_detects_firmware_addons_and_board_hints(tmp_pat
 
     (config_dir / "printer.cfg").write_text(
         "[include extras/stealthburner_ebb36.cfg]\n"
-        "[include klipperai/*.cfg]\n\n"
+        "[include kai/*.cfg]\n\n"
         "[printer]\n"
         "kinematics: corexy\n\n"
         "[stepper_x]\n"
@@ -179,11 +179,11 @@ async def test_profile_collector_applies_mainboard_and_toolhead_overrides(tmp_pa
     assert profile.mainboard == "LDO Leviathan"
     assert profile.toolhead == "Dragon Burner"
     assert any(
-        item.source == "klipperai.cfg" and "Mainboard declared" in item.summary
+        item.source == "kai.cfg" and "Mainboard declared" in item.summary
         for item in profile.evidence
     )
     assert any(
-        item.source == "klipperai.cfg" and "Toolhead declared" in item.summary
+        item.source == "kai.cfg" and "Toolhead declared" in item.summary
         for item in profile.evidence
     )
 
@@ -222,7 +222,7 @@ def test_build_profile_from_settings_uses_persisted_identity() -> None:
 
 @pytest.mark.asyncio
 async def test_write_profile_to_cfg_persists_detected_identity(tmp_path: Path) -> None:
-    config_file = tmp_path / "klipperai.cfg"
+    config_file = tmp_path / "kai.cfg"
     config_file.write_text(
         "# Firmware comment should be preserved\n"
         "[printer_identity]\n"

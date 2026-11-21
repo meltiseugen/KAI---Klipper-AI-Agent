@@ -5,20 +5,20 @@ from types import SimpleNamespace
 
 import pytest
 
-import klipperai_agent.profile.persistence as profile_persistence
-from klipperai_agent.config.collector import ConfigCollector
-from klipperai_agent.config.models import ConfigDocument, ConfigSnapshot
-from klipperai_agent.infrastructure.moonraker import MoonrakerError
-from klipperai_agent.profile.collector import PrinterProfileCollector
-from klipperai_agent.profile.models import (
+import kai_agent.profile.persistence as profile_persistence
+from kai_agent.config.collector import ConfigCollector
+from kai_agent.config.models import ConfigDocument, ConfigSnapshot
+from kai_agent.infrastructure.moonraker import MoonrakerError
+from kai_agent.profile.collector import PrinterProfileCollector
+from kai_agent.profile.models import (
     DetectedAddon,
     PrinterProfile,
     ProfileEvidence,
     _as_bool,
 )
-from klipperai_agent.profile.persistence import write_profile_to_cfg
-from klipperai_agent.profile.saved import _split_addon_names
-from klipperai_agent.profile.values import _first_non_empty
+from kai_agent.profile.persistence import write_profile_to_cfg
+from kai_agent.profile.saved import _split_addon_names
+from kai_agent.profile.values import _first_non_empty
 
 
 def _collector(tmp_path: Path) -> PrinterProfileCollector:
@@ -114,7 +114,7 @@ def test_profile_rendering_state_roundtrip_and_summaries() -> None:
 
 
 def test_write_profile_overwrite_split_and_bool_helpers(tmp_path: Path) -> None:
-    cfg = tmp_path / "klippyai.cfg"
+    cfg = tmp_path / "kai.cfg"
     cfg.write_text("[printer_identity]\nfirmware_flavor = Old\n", encoding="utf-8")
     write_profile_to_cfg(cfg, PrinterProfile(firmware_flavor="New"), overwrite=True)
     assert "firmware_flavor = New" in cfg.read_text(encoding="utf-8")
@@ -168,17 +168,17 @@ def test_git_remote_detection_success_empty_and_error(monkeypatch, tmp_path: Pat
     repo = tmp_path / "repo"
     repo.mkdir()
     monkeypatch.setattr(
-        "klipperai_agent.profile.host.subprocess.run",
+        "kai_agent.profile.host.subprocess.run",
         lambda *args, **kwargs: SimpleNamespace(stdout="https://example.com/repo.git\n"),
     )
     assert collector.host.detect_git_remote(str(repo)) == "https://example.com/repo.git"
     monkeypatch.setattr(
-        "klipperai_agent.profile.host.subprocess.run",
+        "kai_agent.profile.host.subprocess.run",
         lambda *args, **kwargs: SimpleNamespace(stdout=""),
     )
     assert collector.host.detect_git_remote(str(repo)) is None
     monkeypatch.setattr(
-        "klipperai_agent.profile.host.subprocess.run",
+        "kai_agent.profile.host.subprocess.run",
         lambda *args, **kwargs: (_ for _ in ()).throw(OSError("git missing")),
     )
     assert collector.host.detect_git_remote(str(repo)) is None

@@ -8,17 +8,15 @@ import zipfile
 import pytest
 
 from deployment.artifacts import inspect_wheel
-from klipperai_agent.domain.version import __version__
+from kai_agent.domain.version import __version__
 from tools import release_artifacts
 
 
 def wheel_file(directory, *, extra=None, version=__version__):
-    path = directory / f"klipperai-{version}-py3-none-any.whl"
+    path = directory / f"kai-{version}-py3-none-any.whl"
     with zipfile.ZipFile(path, "w") as archive:
-        archive.writestr("klipperai_agent/__init__.py", "")
-        archive.writestr(
-            f"klipperai-{version}.dist-info/METADATA", f"Name: klipperai\nVersion: {version}\n"
-        )
+        archive.writestr("kai_agent/__init__.py", "")
+        archive.writestr(f"kai-{version}.dist-info/METADATA", f"Name: kai\nVersion: {version}\n")
         if extra:
             member, content = extra
             if isinstance(member, str):
@@ -30,7 +28,7 @@ def wheel_file(directory, *, extra=None, version=__version__):
 
 
 def source_file(directory, *, extra=None, version=__version__, omit=None):
-    path = directory / f"klipperai-{version}.tar.gz"
+    path = directory / f"kai-{version}.tar.gz"
     names = [
         "install.sh",
         "uninstall.sh",
@@ -39,19 +37,15 @@ def source_file(directory, *, extra=None, version=__version__, omit=None):
         "tools/deploy.py",
         "CHANGELOG.md",
         "docs/RELEASING.md",
-        "klipperai_agent/web/templates/embed.html",
+        "kai_agent/web/templates/embed.html",
         "PKG-INFO",
     ]
     with tarfile.open(path, "w:gz") as archive:
         for name in names:
             if name == omit:
                 continue
-            body = (
-                f"Name: klipperai\nVersion: {version}\n".encode()
-                if name == "PKG-INFO"
-                else b"example"
-            )
-            info = tarfile.TarInfo(f"klipperai-{version}/" + name)
+            body = f"Name: kai\nVersion: {version}\n".encode() if name == "PKG-INFO" else b"example"
+            info = tarfile.TarInfo(f"kai-{version}/" + name)
             info.size = len(body)
             archive.addfile(info, io.BytesIO(body))
         if extra:
@@ -65,11 +59,11 @@ def source_file(directory, *, extra=None, version=__version__, omit=None):
     [
         "../outside",
         "/outside",
-        "klipperai_agent/../../outside",
-        "klipperai_agent\\bad.py",
+        "kai_agent/../../outside",
+        "kai_agent\\bad.py",
         "outside.py",
-        "klipperai_agent/.env",
-        "klipperai_agent/history.sqlite3",
+        "kai_agent/.env",
+        "kai_agent/history.sqlite3",
     ],
 )
 def test_wheel_rejects_paths_and_private_runtime_files(tmp_path, name):
@@ -83,7 +77,7 @@ def test_wheel_checks_identity_hash_and_links(tmp_path):
     assert inspect_wheel(wheel, checksum)["build"] == checksum[:16]
     with pytest.raises(ValueError, match="checksum"):
         inspect_wheel(wheel, "a" * 64)
-    link = zipfile.ZipInfo("klipperai_agent/link.py")
+    link = zipfile.ZipInfo("kai_agent/link.py")
     link.external_attr = 0o120777 << 16
     wheel, checksum = wheel_file(tmp_path, extra=(link, "elsewhere"))
     with pytest.raises(ValueError, match="symlink"):

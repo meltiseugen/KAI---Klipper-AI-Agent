@@ -65,7 +65,7 @@ def test_native_start_and_stop_use_authenticated_process_identity(config, monkey
     service.start()  # Idempotent while the same process is alive.
     assert len(starts) == 1
     assert starts[0][0][1:3] == ["-m", "deployment.appliance_runtime"]
-    assert starts[0][1]["env"]["KLIPPERAI_NATIVE_INSTANCE"] == config.instance
+    assert starts[0][1]["env"]["KAI_NATIVE_INSTANCE"] == config.instance
     assert "CREDENTIALS_DIRECTORY" not in starts[0][1]["env"]
 
     def kill(pid, sig):
@@ -76,7 +76,7 @@ def test_native_start_and_stop_use_authenticated_process_identity(config, monkey
     service.stop()
     assert signals == [(123, signal.SIGTERM)]
     assert not service.pidfile.exists()
-    assert not (config.runtime / "klipperai-provider-master").exists()
+    assert not (config.runtime / "kai-provider-master").exists()
 
 
 def test_native_release_activation_and_failed_build_restore_previous_code(config, monkeypatch):
@@ -114,7 +114,7 @@ def test_native_install_reuses_master_and_only_writes_own_init_script(
     config, tmp_path, monkeypatch
 ):
     monkeypatch.setattr(appliance_credentials, "ram_backed", lambda _: True)
-    init = tmp_path / "S99klipperai"
+    init = tmp_path / "S99kai"
     monkeypatch.setattr(appliance_install, "INIT_SCRIPT", init)
     args = argparse.Namespace(
         install_dir=config.install,
@@ -135,15 +135,15 @@ def test_native_install_reuses_master_and_only_writes_own_init_script(
     assert "example-provider-key" not in init.read_text()
     assert "deployment.appliance_service" in init.read_text()
     assert "systemctl" not in init.read_text() and "klipper.service" not in init.read_text()
-    from klipperai_agent.infrastructure.credential_cipher import CredentialCipher
-    from klipperai_agent.infrastructure.provider_store import ProviderStore
+    from kai_agent.infrastructure.credential_cipher import CredentialCipher
+    from kai_agent.infrastructure.provider_store import ProviderStore
 
     db = ProviderStore(
         args.storage_dir, (config.install, args.printer_data_root), cipher=CredentialCipher(master)
     )
     assert db.load()[2] == "example-provider-key"
     assert b"example-provider-key" not in db.path.read_bytes()
-    assert not (config.runtime / "klipperai-provider-master").exists()
+    assert not (config.runtime / "kai-provider-master").exists()
     assert appliance_install.provision(args, b"") == config
     init.write_text("operator override")
     with pytest.raises(ValueError, match="differs"):
@@ -152,7 +152,7 @@ def test_native_install_reuses_master_and_only_writes_own_init_script(
 
 
 def test_native_uninstall_preserves_or_purges_exact_credentials(config, tmp_path, monkeypatch):
-    init = tmp_path / "S99klipperai"
+    init = tmp_path / "S99kai"
     init.write_text(appliance_install.init_script(config.install))
     unrelated = tmp_path / "S55klipper_service"
     unrelated.write_text("preserve")
@@ -169,7 +169,7 @@ def test_first_native_install_provisions_reusable_ciphertext_and_boot_entry(tmp_
     install = installation(tmp_path)
     monkeypatch.setattr(appliance_credentials, "ram_backed", lambda _: True)
     monkeypatch.setattr(appliance_install, "ram_backed", lambda _: True)
-    init = tmp_path / "S99klipperai"
+    init = tmp_path / "S99kai"
     monkeypatch.setattr(appliance_install, "INIT_SCRIPT", init)
     args = argparse.Namespace(
         install_dir=install,

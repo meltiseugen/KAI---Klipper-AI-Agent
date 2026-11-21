@@ -1,4 +1,4 @@
-"""Remove only the native KlipperAI service and explicitly selected host credentials."""
+"""Remove only the native KAI service and explicitly selected host credentials."""
 
 from __future__ import annotations
 
