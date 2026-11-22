@@ -51,7 +51,11 @@ commands, changes settings, disables protections or restarts anything.
 Findings contain `citations`; model-generated public conclusions become
 `answer_claims` after reference validation. A model reference contains only an
 `evidence_id` and inclusive `start_line` / `end_line` range. Both lines set to zero
-select source citations already attached by a trusted collector/tool. The model
+select source citations already attached by a trusted collector/tool, or reference
+a retained structured JSON observation from a tool, Moonraker or saved profile.
+Structured observations retain their source, collection time and evidence ID
+without inventing file lines. Saved profile provenance still means saved identity,
+not a physical hardware verification. The model
 cannot provide a trusted path, quote, timestamp or revision.
 
 The resolver checks retained evidence, availability, line basis, text format and
@@ -69,6 +73,16 @@ deduplicates sources. Older saved turns remain readable through additive default
 Citation validation establishes traceability to retained text. It does not prove
 that the text is true or that a model's interpretation or causal claim is correct.
 Collection time dates the observation, not every event in a historical log.
+Structured tool results with an attached real source excerpt also accept ranges
+within that one excerpt. The resolver uses its original file/excerpt offsets,
+never lines of serialized JSON. Ambiguous or out-of-range references are rejected.
+Component-knowledge tool output separates identified components from identity
+gaps, so empty setup slots cannot masquerade as an installed-component list.
+Rejected final answers receive the specific citation error (or a safe schema
+error) on the bounded repair turn; raw provider reasoning is not logged or stored.
+Repair feedback also lists eligible evidence IDs. Recalled evidence shown in the
+request is eligible for citation, with a Historical label and its original
+collection date. It remains historical and is not copied into fresh evidence.
 
 ## Validation and references
 

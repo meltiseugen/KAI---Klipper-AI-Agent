@@ -47,13 +47,37 @@ the conversation on small screens. Model text is rendered as text nodes, never i
 The transport owns all session retry logic; renderers do not fetch data.
 
 Provider settings separate Connection, Models and Usage limits into expandable
-sections. Printer knowledge groups setup, references, connection checks, connector
-observations and diagrams the same way. Component and model details open individually;
+sections. Printer knowledge groups setup, references, source reviews and diagrams
+the same way. Component and model details open individually;
 knowledge refreshes preserve expanded sections. Dialog titles and save actions stay
 visible while their content scrolls.
 
 The sidebar starts with lightweight investigation summaries. Full saved answers
 load when a chat is opened; cached messages and drafts survive failed fetches.
+Answer receipts (model usage, conclusions, evidence, investigation activity,
+historical sources and starting context) sit inside one collapsed **Worked**
+dropdown before **Next actions**. They describe the answer's investigation, not
+work performed for the suggested actions. Each **Add to chat** button appends the
+exact suggested action to the editable draft without sending it; existing text
+is preserved. In `kai.cfg`, `[chat] show_next_actions: true` defaults on. Set it
+to `false` and restart KAI to hide the suggestions for both new and saved answers.
+Stored actions and investigation records are preserved.
+
+The header shows Klipper, Moonraker, events, provider and model directly in a single
+scrollable row of status tags, without a status dropdown or Connection panel.
+Beside the composer's styled **Chat/Debug** picker, the provider
+and clickable model name stay on the same row. The model popover offers the
+printer default, recently selected chat models, 14 general-purpose OpenAI model
+choices and a model-ID input. The scrollable list includes GPT-6.2 Sol/Astra,
+GPT-6.1 Terra/Sol, GPT-6 Luna/Astra/Sol, GPT-5.6 Sol/Terra/Luna, GPT-5.5,
+GPT-5.4/mini and GPT-5.2. Choices come from the
+[OpenAI model catalog](https://developers.openai.com/api/docs/models/all), reviewed
+2026-11-22; the API key must have access to the selected model. A selection
+applies only to future messages in this conversation; **Default** removes the
+override. It is saved with browser conversations and public server turns/pending
+requests, including automatic recovery. No provider-settings save or KAI restart
+is needed. Search and knowledge retain their configured models; token/request
+limits and the existing private credential remain in use.
 History refresh slows to thirty seconds when idle, remains five seconds for pending
 work, and pauses in hidden tabs. See [performance.md](performance.md) for measured
 costs and the separate Linux/ARM acceptance requirements.
@@ -170,7 +194,11 @@ state and process locking (`maintenance_state.py`), and update coordination
 shell entry points select the interpreter and install the systemd watcher/timer.
 Missing or duplicate upstream anchors stop patching before either target changes.
 Busy, missing or invalid Moonraker update state leaves the checkout and suspension
-marker unchanged. Failed restarts and refreshes are retried without rewriting
+marker unchanged. Newly installed hooks keep the route active while OE updates
+are merely available; explicitly prepare the checkout before updating OE.
+The optional `prepare` policy retains automatic preparation when updates become
+available, and existing generated runners keep that behavior until reinstalled.
+Failed restarts and refreshes are retried without rewriting
 current files. The generated runner retains its custom storage directory even
 without `HOME` or environment overrides. See the
 [OE maintenance guide](../integrations/octoeverywhere/README.md) for recovery state,

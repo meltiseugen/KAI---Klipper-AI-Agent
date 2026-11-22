@@ -75,9 +75,17 @@ class OctoEverywhereService:
 
 
 class UpdateCoordinator:
-    def __init__(self, files: PatchFiles, updates: Updates, service: Service):
+    def __init__(
+        self, files: PatchFiles, updates: Updates, service: Service, *, prepare_updates: bool = True
+    ):
         self.files, self.updates, self.service = files, updates, service
         self.state: MaintenanceState = files.state
+        self.prepare_updates = prepare_updates
+
+    def should_restore(self, status: UpdateStatus) -> bool:
+        return status.commits_behind > 0 and (
+            self.prepare_updates or self.state.has("reapply.suspended")
+        )
 
     def finish(self, restore: bool, restart: bool) -> None:
         if restart and self.state.has("restart-pending"):
@@ -92,12 +100,12 @@ class UpdateCoordinator:
         if status.busy or self.files.git_busy():
             print("[KAI OE] Update in progress; checkout unchanged.")
             return
-        restore = status.commits_behind > 0
+        restore = self.should_restore(status)
         plan = self.files.plan(restore)
         # Recheck immediately before writes/restarts; Moonraker does not share our lock.
         if plan.changes or self.state.has("restart-pending") or self.state.has("refresh-pending"):
             latest = self.updates.status()
-            if latest.busy or (latest.commits_behind > 0) != restore or self.files.git_busy():
+            if latest.busy or self.should_restore(latest) != restore or self.files.git_busy():
                 print("[KAI OE] Update state changed; deferring maintenance.")
                 return
         if restore and plan.changes:

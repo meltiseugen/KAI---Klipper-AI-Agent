@@ -29,6 +29,8 @@ assert.ok(ids["klipper-badge"].classList.contains("ok"));
 sources[0].onerror();
 assert.ok(sources[0].closed);
 assert.equal(ids["klipper-badge"].textContent, "Klipper: unknown");
+assert.equal(ids["connection-label"].textContent, "Status reconnecting");
+assert.equal(ids["moonraker-badge"].textContent, "Moonraker: status unknown");
 assert.equal(timers[0].delay, 1000);
 await timers[0].fn();
 assert.deepEqual(sessions, [false, true]);

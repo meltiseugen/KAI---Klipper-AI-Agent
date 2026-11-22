@@ -75,6 +75,7 @@ class PrinterProfileSummary(BaseModel):
 class ChatRequest(BaseModel):
     session_id: str
     mode: AgentMode = "chat"
+    model: str | None = Field(default=None, regex=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$")
     thread_id: str | None = Field(default=None, min_length=1, max_length=128)
     message: str = Field(min_length=1, max_length=40000)
     artifacts: list[ArtifactInput] = Field(default_factory=list, max_items=8)
@@ -130,6 +131,7 @@ class BootstrapResponse(BaseModel):
     provider_model: str | None = None
     provider_configured: bool = True
     conversation_history_pairs: int = 10
+    show_next_actions: bool = True
     moonraker_reachable: bool
     klipper_reachable: bool
     expires_at: datetime

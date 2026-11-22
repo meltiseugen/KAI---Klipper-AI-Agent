@@ -50,6 +50,7 @@ class Settings(BaseSettings):
     security_allowed_origins: str = ""
     security_allowed_hosts: str = "*"
     conversation_history_pairs: int = Field(default=10, ge=0, le=50)
+    show_next_actions: bool = True
     memory_cross_chat: bool = True
     memory_retention_days: int = Field(default=90, ge=1, le=3650)
     collect_host_logs: bool = True

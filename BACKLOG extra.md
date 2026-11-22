@@ -20,5 +20,3 @@
 - [ ] Record actual KE firmware acceptance: dependency installation, boot/reboot, automatic evidence reads, provider setup, UI routing, deployment and rollback.
 
 interupptions and asking the user
-
-- we need a model selector

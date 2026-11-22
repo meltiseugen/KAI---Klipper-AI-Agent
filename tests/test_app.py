@@ -99,6 +99,20 @@ def test_create_app_serves_ui_api_and_lifespan(monkeypatch, tmp_path) -> None:
     assert container.closed is True
 
 
+@pytest.mark.parametrize("enabled", [True, False])
+def test_bootstrap_exposes_the_next_actions_display_flag(monkeypatch, tmp_path, enabled):
+    settings = Settings(data_dir=tmp_path, show_next_actions=enabled)
+    monkeypatch.setattr(app_module, "get_settings", lambda: settings)
+    monkeypatch.setattr(app_module, "build_container", lambda _: _FakeContainer())
+    with TestClient(app_module.create_app()) as client:
+        assert (
+            client.get("/api/bootstrap", params={"session_id": "session-1"}).json()[
+                "show_next_actions"
+            ]
+            is enabled
+        )
+
+
 def test_container_lookup() -> None:
     request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace()))
     with pytest.raises(RuntimeError, match="not initialized"):

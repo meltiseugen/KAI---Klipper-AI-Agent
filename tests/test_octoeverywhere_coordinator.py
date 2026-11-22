@@ -75,6 +75,37 @@ def test_git_lock_and_upstream_conflict_never_clear_suspension(coordinator):
     assert coordinator.state.has("reapply.suspended")
 
 
+def test_keep_active_repairs_with_available_updates_and_respects_manual_suspension(coordinator):
+    coordinator.prepare_updates = False
+    status = type(coordinator.updates.status.return_value)
+    coordinator.updates.status.return_value = status(False, 70)
+    coordinator.reconcile()
+    assert coordinator.files.plan().status == "current"
+    coordinator.updates.refresh.assert_not_called()
+    patched = [path.read_bytes() for path in coordinator.files.paths]
+    coordinator.reconcile()
+    assert [path.read_bytes() for path in coordinator.files.paths] == patched
+    assert coordinator.service.restart.call_count == 1
+
+    # An upstream replacement is repaired even while more updates are available.
+    coordinator.files.commit(coordinator.files.plan(restore=True))
+    coordinator.reconcile()
+    assert [path.read_bytes() for path in coordinator.files.paths] == patched
+    assert coordinator.service.restart.call_count == 2
+
+    # Explicit operator preparation stays suspended until the update completes.
+    coordinator.files.commit(coordinator.files.plan(restore=True))
+    coordinator.state.mark("reapply.suspended")
+    clean = [path.read_bytes() for path in coordinator.files.paths]
+    coordinator.reconcile()
+    assert [path.read_bytes() for path in coordinator.files.paths] == clean
+    assert coordinator.state.has("reapply.suspended")
+    coordinator.updates.status.return_value = status(False)
+    coordinator.reconcile()
+    assert [path.read_bytes() for path in coordinator.files.paths] == patched
+    assert not coordinator.state.has("reapply.suspended")
+
+
 def test_update_api_and_bounded_service_command(oe_maintenance, monkeypatch):
     module = oe_maintenance.updates
     calls = []

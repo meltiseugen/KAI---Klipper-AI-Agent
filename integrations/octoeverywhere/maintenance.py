@@ -27,6 +27,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--restart-service", action="store_true")
     parser.add_argument("--moonraker-url", default="http://127.0.0.1:7125")
     parser.add_argument("--update-manager", default="octoeverywhere")
+    parser.add_argument("--update-policy", choices=("prepare", "keep-active"), default="prepare")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--restore-original", "--restore", action="store_true")
     mode.add_argument("--reconcile", action="store_true")
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
             files,
             MoonrakerUpdates(args.moonraker_url, args.update_manager),
             OctoEverywhereService(args.service),
+            prepare_updates=args.update_policy == "prepare",
         )
         if args.check:
             plan = files.plan()

@@ -1,6 +1,10 @@
 // Conversation value normalization; no DOM or storage access.
 function normalizeAgentMode(value) { return value === "debug" ? "debug" : "chat"; }
 
+function normalizeChatModel(value) {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(value) ? value : null;
+}
+
 function isWelcomeEntry(entry, introMessage) {
   if (entry.role !== "assistant" || entry.error || entry.followUpAvailable) return false;
   return entry.intro || entry.text === introMessage

@@ -7,6 +7,8 @@ import json
 import logging
 from dataclasses import dataclass, field
 
+from pydantic import ValidationError
+
 from kai_agent.agent.claim_citations import resolve_claims
 from kai_agent.agent.deadline import within
 from kai_agent.agent.models import (
@@ -128,6 +130,19 @@ class AgentRunner:
         self, request: InvestigationRequest, run: AgentRun, registry: ToolRegistry, emit: EventSink
     ) -> None:
         payload = await prepare_context(request, run.context, registry, self._limits, emit)
+        historical = [
+            item.copy(
+                update={
+                    "freshness": "historical",
+                    "label": f"Historical: {item.label}",
+                    "citations": [
+                        citation.copy(update={"label": f"Historical: {citation.label}"})
+                        for citation in item.citations
+                    ],
+                }
+            )
+            for item in request.memory
+        ]
         if request.artifacts and not run.context.findings:
             observations: list[CollectedArtifact] = list(run.context.evidence)
             run.context.findings = link_findings(
@@ -180,18 +195,36 @@ class AgentRunner:
             if not turn.calls:
                 try:
                     parsed = response_model(run.workflow).parse_raw(turn.text)
-                    claims = resolve_claims(parsed.claims, run.context.evidence)
+                    claims = resolve_claims(parsed.claims, [*historical, *run.context.evidence])
                     run.answer = AgentAnswer.parse_obj(parsed.model_dump())
                     run.claims = claims
                     run.missing_evidence = parsed.missing_evidence
                     run.hypotheses = getattr(parsed, "hypotheses", [])
                     return
-                except ValueError:
+                except ValueError as exc:
                     # Allow a bounded repair without treating malformed output as a successful answer.
+                    reason = (
+                        "Final JSON does not match the selected workflow schema."
+                        if isinstance(exc, ValidationError)
+                        else str(exc)
+                    )
+                    logger.info("Agent final answer rejected: %s", reason)
+                    available = [
+                        {
+                            "evidence_id": item.id,
+                            "label": item.label,
+                            "content_format": item.content_format,
+                            "line_basis": item.line_basis,
+                        }
+                        for item in [*run.context.evidence, *historical]
+                        if item.status != "unavailable"
+                    ]
                     conversation.append(
                         {
                             "role": "user",
-                            "content": "Return the final answer as the selected workflow's JSON schema with a nonempty response. Use only available evidence IDs and retained line ranges for claims; read missing sources or state the gap. Do not include proposals outside the config_draft workflow or invent review results.",
+                            "content": reason
+                            + " Return the final answer as the selected workflow's JSON schema with a nonempty response. Use only available evidence IDs and retained line ranges for claims; use zero lines for structured tool/profile/status observations. Read missing sources or state the gap. Do not include proposals outside the config_draft workflow or invent review results. Available citation sources: "
+                            + json.dumps(available),
                         }
                     )
                     continue

@@ -160,3 +160,5 @@ async def test_agent_repairs_bad_claim_reference_and_keeps_workflow_and_gaps(too
     assert result["missing_evidence"] == valid["missing_evidence"]
     assert len(model.conversations) == 2
     assert "available evidence IDs" in model.conversations[1][-1]["content"]
+    assert "Unknown or unavailable evidence reference" in model.conversations[1][-1]["content"]
+    assert "Available citation sources:" in model.conversations[1][-1]["content"]

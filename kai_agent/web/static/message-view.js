@@ -165,10 +165,16 @@ class MessageView {
     }
 
     if (entry.role === "assistant") {
-      ModelUsageView.append(article, entry.modelUsage);
       const findings = normalizeFindings(entry.findings);
       appendFindingCards(article, findings, this.followUp);
-      appendAnswerDetails(article, entry);
+      const worked = document.createElement("details");
+      worked.className = "worked-details";
+      worked.setAttribute("aria-label", "Worked");
+      const workedSummary = document.createElement("summary");
+      workedSummary.textContent = "Worked";
+      worked.appendChild(workedSummary);
+      ModelUsageView.append(worked, entry.modelUsage);
+      appendAnswerDetails(worked, entry);
       const claimCitations = (entry.answerClaims || []).flatMap(item => item.citations || []);
       if (findings.some(item => item.evidence) || entry.sourceCitations?.length || claimCitations.length) {
         const evidence = resultCard("Evidence", "evidence-card");
@@ -180,18 +186,21 @@ class MessageView {
           if (seen.has(key)) return false;
           seen.add(key); return true;
         }));
-        article.appendChild(evidence);
+        worked.appendChild(evidence);
       }
-      AgentActivity.appendActions(article, [...new Set([...(entry.nextActions || []), ...findings.map(item => item.proposed_fix).filter(Boolean)])], this.followUp);
       if (entry.agentStatus === "limited" || entry.agentStatus === "error") {
         const status = document.createElement("p");
         status.className = "result-status";
         status.textContent = entry.agentStatus === "limited" ? "Partial result · Some investigation steps could not be completed." : "Investigation error · Review the available evidence before continuing.";
         article.appendChild(status);
       }
-      AgentActivity.append(article, entry.agentEvents);
-      InvestigationEvidence.append(article, entry.memorySources);
-      ContextReceipt.append(article, entry.contextIncluded, entry.mode);
+      AgentActivity.append(worked, entry.agentEvents);
+      InvestigationEvidence.append(worked, entry.memorySources);
+      ContextReceipt.append(worked, entry.contextIncluded, entry.mode);
+      if (worked.children.length > 1) article.appendChild(worked);
+      if (this.showNextActions !== false) {
+        AgentActivity.appendActions(article, [...new Set([...(entry.nextActions || []), ...findings.map(item => item.proposed_fix).filter(Boolean)])], this.followUp);
+      }
     }
 
     if (entry.role === "user" && entry.attachments?.length) {

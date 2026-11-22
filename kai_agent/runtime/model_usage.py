@@ -13,6 +13,7 @@ from kai_agent.domain.model_usage import ModelUsage
 class UsageScope:
     receipt: ModelUsage
     on_event: Callable[[AgentEvent], Awaitable[None]] | None
+    chat_model: str | None
 
 
 _scope: ContextVar[UsageScope | None] = ContextVar("model_usage", default=None)
@@ -21,13 +22,21 @@ _scope: ContextVar[UsageScope | None] = ContextVar("model_usage", default=None)
 @contextmanager
 def track_model_usage(
     on_event: Callable[[AgentEvent], Awaitable[None]] | None = None,
+    *,
+    chat_model: str | None = None,
 ) -> Iterator[ModelUsage]:
     receipt = ModelUsage(status="not_used")
-    token = _scope.set(UsageScope(receipt, on_event))
+    token = _scope.set(UsageScope(receipt, on_event, chat_model))
     try:
         yield receipt
     finally:
         _scope.reset(token)
+
+
+def selected_chat_model(default: str) -> str:
+    """Resolve this request's override without changing shared provider policy."""
+    scope = _scope.get()
+    return scope.chat_model if scope and scope.chat_model else default
 
 
 @asynccontextmanager

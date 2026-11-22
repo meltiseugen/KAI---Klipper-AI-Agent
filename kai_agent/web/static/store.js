@@ -52,6 +52,7 @@ class ConversationStore {
       loaded: seed.loaded !== false,
       draft: typeof seed.draft === "string" ? seed.draft : "",
       mode: normalizeAgentMode(seed.mode),
+      model: normalizeChatModel(seed.model),
       updatedAt: normalizeTimestamp(seed.updatedAt),
       messages: normalizedMessages,
     };

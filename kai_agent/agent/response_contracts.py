@@ -155,6 +155,11 @@ def workflow_prompt(workflow: WorkflowKind) -> str:
         "Return only this workflow's JSON response schema. claims contains concise public conclusions, "
         "never hidden reasoning. Cite printer-specific claims using collected evidence_refs: evidence_id "
         "and inclusive start_line/end_line within that artifact's line_basis. Use both lines=0 only "
-        "to reference source citations already attached to an artifact. Never invent IDs, paths, "
-        "quotes or ranges. Leave claims empty for generic explanations. State missing evidence explicitly."
+        "to reference source citations already attached to an artifact, or a structured JSON "
+        "observation from a tool, Moonraker or saved profile (without inventing file lines). "
+        "A structured read_config_file result carries file lines in source; zero-line references "
+        "select those attached file citations; ranges within a single attached source excerpt also work. "
+        "Do not report them missing because the outer result is JSON. "
+        "Never invent IDs, paths, quotes or ranges. Leave claims empty for generic explanations. "
+        "State missing evidence explicitly."
     )

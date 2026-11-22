@@ -12,6 +12,20 @@ from kai_agent.runtime.settings import (
 )
 
 
+@pytest.mark.parametrize("value", [True, False])
+def test_next_actions_default_on_and_chat_config_override(monkeypatch, tmp_path, value):
+    monkeypatch.delenv("KAI_SHOW_NEXT_ACTIONS", raising=False)
+    assert Settings().show_next_actions is True
+    path = tmp_path / "kai.cfg"
+    path.write_text(f"[chat]\nshow_next_actions: {str(value).lower()}\n", encoding="utf-8")
+    monkeypatch.setenv("KAI_CONFIG_FILE", str(path))
+    get_settings.cache_clear()
+    try:
+        assert get_settings().show_next_actions is value
+    finally:
+        get_settings.cache_clear()
+
+
 def test_moonraker_socket_defaults_and_config_override(tmp_path):
     config = tmp_path / "kai.cfg"
     config.write_text("[moonraker]\nmoonraker_agent_enabled: false\nmoonraker_socket_path:\n")

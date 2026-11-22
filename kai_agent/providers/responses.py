@@ -11,7 +11,7 @@ from kai_agent.agent.models import ModelTurn, ToolCall
 from kai_agent.domain.provider_settings import ModelProfile, ProviderPolicy
 from kai_agent.domain.redaction import redact_data, redact_text
 from kai_agent.providers.usage import UsageGuard
-from kai_agent.runtime.model_usage import model_request
+from kai_agent.runtime.model_usage import model_request, selected_chat_model
 
 
 class ProviderError(RuntimeError):
@@ -68,12 +68,13 @@ class ResponsesClient:
             if self._policy
             else ModelProfile(model=self._model, max_output_tokens=self._max_output_tokens)
         )
+        model = selected_chat_model(profile.model) if purpose == "agent" else profile.model
         limit = min(
             payload.get("max_output_tokens", profile.max_output_tokens), profile.max_output_tokens
         )
         body = {
             **private_payload(payload, self._api_key),
-            "model": profile.model,
+            "model": model,
             "store": False,
             "max_output_tokens": limit,
         }
@@ -85,7 +86,7 @@ class ResponsesClient:
                 if self._guard
                 else nullcontext(None) as reservation
             ):
-                async with model_request(profile.model):
+                async with model_request(model):
                     response = await self._http.post(
                         "https://api.openai.com/v1/responses",
                         headers={"Authorization": f"Bearer {self._api_key}"},

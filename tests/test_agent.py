@@ -129,6 +129,9 @@ async def test_agent_observes_tools_and_follows_up_with_config_and_web_sources(t
     assert result["response_text"] == "Evidence-backed answer"
     assert result["findings"] and result["moonraker_reachable"]
     assert any(source["line_number"] == 3 for source in result["source_citations"])
+    config_read = next(item for item in result["evidence"] if item["source"] == "read_config_file")
+    source = json.loads(config_read["content"])["source"]
+    assert source["line_basis"] == "file" and source["end_line"] >= source["line_number"]
     assert any(source["url"] for source in result["source_citations"])
     assert len(events) == 20  # Starting profile/config/logs, then seven model-selected reads.
     assert "PA1" in json.dumps(model.conversations[-1])

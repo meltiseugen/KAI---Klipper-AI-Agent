@@ -55,12 +55,14 @@ class ShellView {
     this.newChat = doc.getElementById("new-chat-button");
     this.status = doc.getElementById("composer-status");
     this.mode = doc.getElementById("agent-mode");
+    this.composer = new ComposerControls(doc);
     this.messageView = new MessageView(doc.getElementById("message-template"), null);
     this.notices = new NoticeView(doc);
   }
 
   bind(actions) {
     this.actions = actions;
+    this.composer.bind(actions);
     this.notices.recover = actions.recover;
     this.send?.addEventListener("click", () => void actions.send());
     this.newChat?.addEventListener("click", () => actions.newChat());
@@ -143,15 +145,10 @@ class ShellView {
   setStatus(text) { setText(this.status, text); }
   showError(error) { this.notices.set(error?.code === "provider_not_configured" ? "provider" : "request", error); }
 
-  connection(label, connected) {
-    setText(this.doc.getElementById("connection-label"), label);
-    this.doc.getElementById("connection-dot")?.classList.toggle("connected", connected);
-  }
-
   moonraker(state) {
     const reachable = this.doc.getElementById("moonraker-badge");
     if (reachable) {
-      reachable.textContent = state.connected ? "Moonraker: reachable" : "Moonraker: unavailable";
+      reachable.textContent = state.connected ? "Moonraker: reachable" : state.transport_unavailable ? "Moonraker: status unknown" : "Moonraker: unavailable";
       reachable.classList.toggle("ok", Boolean(state.connected));
       reachable.classList.toggle("warn", !state.connected);
     }
@@ -171,7 +168,6 @@ class ShellView {
       printer.classList.toggle("ok", Boolean(live && state.klippy_state === "ready"));
       printer.classList.toggle("warn", !live || state.klippy_state !== "ready");
     }
-    this.connection(state.connected ? (state.stale ? "Status reconnecting" : `Printer ${state.klippy_state || "connected"}`) : "Printer unavailable", Boolean(live && state.klippy_state === "ready"));
   }
 
   bootstrap(payload) {
@@ -180,7 +176,7 @@ class ShellView {
     const provider = payload.provider === "openai" ? "OpenAI" : payload.provider || "your provider";
     setText(this.doc.getElementById("provider-badge"), `Provider: ${provider}`);
     setText(this.doc.getElementById("model-badge"), `Model: ${payload.provider_model || "unavailable"}`);
-    setText(this.doc.getElementById("llm-summary"), payload.provider_configured === false ? "OpenAI not connected" : `${provider}${payload.provider_model ? ` · ${payload.provider_model}` : ""}`);
+    this.composer.bootstrap(payload);
     setText(this.doc.getElementById("llm-request-info"), payload.provider_configured === false
       ? "Configure an LLM provider and API key to use Chat and Debug. Saved information remains available."
       : `Chat and Debug use ${provider}${payload.provider_model ? ` / ${payload.provider_model}` : ""}. Your question, printer config and recent logs are sent to the LLM. Provider credits may be used. Config changes remain manual.`);
@@ -192,11 +188,9 @@ class ShellView {
       badge.classList.remove("ok", "warn");
       badge.classList.add(reachable ? "ok" : "warn");
     }
-    const connected = Boolean(payload.moonraker_reachable && payload.klipper_reachable);
-    this.connection(connected ? "Printer connected" : "Printer unavailable", connected);
   }
 
-  render(store, { busy, pending, revalidate, followUp, modesEnabled, recovering = false, providerConfigured = true }) {
+  render(store, { busy, pending, revalidate, followUp, modesEnabled, recovering = false, providerConfigured = true, showNextActions = true }) {
     const conversation = store.getCurrentConversation();
     const entries = (conversation?.messages || []).filter(entry => !isWelcomeEntry(entry, store.introMessage));
     const empty = !entries.length && !pending && !recovering;
@@ -216,6 +210,7 @@ class ShellView {
     if (title) title.title = conversation?.title || "New chat";
     this.messageView.revalidate = revalidate;
     this.messageView.followUp = followUp;
+    this.messageView.showNextActions = showNextActions;
     this.notices.render(busy);
     this.renderHistory(store, busy);
     if (this.messages && conversation) {
@@ -239,6 +234,7 @@ class ShellView {
       this.mode.value = modesEnabled ? normalizeAgentMode(conversation?.mode) : "chat";
       this.mode.disabled = busy || !modesEnabled || !providerConfigured;
     }
+    this.composer.render(store, { busy: busy || recovering, providerConfigured });
     const description = !providerConfigured ? "Chat and Debug require a configured LLM provider."
       : !modesEnabled ? "Modes require the tool-using agent. Context is selected from your question."
       : conversation?.mode === "debug" ? "Config and recent logs, plus live status and service diagnostics."

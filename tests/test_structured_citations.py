@@ -87,6 +87,60 @@ def test_no_range_selects_only_trusted_source_citations_and_no_mutation():
     assert trusted.evidence_id is None
 
 
+@pytest.mark.parametrize("origin", ["saved_profile", "moonraker", "tool"])
+def test_structured_observation_references_keep_provenance_without_invented_lines(origin):
+    item = source(
+        source="get_printer_profile",
+        origin=origin,
+        content={"firmware_flavor": "Kalico"},
+        line_basis="none",
+        kind="printer_profile",
+    )
+    citation = resolve_claims([claim(item, 0, 0)], [item])[0].citations[0]
+    assert citation.path == item.source and citation.evidence_id == item.id
+    assert citation.line_number is None and citation.end_line is None
+    assert citation.line_basis == "none" and citation.observed_at == item.observed_at
+    assert json.loads(citation.excerpt)["firmware_flavor"] == "Kalico"
+    assert item.citations == []
+
+
+def test_structured_user_input_does_not_become_a_trusted_observation():
+    item = source(origin="user", content={"firmware_flavor": "fiction"}, line_basis="none")
+    with pytest.raises(ValueError, match="no source citations"):
+        resolve_claims([claim(item, 0, 0)], [item])
+
+
+def test_json_tool_source_accepts_only_lines_in_its_attached_real_excerpt():
+    trusted = SourceCitation(
+        label="start.cfg:20",
+        path="start.cfg",
+        line_number=20,
+        end_line=22,
+        line_basis="file",
+        excerpt="[gcode_macro START_PRINT]\n  G28\n  M109 S200",
+    )
+    item = source(
+        source="read_config_file",
+        origin="config",
+        content={"source": trusted.model_dump()},
+        line_basis="none",
+        citations=[trusted],
+    )
+    citation = resolve_claims([claim(item, 21, 22)], [item])[0].citations[0]
+    assert citation.path == "start.cfg" and citation.line_number == 21 and citation.end_line == 22
+    assert (
+        citation.excerpt == "  G28\n  M109 S200" and citation.section == "gcode_macro START_PRINT"
+    )
+    assert item.content_format == "json" and item.line_basis == "none"
+    for changes, start, end in [
+        ({}, 19, 20),
+        ({}, 22, 23),
+        ({"citations": [trusted, trusted]}, 20, 21),
+    ]:
+        with pytest.raises(ValueError, match="one attached source"):
+            resolve_claims([claim(item, start, end)], [item.copy(update=changes)])
+
+
 def test_config_findings_link_to_the_observed_section_and_revision():
     snapshot = ConfigSnapshot(
         "printer.cfg",
@@ -155,6 +209,49 @@ async def test_agent_resolves_a_config_claim_and_returns_server_owned_citations(
     citation = result["answer_claims"][0]["citations"][0]
     assert citation["section"] == "extruder" and citation["path"] == "printer.cfg"
     assert citation in result["source_citations"]
+
+
+@pytest.mark.asyncio
+async def test_recalled_evidence_can_be_cited_as_historical_without_repersisting_it(tool_context):
+    old = source(
+        citations=[
+            SourceCitation(
+                label="Old excerpt",
+                path="printer.cfg",
+                line_number=3,
+                line_basis="file",
+                excerpt="step_pin: PA1",
+            )
+        ]
+    )
+    model = ScriptedModel(
+        ModelTurn(
+            [],
+            text=json.dumps(
+                {
+                    "response": "The earlier observation recorded PA1; it does not prove current wiring.",
+                    "claims": [
+                        {
+                            "claim": "Previously recorded PA1.",
+                            "evidence_refs": [
+                                {"evidence_id": old.id, "start_line": 0, "end_line": 0}
+                            ],
+                        }
+                    ],
+                }
+            ),
+        )
+    )
+    result = await AgentWorkflow(model, tool_context.moonraker, AgentLimits()).ainvoke(
+        {"user_message": "What was previously recorded?", "memory": [old.model_dump()]},
+        context=tool_context.services,
+    )
+    assert result["agent_status"] == "completed" and len(model.conversations) == 1
+    citation = result["answer_claims"][0]["citations"][0]
+    assert citation["label"].startswith("Historical:")
+    assert citation["observed_at"] == old.observed_at and citation["evidence_id"] == old.id
+    assert all(item["id"] != old.id for item in result["evidence"])
+    assert old.citations[0].label == "Old excerpt"
 
 
 @pytest.mark.asyncio

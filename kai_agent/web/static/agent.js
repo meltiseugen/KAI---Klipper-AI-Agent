@@ -33,9 +33,14 @@ class AgentActivity {
     const list = document.createElement("ul");
     for (const action of actions) {
       const item = document.createElement("li");
-      item.textContent = String(action);
-      if (followUp) questionButton(item, "Explain this check",
-        `Explain this suggested manual check: ${action}\nWhy is it useful, what should I look for, and what precautions apply?`, followUp);
+      const row = document.createElement("div");
+      row.className = "next-action-row";
+      const text = document.createElement("span");
+      text.className = "next-action-text";
+      text.textContent = String(action);
+      row.appendChild(text);
+      questionButton(row, "Add to chat", String(action), followUp);
+      item.appendChild(row);
       list.appendChild(item);
     }
     section.appendChild(list);

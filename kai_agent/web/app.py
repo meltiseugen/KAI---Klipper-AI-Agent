@@ -172,7 +172,8 @@ def create_app() -> FastAPI:
     async def bootstrap(session_id: str, request: Request) -> BootstrapResponse:
         container = _get_container(request)
         try:
-            result = await container.chat_service.bootstrap(session_id)
+            result = BootstrapResponse.parse_obj(await container.chat_service.bootstrap(session_id))
+            result.show_next_actions = settings.show_next_actions
             if getattr(container, "providers", None) is not None:
                 result.features.append("provider-management")
                 result.provider_configured = provider_configured(container)

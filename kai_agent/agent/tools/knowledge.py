@@ -63,8 +63,28 @@ class PrinterKnowledgeTool(Tool[ToolArguments]):
 
     async def execute(self, arguments: ToolArguments, context: ToolContext) -> dict[str, Any]:
         setup, docs, changed = await self._knowledge.read()
+        identified = [
+            item
+            for item in setup.components
+            if item.model.strip().lower() not in {"", "unknown", "none"}
+        ]
         return {
-            "setup": setup.model_dump(exclude={"diagram_notes", "connectors", "validation"}),
+            "setup": {
+                **setup.model_dump(
+                    exclude={"diagram_notes", "connectors", "validation", "components"}
+                ),
+                "components": [item.model_dump() for item in identified],
+            },
+            "identity_gaps": [
+                {
+                    "role": item.role,
+                    "recorded_identity": item.model or "unknown",
+                    "presence_user_confirmed": item.confirmed,
+                    "note": "No identified component. This slot does not establish physical presence or absence.",
+                }
+                for item in setup.components
+                if item not in identified
+            ],
             "connector_observations": len(setup.connectors),
             "components": [
                 {
@@ -74,7 +94,7 @@ class PrinterKnowledgeTool(Tool[ToolArguments]):
                     ).items()
                     if key != "fan_evidence"
                 }
-                for item in setup.components
+                for item in identified
             ],
             "context_notes": "Identity and notes are user-supplied, not freshly detected. Use current configuration to verify MCU assignments. Knowledge is researched per component, without a built-in board catalog. Build/refresh documents and review connector evidence through Printer knowledge in the UI.",
         }

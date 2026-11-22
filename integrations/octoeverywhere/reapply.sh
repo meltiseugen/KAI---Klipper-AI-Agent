@@ -6,4 +6,5 @@ exec sh "$INSTALL_DIR/integrations/octoeverywhere/run-maintenance.sh" \
   --reconcile --state-dir "$STATE_DIR" --oe-root "$OE_ROOT" \
   --kai-prefix "$KAI_PREFIX" --kai-port "$KAI_PORT" \
   --nav-target "$NAV_TARGET" --service "$OE_SERVICE" \
-  --moonraker-url "$MOONRAKER_URL" --update-manager "$OE_UPDATE_MANAGER"
+  --moonraker-url "$MOONRAKER_URL" --update-manager "$OE_UPDATE_MANAGER" \
+  --update-policy "${OE_UPDATE_POLICY:-prepare}"

@@ -37,17 +37,13 @@
             </button>
             <h1 id="conversation-title" class="topbar-title">New chat</h1>
           </div>
-          <details id="connection-details" class="connection-details">
-            <summary><span id="connection-dot" class="connection-dot"></span><span id="connection-label">Checking printer</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></summary>
-            <div class="connection-popover" aria-label="Printer and assistant status">
-              <h2>Connection</h2>
-              <span id="klipper-badge" class="badge muted">Klipper: checking</span>
-              <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
-              <span id="moonraker-events-badge" class="badge muted" hidden>Events: connecting</span>
-              <span id="provider-badge" class="badge">Provider: loading</span>
-              <span id="model-badge" class="badge">Model: loading</span>
-            </div>
-          </details>
+          <div class="connection-tags" role="group" aria-label="Printer and assistant status">
+            <span id="klipper-badge" class="badge muted">Klipper: checking</span>
+            <span id="moonraker-badge" class="badge muted">Moonraker: checking</span>
+            <span id="moonraker-events-badge" class="badge muted" hidden>Events: connecting</span>
+            <span id="provider-badge" class="badge">Provider: loading</span>
+            <span id="model-badge" class="badge">Model: loading</span>
+          </div>
         </header>
 
         <main class="workspace-main">
@@ -133,7 +129,28 @@
                   <textarea id="message-input" rows="1" maxlength="40000" placeholder="Ask about your printer"></textarea>
                 </label>
                 <div class="composer-tools">
-                  <select id="agent-mode" aria-label="Investigation mode" aria-describedby="mode-description" disabled><option value="chat">Chat</option><option value="debug">Debug</option></select>
+                  <div class="composer-selectors">
+                    <div class="composer-picker" id="mode-picker">
+                      <button id="agent-mode" class="composer-trigger" type="button" aria-label="Investigation mode" aria-describedby="mode-description" aria-haspopup="menu" aria-controls="mode-menu" aria-expanded="false" disabled><span id="agent-mode-label">Chat</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></button>
+                      <div id="mode-menu" class="composer-menu mode-menu" role="menu" aria-label="Investigation mode" hidden>
+                        <button type="button" role="menuitemradio" aria-checked="true" data-mode="chat"><span>Chat</span><small>Ask about your printer</small></button>
+                        <button type="button" role="menuitemradio" aria-checked="false" data-mode="debug"><span>Debug</span><small>Include live status and diagnostics</small></button>
+                      </div>
+                    </div>
+                    <span id="llm-summary" class="composer-provider"><span id="llm-provider">OpenAI</span><span aria-hidden="true">·</span></span>
+                    <div class="composer-picker model-picker" id="model-picker">
+                      <button id="chat-model" class="composer-trigger" type="button" aria-label="Choose model for this chat" aria-haspopup="dialog" aria-controls="model-menu" aria-expanded="false" disabled><span id="chat-model-label">Loading model</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></button>
+                      <div id="model-menu" class="composer-menu model-menu" role="dialog" aria-labelledby="chat-model-heading" hidden>
+                        <h2 id="chat-model-heading">Model for this chat</h2>
+                        <div id="chat-model-options" class="chat-model-options"></div>
+                        <form id="chat-model-form">
+                          <label class="field" for="chat-model-input">Model ID<input id="chat-model-input" type="text" maxlength="120" pattern="[A-Za-z0-9][A-Za-z0-9._:\-]{0,119}" placeholder="Enter an OpenAI model ID" autocomplete="off" spellcheck="false" required /></label>
+                          <button class="secondary-button" type="submit">Use model</button>
+                        </form>
+                        <p>Applies to future messages in this chat. Use a model available to your API key that supports tools and structured responses. Provider limits still apply.</p>
+                      </div>
+                    </div>
+                  </div>
                   <span id="mode-description" class="sr-only">Loading agent modes</span>
                   <button id="send-button" class="send-button" type="button" aria-label="Ask agent" title="Send message">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg><span id="send-label" class="sr-only">Ask agent</span>
@@ -141,7 +158,7 @@
                 </div>
               </div>
               <div id="composer-status" class="composer-status" role="status" aria-live="polite"></div>
-              <div class="composer-footer"><span id="llm-summary">Checking provider</span><details class="request-disclosure"><summary>What's shared</summary><p id="llm-request-info">Checking LLM setup</p></details><span>Read-only</span></div>
+              <div class="composer-footer"><details class="request-disclosure"><summary>What's shared</summary><p id="llm-request-info">Checking LLM setup</p></details><span>Read-only</span></div>
             </section>
             <div id="chat-starters" class="chat-starters" aria-label="Example questions" hidden>
               <button id="starter-diagnose" type="button">Investigate why a print stopped <span aria-hidden="true">↗</span></button>

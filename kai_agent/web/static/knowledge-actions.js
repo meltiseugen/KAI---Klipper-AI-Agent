@@ -1,4 +1,4 @@
-// Explicit physical observations and live checks. No printer commands are sent.
+// Hardware source reviews and visually reviewed diagram notes.
 class KnowledgeActions {
   constructor(panel) { this.panel = panel; this.fields = new Set(); }
 
@@ -24,32 +24,20 @@ class KnowledgeActions {
     return button;
   }
 
-  async submit(path, body, provider = false) {
+  async submit(path, body) {
     const panel = this.panel;
     if (panel.busy) return;
-    if (panel.dirty) { panel.status.textContent = "Save edited component details before recording observations or running validation."; return; }
+    if (panel.dirty) { panel.status.textContent = "Save edited component details before recording source reviews or diagram notes."; return; }
     panel.lock(true);
     try {
-      const result = provider ? await (await panel.transport.request("/providers/probe", "POST", {})).json() : await panel.api(path, "POST", { ...body, ...(!["/validate"].includes(path) ? { revision: panel.setup.revision } : {}) });
-      if (path === "/validate" || provider) this.lastCheck = result;
+      await panel.api(path, "POST", { ...body, revision: panel.setup.revision });
       await panel.load(true);
-      if (this.lastCheck) panel.status.textContent = this.lastCheck.message || `Live printer read: ${this.lastCheck.printer_reachable ? "reachable" : "unavailable"}. Physical wiring remains user-verified.`;
     } catch (error) { panel.status.textContent = `${error} Current observations were kept.`; panel.lock(false); }
   }
 
   render(payload) {
     const panel = this.panel, parent = panel.records;
     panel.fields = panel.fields.filter(field => !this.fields.has(field)); this.fields.clear();
-    const checks = settingsSection(parent, "Connection checks", "Read printer status or test provider access");
-    panel.line(checks, "Checks use the configured connections. The provider check sends a fixed public prompt, uses provider credits, and sends no printer data. Printer checks only read state.");
-    const actions = panel.line(checks, "", "div"); actions.className = "actions";
-    this.button(actions, "Check live printer", () => this.submit("/validate", {}));
-    this.button(actions, "Check live provider response", () => this.submit("/probe", {}, true));
-    const report = payload.setup.validation;
-    if (report?.checked_at) {
-      panel.line(checks, `Last printer check: ${report.checked_at}; reachable: ${report.printer_reachable}.`);
-      for (const gap of report.gaps || []) panel.line(checks, gap);
-    }
     for (const [role, evidence] of Object.entries(payload.bus_evidence || {})) {
       if (!evidence.candidates.length) continue;
       const buses = settingsSection(parent, `${role}: hardware bus pins`, "Source quotes and your review");
@@ -58,30 +46,7 @@ class KnowledgeActions {
       this.button(buses, reviewed ? "Bus evidence reviewed" : "I checked this exact hardware/firmware pinmux", () => this.submit("/review-buses", { role, signature: evidence.signature }), reviewed || evidence.conflicts.length > 0 || payload.profile_changed);
       if (evidence.conflicts.length) panel.line(buses, `Conflicting bus definitions: ${evidence.conflicts.join(", ")}. Review MCU variant and source conditions.`);
     }
-    this.inventory(payload, parent);
     this.diagrams(payload, parent);
-  }
-
-  inventory(payload, parent) {
-    const panel = this.panel;
-    parent = settingsSection(parent, "Physical connector inventory", "Record connectors you have checked on the printer");
-    panel.line(parent, "Unused config pins do not prove a connector is free. Record what you physically checked, with power off where appropriate.");
-    for (const entries of Object.values(payload.connector_inventory || {})) for (const item of entries) panel.line(parent,
-      `${item.role} / ${item.connector}: ${item.stale ? "stale identity; recheck" : item.occupancy}; ${item.attached_device || "no device recorded"}; electrical: ${item.electrical_confirmed ? item.electrical_notes : "unconfirmed"}; observed ${item.observed_at}`);
-    const group = panel.line(parent, "", "fieldset"); group.className = "settings-fields";
-    panel.line(group, "Confirm a physical observation", "legend");
-    const roles = payload.setup.components.map(item => item.role);
-    const role = this.field(group, "Component", roles[0] || "", roles);
-    const connector = this.field(group, "Exact connector label");
-    const occupancy = this.field(group, "Observed occupancy", "unknown", ["unknown", "free", "occupied"]);
-    const device = this.field(group, "Attached device (required when occupied)");
-    const electrical = this.field(group, "Checked voltage/current, connector and device requirements");
-    const electricalConfirmed = this.field(group, "I verified these electrical requirements", false, null, "checkbox");
-    const confirmed = this.field(group, "I physically checked this connector and confirm this observation", false, null, "checkbox");
-    this.button(group, "Record connector observation", () => {
-      if (!confirmed.checked) { panel.status.textContent = "Explicit physical observation confirmation is required."; return; }
-      void this.submit("/connectors", { observation: { role: role.value, connector: connector.value.trim(), occupancy: occupancy.value, attached_device: device.value.trim(), electrical_notes: electrical.value.trim(), electrical_confirmed: electricalConfirmed.checked, confirmed: true } });
-    }, !roles.length);
   }
 
   diagrams(payload, parent) {

@@ -80,6 +80,7 @@ OctoEverywhere integration:
 - Route: ${KAI_ROOT_PATH%/}/
 - Auto-reapply timer: $INSTALL_OCTOEVERYWHERE_AUTO_REAPPLY
 - When enabled, checks at startup (after about 30 seconds), on file changes and every 5 minutes.
+- Available OE updates leave KAI active. Before updating OE, follow integrations/octoeverywhere/README.md to prepare the checkout.
 
 EOF
   fi

@@ -22,11 +22,16 @@
     },
     "kai_agent.agent.claim_citations": {
       "path": "kai_agent/agent/claim_citations.py",
-      "lines": 66,
+      "lines": 106,
       "symbols": [
         {
-          "name": "resolve_claims",
+          "name": "text_source",
           "line": 8,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "resolve_claims",
+          "line": 35,
           "kind": "FunctionDef"
         }
       ],
@@ -141,6 +146,7 @@
         "tests/test_agent_modes.py",
         "tests/test_agent_search.py",
         "tests/test_automatic_context.py",
+        "tests/test_chat_models.py",
         "tests/test_config_analysis.py",
         "tests/test_config_templates_agent.py",
         "tests/test_diagnostics_mvp.py",
@@ -320,7 +326,7 @@
     },
     "kai_agent.agent.prompts": {
       "path": "kai_agent/agent/prompts.py",
-      "lines": 87,
+      "lines": 94,
       "symbols": [],
       "imports": [],
       "tests": [
@@ -384,7 +390,7 @@
     },
     "kai_agent.agent.response_contracts": {
       "path": "kai_agent/agent/response_contracts.py",
-      "lines": 160,
+      "lines": 165,
       "symbols": [
         {
           "name": "EvidenceReference",
@@ -462,39 +468,39 @@
     },
     "kai_agent.agent.runner": {
       "path": "kai_agent/agent/runner.py",
-      "lines": 239,
+      "lines": 272,
       "symbols": [
         {
           "name": "AgentRun",
-          "line": 42,
+          "line": 44,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "result",
-              "line": 53
+              "line": 55
             }
           ]
         },
         {
           "name": "AgentRunner",
-          "line": 84,
+          "line": 86,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 85
+              "line": 87
             },
             {
               "name": "run",
-              "line": 89
+              "line": 91
             },
             {
               "name": "_loop",
-              "line": 127
+              "line": 129
             },
             {
               "name": "_stop",
-              "line": 236
+              "line": 269
             }
           ]
         }
@@ -652,7 +658,7 @@
     },
     "kai_agent.agent.tools.config": {
       "path": "kai_agent/agent/tools/config.py",
-      "lines": 108,
+      "lines": 110,
       "symbols": [
         {
           "name": "InspectConfigArguments",
@@ -893,7 +899,7 @@
     },
     "kai_agent.agent.tools.knowledge": {
       "path": "kai_agent/agent/tools/knowledge.py",
-      "lines": 243,
+      "lines": 263,
       "symbols": [
         {
           "name": "complete_config",
@@ -922,64 +928,64 @@
         },
         {
           "name": "SearchKnowledgeArguments",
-          "line": 83,
+          "line": 103,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SearchKnowledgeTool",
-          "line": 88,
+          "line": 108,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 94
+              "line": 114
             },
             {
               "name": "execute",
-              "line": 97
+              "line": 117
             }
           ]
         },
         {
           "name": "FanPortsArguments",
-          "line": 140,
+          "line": 160,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "FanPortsTool",
-          "line": 144,
+          "line": 164,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 150
+              "line": 170
             },
             {
               "name": "execute",
-              "line": 153
+              "line": 173
             }
           ]
         },
         {
           "name": "EddyArguments",
-          "line": 201,
+          "line": 221,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "EddyCalibrationTool",
-          "line": 205,
+          "line": 225,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 211
+              "line": 231
             },
             {
               "name": "execute",
-              "line": 214
+              "line": 234
             }
           ]
         }
@@ -1350,6 +1356,7 @@
         "tests/test_agent_modes.py",
         "tests/test_agent_search.py",
         "tests/test_automatic_context.py",
+        "tests/test_chat_models.py",
         "tests/test_config_analysis.py",
         "tests/test_config_templates_agent.py",
         "tests/test_diagnostics_mvp.py",
@@ -1370,7 +1377,7 @@
     },
     "kai_agent.application.chat": {
       "path": "kai_agent/application/chat.py",
-      "lines": 386,
+      "lines": 388,
       "symbols": [
         {
           "name": "ChatService",
@@ -1395,23 +1402,23 @@
             },
             {
               "name": "resume",
-              "line": 166
+              "line": 167
             },
             {
               "name": "_resume_run",
-              "line": 203
+              "line": 205
             },
             {
               "name": "_run",
-              "line": 210
+              "line": 212
             },
             {
               "name": "_execute",
-              "line": 224
+              "line": 226
             },
             {
               "name": "_classify_chat_intent",
-              "line": 367
+              "line": 369
             }
           ]
         }
@@ -1568,7 +1575,7 @@
     },
     "kai_agent.application.investigations": {
       "path": "kai_agent/application/investigations.py",
-      "lines": 159,
+      "lines": 160,
       "symbols": [
         {
           "name": "InvestigationMemory",
@@ -3239,7 +3246,7 @@
     },
     "kai_agent.contracts.api": {
       "path": "kai_agent/contracts/api.py",
-      "lines": 143,
+      "lines": 145,
       "symbols": [
         {
           "name": "DetectedAddonSummary",
@@ -3260,29 +3267,29 @@
           "methods": [
             {
               "name": "_reject_blank",
-              "line": 84
+              "line": 85
             },
             {
               "name": "_bounded_text_artifacts",
-              "line": 90
+              "line": 91
             }
           ]
         },
         {
           "name": "ChatResponse",
-          "line": 101,
+          "line": 102,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "BootstrapResponse",
-          "line": 126,
+          "line": 127,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "UiSessionResponse",
-          "line": 140,
+          "line": 142,
           "kind": "ClassDef",
           "methods": []
         }
@@ -3302,6 +3309,7 @@
         "tests/test_agent_integration.py",
         "tests/test_agent_modes.py",
         "tests/test_automatic_context.py",
+        "tests/test_chat_models.py",
         "tests/test_config_analysis.py",
         "tests/test_confirmed_memory.py",
         "tests/test_diagnostics_extra.py",
@@ -3884,7 +3892,7 @@
     },
     "kai_agent.domain.investigation": {
       "path": "kai_agent/domain/investigation.py",
-      "lines": 151,
+      "lines": 153,
       "symbols": [
         {
           "name": "utc_now",
@@ -3933,29 +3941,29 @@
         },
         {
           "name": "PendingInvestigation",
-          "line": 98,
+          "line": 99,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ConfirmedMemory",
-          "line": 111,
+          "line": 113,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "as_evidence",
-              "line": 119
+              "line": 121
             }
           ]
         },
         {
           "name": "Investigation",
-          "line": 131,
+          "line": 133,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "history",
-              "line": 141
+              "line": 143
             }
           ]
         }
@@ -3972,6 +3980,7 @@
       "tests": [
         "tests/test_agent.py",
         "tests/test_agent_modes.py",
+        "tests/test_chat_models.py",
         "tests/test_config_patches.py",
         "tests/test_confirmed_memory.py",
         "tests/test_investigation_recovery.py",
@@ -4111,6 +4120,7 @@
         "tests/test_firmware_knowledge.py",
         "tests/test_hardware_knowledge.py",
         "tests/test_knowledge.py",
+        "tests/test_knowledge_agent.py",
         "tests/test_knowledge_research.py",
         "tests/test_knowledge_storage.py",
         "tests/test_knowledge_web.py",
@@ -4420,6 +4430,7 @@
       ],
       "imports": [],
       "tests": [
+        "tests/test_chat_models.py",
         "tests/test_credential_storage.py",
         "tests/test_embedded_experience.py",
         "tests/test_provider_agent.py",
@@ -6459,7 +6470,7 @@
     },
     "kai_agent.providers.json_client": {
       "path": "kai_agent/providers/json_client.py",
-      "lines": 68,
+      "lines": 69,
       "symbols": [
         {
           "name": "OpenAIJsonClient",
@@ -6485,6 +6496,7 @@
         "kai_agent.runtime.model_usage"
       ],
       "tests": [
+        "tests/test_chat_models.py",
         "tests/test_llm_extra.py",
         "tests/test_model_usage.py",
         "tests/test_provider_management.py",
@@ -6736,7 +6748,7 @@
     },
     "kai_agent.providers.responses": {
       "path": "kai_agent/providers/responses.py",
-      "lines": 146,
+      "lines": 147,
       "symbols": [
         {
           "name": "ProviderError",
@@ -6770,16 +6782,16 @@
         },
         {
           "name": "OpenAIAgentModel",
-          "line": 112,
+          "line": 113,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 113
+              "line": 114
             },
             {
               "name": "respond",
-              "line": 116
+              "line": 117
             }
           ]
         }
@@ -6793,6 +6805,7 @@
       ],
       "tests": [
         "tests/test_agent_providers.py",
+        "tests/test_chat_models.py",
         "tests/test_model_usage.py",
         "tests/test_provider_management.py",
         "tests/test_provider_web.py",
@@ -6917,7 +6930,7 @@
     },
     "kai_agent.runtime.model_usage": {
       "path": "kai_agent/runtime/model_usage.py",
-      "lines": 53,
+      "lines": 62,
       "symbols": [
         {
           "name": "UsageScope",
@@ -6927,12 +6940,17 @@
         },
         {
           "name": "track_model_usage",
-          "line": 22,
+          "line": 23,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "selected_chat_model",
+          "line": 36,
           "kind": "FunctionDef"
         },
         {
           "name": "model_request",
-          "line": 34,
+          "line": 43,
           "kind": "AsyncFunctionDef"
         }
       ],
@@ -6941,6 +6959,7 @@
         "kai_agent.domain.model_usage"
       ],
       "tests": [
+        "tests/test_chat_models.py",
         "tests/test_model_usage.py"
       ]
     },
@@ -6963,7 +6982,7 @@
     },
     "kai_agent.runtime.settings": {
       "path": "kai_agent/runtime/settings.py",
-      "lines": 288,
+      "lines": 289,
       "symbols": [
         {
           "name": "Settings",
@@ -6972,62 +6991,62 @@
           "methods": [
             {
               "name": "_journal_units",
-              "line": 105
+              "line": 106
             },
             {
               "name": "_normalize_moonraker_socket",
-              "line": 120
+              "line": 121
             },
             {
               "name": "_normalize_optional_identity",
-              "line": 141
+              "line": 142
             },
             {
               "name": "_normalize_required_strings",
-              "line": 148
+              "line": 149
             },
             {
               "name": "_log_basename",
-              "line": 155
+              "line": 156
             },
             {
               "name": "_normalize_log_tail_lines_overrides",
-              "line": 161
+              "line": 162
             },
             {
               "name": "_normalize_excluded_logs",
-              "line": 176
+              "line": 177
             },
             {
               "name": "_normalize_provider",
-              "line": 197
+              "line": 198
             },
             {
               "name": "_enforce_read_only_runtime",
-              "line": 205
+              "line": 206
             },
             {
               "name": "host_logs_dir",
-              "line": 222
+              "line": 223
             },
             {
               "name": "agent_log_path",
-              "line": 227
+              "line": 228
             },
             {
               "name": "ensure_directories",
-              "line": 230
+              "line": 231
             }
           ]
         },
         {
           "name": "_load_kai_cfg_values",
-          "line": 235,
+          "line": 236,
           "kind": "FunctionDef"
         },
         {
           "name": "get_settings",
-          "line": 285,
+          "line": 286,
           "kind": "FunctionDef"
         }
       ],
@@ -7061,7 +7080,7 @@
     },
     "kai_agent.web.app": {
       "path": "kai_agent/web/app.py",
-      "lines": 238,
+      "lines": 239,
       "symbols": [
         {
           "name": "create_app",
@@ -7070,7 +7089,7 @@
         },
         {
           "name": "_get_container",
-          "line": 234,
+          "line": 235,
           "kind": "FunctionDef"
         }
       ],

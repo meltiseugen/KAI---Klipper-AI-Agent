@@ -21,6 +21,7 @@ search, then inspect the implementation and its tests.
 | Chat/history/session behavior | `application/chat.py`, `request_context.py`, `sessions.py` | `test_services.py`, `test_sessions.py` |
 | Streaming and HTTP/UI | `web/app.py`, `streaming.py`, `static/scripts.json`, `static/chat-application.js` | `test_app.py`, `test_agent_integration.py`, `agent-ui.test.mjs`, `chat-ui.test.mjs` |
 | Browser drafts, HTTP, rendering | `web/static/store.js`, `transport.js`, `message-view.js`, `shell-view.js` | `chat-ui.test.mjs` |
+| Composer mode/model pickers and per-chat model overrides | `web/static/composer-controls.js`, `conversation.js`, `application/chat.py`, `runtime/model_usage.py`, `providers/responses.py` | `test_chat_models.py`, `test_model_usage.py` |
 | Result cards, follow-ups and recovery notices | `web/static/result-cards.js`, `ui-errors.js`, `web/chat_readiness.py`, `contracts/api.py` | `embedded-experience.test.mjs`, `test_embedded_experience.py` |
 | Credential redaction, private storage and deployment trust | `domain/redaction.py`, `web/security.py`, `infrastructure/private_files.py`, `runtime/logging.py`, [security guide](security.md) | `test_security*.py`, `test_installer.py` |
 | Settings, flags, defaults | `runtime/settings.py`, `deployment/config/kai.cfg.example`, `install.sh` | `test_settings.py` |
@@ -53,6 +54,7 @@ search, then inspect the implementation and its tests.
 | Automatic prerequisite installation, BusyBox startup and fresh Entware bootstrap | `deployment/installer/bootstrap.sh`, `entware.sh`, `prerequisites.sh`, [prerequisites](installer-prerequisites.md) | `test_prerequisite_bootstrap.py`, `test_entware_bootstrap.py` |
 | Creality/KE native init, host credentials, vendor paths and Python/nginx fallbacks | `deployment/appliance_*.py`, `deployment/installer/platform.sh`, `discovery.sh`, `python.sh`, `nginx.sh`, [native guide](creality-compatibility.md) | `test_appliance_*.py`, `test_native_host_boot.py`, `test_creality_compatibility.py`, `test_installer.py` |
 | Linux CI, installed daemon boot and actual nginx routing | `.github/workflows/linux.yml`, `tools/smoke_installed.py`, [release guide](RELEASING.md) | `test_release_integration.py`, `test_nginx_smoke.py` |
+| Live question smoke checks and answer acceptance | `tools/smoke_questions.py`, `tools/question_smoke.py`, [question suite](question-smoke.md) | `test_question_smoke.py` |
 | Operator SSH updates, staged code and rollback | `tools/deploy.py`, `deployment/update.py`, `deployment/releases.py`, `deployment/artifacts.py`, [printer testing](printer-testing.md) | `test_deploy.py`, `test_release_updates.py`, `test_release_artifacts.py` |
 | Version, release contents and failure examples | `domain/version.py`, `runtime/release.py`, `tools/release_artifacts.py`, `CHANGELOG.md`, `examples/failures/` | `test_release_identity.py`, `test_release_artifacts.py`, `test_failure_examples.py` |
 | Mainsail sidebar repair at boot and after theme changes | `integrations/mainsail/navigation.py`, `navigation_file.py`, `nav_cli.py`, `nav_hook.py`, `integrations/host_lock.py` | `test_mainsail_navigation.py`, `test_mainsail_auto_reapply.py`, `test_installer.py` |

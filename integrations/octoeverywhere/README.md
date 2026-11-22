@@ -21,8 +21,7 @@ What it does not do:
 - it does not patch Mainsail itself
 - it does not add a second officially supported frontend to OctoEverywhere
 - it does not keep the OctoEverywhere checkout clean while the route is active;
-  the optional update hook temporarily removes only KAI's marked blocks
-  when Moonraker reports a pending OE update
+  prepare the checkout before an OE update using the command below
 
 ## Assumptions
 
@@ -69,9 +68,9 @@ original files in a unique `change-*` directory under
 the original mode and owner. Unchanged files keep their contents and timestamps;
 an already current patch creates no backup and requires no restart.
 
-## Automatic Update Coordination
+## Automatic Repair and Update Coordination
 
-Install the systemd path/timer hook to coordinate Moonraker-managed OE updates:
+Install the systemd path/timer hook to repair the route after file changes:
 
 ```bash
 sh integrations/octoeverywhere/install-auto-reapply.sh \
@@ -87,9 +86,10 @@ The hook:
 - checks Moonraker's `octoeverywhere` update-manager state
 - leaves the checkout and suspension marker untouched while an update is busy,
   or when the request fails or required update fields are missing/invalid
-- removes only KAI's marked blocks when OE has pending commits
+- keeps KAI available when Moonraker merely reports available OE updates
+- respects explicit update preparation until OE is current, then reapplies the route
 - leaves unrelated local changes in the two OE files intact
-- refreshes Moonraker so the checkout can become updateable
+- refreshes Moonraker when automatic update preparation removes the patch
 - compares both files with the configured patch contents, repairing missing,
   partial or outdated patches after the OE update
 - watches the patched files and KAI templates for changes
@@ -100,6 +100,12 @@ The hook:
 - enables future retries even if the initial Moonraker query fails
 - moves legacy `*.kai-backup-*` files out of the OE checkout and into
   `/etc/kai/octoeverywhere-backups/legacy`
+
+New installations, including `install.sh`, use `--update-policy keep-active`.
+This avoids disabling KAI indefinitely on hosts that defer OE updates. To retain
+the earlier behavior of removing the route as soon as updates are available,
+install the hook with `--update-policy prepare`. Previously generated runners
+keep that earlier policy until the hook is reinstalled.
 
 The runner retains a custom `KAI_STATE_DIR` supplied during installation,
 including under systemd where `HOME` and interactive environment variables may
@@ -145,9 +151,8 @@ Installed artifacts:
 
 ## Updating OctoEverywhere
 
-With the automatic hook installed, refresh Moonraker updates and wait for the
-hook to remove the patch before clicking `Update`. Manual preparation remains
-available:
+With the default `keep-active` policy, refresh Moonraker updates, then prepare
+the checkout before clicking `Update`:
 
 ```bash
 sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \
@@ -157,9 +162,13 @@ sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \
   --service octoeverywhere
 ```
 
-The restore operation removes the marked KAI blocks rather than resetting
-the whole files from git. After the OE update, the path/timer hook reapplies the
-patch. Manual reapplication remains available:
+The restore operation removes only the marked KAI blocks and records suspension.
+The hook respects that suspension while updates remain available. Refresh
+Moonraker's update status after preparation if it still reports a dirty checkout.
+KAI is temporarily unavailable through OE during this preparation. After OE is
+current, the path/timer hook reapplies the patch. With `--update-policy prepare`,
+the hook performs preparation automatically when updates become available.
+Manual reapplication can also cancel preparation without updating OE:
 
 ```bash
 sh integrations/octoeverywhere/apply-local-kai-route-patch.sh \

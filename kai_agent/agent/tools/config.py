@@ -96,6 +96,8 @@ class ReadConfigTool(Tool[ReadConfigArguments]):
             label=f"{document.path}:{arguments.start_line}",
             path=document.path,
             line_number=arguments.start_line,
+            end_line=arguments.start_line + max(0, len(excerpt.splitlines()) - 1),
+            line_basis="file",
             excerpt=excerpt,
         )
         context.citations.append(citation)

@@ -13,6 +13,7 @@ function element(tag) {
   return { tag, children: [], listeners: {}, appendChild(child) { this.children.push(child); }, setAttribute() {}, addEventListener(name, fn) { this.listeners[name] = fn; } };
 }
 const context = vm.createContext({ TextDecoder, document: { createElement: element } });
+vm.runInContext(await readFile(new URL("../kai_agent/web/static/result-cards.js", import.meta.url), "utf8"), context);
 vm.runInContext(await readFile(new URL("../kai_agent/web/static/model-usage.js", import.meta.url), "utf8"), context);
 vm.runInContext(`${source}\nglobalThis.Reader = ChatStreamReader; globalThis.Activity = AgentActivity;`, context);
 vm.runInContext(`${investigation}\nglobalThis.messages = investigationMessages; globalThis.Review = ProposalReviewCard; globalThis.Evidence = InvestigationEvidence;`, context);
@@ -48,7 +49,8 @@ context.Activity.append(article, [null, { kind: "tool_started", message: "Start"
 assert.equal(article.children.length, 1);
 assert.equal(article.children[0].children[1].children[0].textContent, "<script>untrusted</script>");
 context.Activity.appendActions(article, ["Review the pin"]);
-assert.equal(article.children[1].children[1].children[0].textContent, "Review the pin");
+assert.equal(article.children[1].children[1].children[0].children[0].children[0].textContent, "Review the pin");
+assert.equal(article.children[1].children[1].children[0].children[0].children[1].disabled, true);
 context.Activity.append(element("article"), null);
 context.Activity.appendActions(element("article"), []);
 

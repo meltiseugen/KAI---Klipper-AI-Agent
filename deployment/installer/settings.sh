@@ -84,6 +84,7 @@ security_allowed_hosts: *  # Optional printer/proxy Host allowlist; see docs/sec
 security_allowed_origins:  # Usually empty; trusted proxy origins when required.
 
 [chat]
+show_next_actions: true  # Show suggested next actions for new and saved answers.
 conversation_history_pairs: 10  # Previous user/assistant pairs sent with each request. Use 0 to disable. Examples: 0, 5, 10
 memory_cross_chat: true  # Reuse dated evidence from other chats about this printer.
 memory_retention_days: 90  # Retain application-owned investigation records for this many days.

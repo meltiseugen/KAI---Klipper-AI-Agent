@@ -68,6 +68,8 @@ def reapply(tmp_path, oe_checkout, run_shell, shell_env, moonraker_updates):
         root.as_posix(),
         "--moonraker-url",
         url,
+        "--update-policy",
+        "prepare",
         env=env,
     )
     state_dir = Path(env["KAI_STATE_DIR"])
@@ -177,11 +179,14 @@ def test_hook_install_enables_retries_even_if_initial_moonraker_query_fails(
     assert "OnUnitInactiveSec=5min" in (units / "kai-octoeverywhere-reapply.timer").read_text()
     assert "OnBootSec=30s" in (units / "kai-octoeverywhere-reapply.timer").read_text()
     assert "WantedBy=timers.target" in (units / "kai-octoeverywhere-reapply.timer").read_text()
+    assert 'OE_UPDATE_POLICY="keep-active"' in runner.read_text()
     state.update(
         status=200,
-        result={"busy": False, "version_info": {"octoeverywhere": {"commits_behind_count": 0}}},
+        result={"busy": False, "version_info": {"octoeverywhere": {"commits_behind_count": 70}}},
     )
     run_shell(runner.as_posix(), env=env)
+    assert "KAI local route patch init start" in oe_checkout[1].read_text()
+    assert not (Path(env["KAI_STATE_DIR"]) / "octoeverywhere-reapply.suspended").exists()
     before = calls.read_text().splitlines()
     assert before.count("restart octoeverywhere") == 1
     run_shell(runner.as_posix(), env=env)

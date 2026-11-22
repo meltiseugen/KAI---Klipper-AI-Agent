@@ -152,6 +152,7 @@ class InvestigationMemory:
     ) -> InvestigationTurn:
         turn = InvestigationTurn(
             question=question,
+            model=investigation.pending.model if investigation.pending else None,
             result=result,
             imported_history=imported_history if not investigation.turns else [],
         )

@@ -91,6 +91,7 @@ class InvestigationTurn(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     created_at: str = Field(default_factory=utc_now)
     question: str
+    model: str | None = None
     result: InvestigationResult
     imported_history: list[ChatHistoryMessage] = Field(default_factory=list)
 
@@ -101,6 +102,7 @@ class PendingInvestigation(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid4()))
     created_at: str = Field(default_factory=utc_now)
     mode: AgentMode = "chat"
+    model: str | None = Field(default=None, regex=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$")
     message: str
     artifacts: list[ArtifactInput] = Field(default_factory=list)
     history: list[ChatHistoryMessage] = Field(default_factory=list)

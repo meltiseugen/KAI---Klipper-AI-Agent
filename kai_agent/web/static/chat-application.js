@@ -18,6 +18,7 @@ class ChatApplication {
       busy: this.busy, pending: this.pending, recovering: Boolean(conversation?.pendingRun),
       modesEnabled: this.modesEnabled,
       providerConfigured: this.providerConfigured !== false,
+      showNextActions: this.showNextActions !== false,
       followUp: !this.busy && this.providerConfigured !== false && !conversation?.pendingRun ? question => this.followUp(question) : null,
       revalidate: this.persistent && conversation?.threadId && !conversation.pendingRun ? id => this.revalidate(id) : null,
     });
@@ -30,6 +31,7 @@ class ChatApplication {
       select: id => this.select(id), remove: id => this.remove(id),
       draft: value => { this.store.getCurrentConversation().draft = value; this.store.save(); this.view.setStatus(""); },
       mode: value => this.setMode(value),
+      model: value => this.setModel(value),
       recover: code => this.recover(code),
       closeSettings: () => this.closeSettings(),
     });
@@ -41,6 +43,7 @@ class ChatApplication {
     try {
       const payload = await this.transport.bootstrap();
       this.providerConfigured = payload.provider_configured !== false;
+      this.showNextActions = payload.show_next_actions !== false;
       this.store.historyPairs = normalizeHistoryPairLimit(payload.conversation_history_pairs);
       this.persistent = payload.features?.includes("persistent-investigations") || false;
       this.modesEnabled = payload.agent_modes?.includes("debug") || false;
@@ -126,6 +129,7 @@ class ChatApplication {
         const conversation = existing || this.store.createConversation({
           id: summary.id, threadId: summary.id, title: summary.title || "Saved chat",
           mode: summary.pending?.mode,
+          model: summary.pending?.model,
           updatedAt: summary.updated_at, messages: summary.pending ? investigationMessages({ turns: [], pending: summary.pending }) : [],
         });
         conversation.loaded = false;
@@ -141,6 +145,7 @@ class ChatApplication {
         id: existing?.id || record.id, threadId: record.id, title: record.title,
         updatedAt: record.updated_at, draft: existing?.draft || "",
         mode: existing?.mode || record.pending?.mode || record.turns.at(-1)?.result.mode,
+        model: existing ? existing.model : record.pending?.model || record.turns.at(-1)?.model,
         messages: investigationMessages(record),
       });
       conversation.pendingRun = Boolean(record.pending);
@@ -169,6 +174,7 @@ class ChatApplication {
       Object.assign(conversation, this.store.createConversation({
         ...conversation, loaded: true, title: record.title, updatedAt: record.updated_at,
         mode: conversation.messages.some(item => item.role === "user") ? conversation.mode : record.pending?.mode || record.turns.at(-1)?.result.mode || conversation.mode,
+        model: conversation.messages.some(item => item.role === "user") ? conversation.model : record.pending?.model || record.turns.at(-1)?.model || conversation.model,
         messages: investigationMessages(record),
       }), { pendingRun: Boolean(record.pending) });
       this.revisions.set(record.id, `${record.revision}:${record.pending?.id || ""}:${record.pending?.attempts || 0}`);
@@ -181,6 +187,18 @@ class ChatApplication {
     this.store.getCurrentConversation().mode = normalizeAgentMode(value);
     this.store.save();
     this.render();
+  }
+
+  setModel(value) {
+    const conversation = this.store.getCurrentConversation();
+    if (this.busy || !conversation || conversation.pendingRun || this.providerConfigured === false) return false;
+    const model = value === null ? null : normalizeChatModel(value.trim());
+    if (value !== null && !model) { this.view.setStatus("Enter a valid model ID (up to 120 letters, digits, dots, colons, underscores or hyphens)."); return false; }
+    conversation.model = model;
+    this.store.save();
+    this.render();
+    this.view.setStatus(model ? `This chat will use ${model} for future messages.` : "This chat will use the printer's default model.");
+    return true;
   }
 
   newChat() {
@@ -221,6 +239,7 @@ class ChatApplication {
     this.busy = true;
     this.pending = "Collecting context for the agent";
     const request = { message, mode: this.modesEnabled ? conversation.mode : "chat", history: this.store.buildRequestHistory(conversation.messages) };
+    if (conversation.model) request.model = conversation.model;
     if (this.persistent) conversation.threadId ||= conversation.id;
     if (conversation.threadId) request.thread_id = conversation.threadId;
     const userEntry = { role: "user", text: message };

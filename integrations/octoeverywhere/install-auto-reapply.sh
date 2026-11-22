@@ -19,6 +19,7 @@ Options:
   --service NAME          OctoEverywhere systemd service. Default: octoeverywhere
   --moonraker-url URL      Moonraker base URL. Default: http://127.0.0.1:7125
   --update-manager NAME   Moonraker updater name. Default: octoeverywhere
+  --update-policy MODE    keep-active (default) or prepare updates as soon as available
   --interval VALUE        systemd fallback timer interval. Default: 5min
   -h, --help              Show this help
 EOF
@@ -62,6 +63,7 @@ NAV_TARGET="_blank"
 OE_SERVICE="octoeverywhere"
 MOONRAKER_URL="http://127.0.0.1:7125"
 OE_UPDATE_MANAGER="octoeverywhere"
+OE_UPDATE_POLICY="keep-active"
 CHECK_INTERVAL="5min"
 RUNNER_PATH="${KAI_OE_RUNNER_PATH:-/usr/local/bin/kai-octoeverywhere-reapply}"
 SYSTEMD_DIR="${KAI_SYSTEMD_DIR:-/etc/systemd/system}"
@@ -102,6 +104,10 @@ while [ $# -gt 0 ]; do
       ;;
     --update-manager)
       OE_UPDATE_MANAGER="$2"
+      shift 2
+      ;;
+    --update-policy)
+      OE_UPDATE_POLICY="$2"
       shift 2
       ;;
     --interval)
@@ -166,7 +172,8 @@ ensure_no_spaces "--interval" "$CHECK_INTERVAL"
 command -v systemctl >/dev/null 2>&1 || die "systemctl is required."
 sh "$INSTALL_DIR/integrations/octoeverywhere/run-maintenance.sh" --validate \
   --kai-prefix "$KAI_PREFIX" --kai-port "$KAI_PORT" \
-  --nav-target "$NAV_TARGET" --service "$OE_SERVICE" --moonraker-url "$MOONRAKER_URL"
+  --nav-target "$NAV_TARGET" --service "$OE_SERVICE" --moonraker-url "$MOONRAKER_URL" \
+  --update-policy "$OE_UPDATE_POLICY"
 
 LEGACY_BACKUP_DIR="$STATE_DIR/octoeverywhere-backups/legacy"
 LEGACY_BACKUP_COUNT=0
@@ -214,6 +221,7 @@ NAV_TARGET="$NAV_TARGET"
 OE_SERVICE="$OE_SERVICE"
 MOONRAKER_URL="$MOONRAKER_URL"
 OE_UPDATE_MANAGER="$OE_UPDATE_MANAGER"
+OE_UPDATE_POLICY="$OE_UPDATE_POLICY"
 export KAI_STATE_DIR="$STATE_DIR"
 SUSPEND_FILE="$STATE_DIR/octoeverywhere-reapply.suspended"
 
@@ -282,3 +290,4 @@ printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_SERVIC
 printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_TIMER_NAME"
 printf '[KAI OE auto-reapply] Installed %s/%s\n' "$SYSTEMD_DIR" "$REAPPLY_PATH_NAME"
 printf '[KAI OE auto-reapply] Timer interval: %s\n' "$CHECK_INTERVAL"
+printf '[KAI OE auto-reapply] Update policy: %s\n' "$OE_UPDATE_POLICY"

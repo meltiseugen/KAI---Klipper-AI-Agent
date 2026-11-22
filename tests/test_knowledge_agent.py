@@ -34,6 +34,32 @@ def reader(data=None):
 
 
 @pytest.mark.asyncio
+async def test_model_inventory_separates_unknown_slots_without_changing_saved_setup(tool_context):
+    from kai_agent.domain.knowledge import ComponentIdentity
+
+    data = setup()
+    data.components[1].model = ""
+    data.components.extend(
+        [
+            ComponentIdentity(role="accelerometer", model="none"),
+            ComponentIdentity(role="camera", model="unknown", confirmed=True),
+        ]
+    )
+    saved = data.model_dump()
+    result = await PrinterKnowledgeTool(reader(data)).execute(ToolArguments(), tool_context)
+    assert all(
+        item["model"] not in {"", "none", "unknown"} for item in result["setup"]["components"]
+    )
+    assert [item["role"] for item in result["identity_gaps"]] == [
+        "toolhead",
+        "accelerometer",
+        "camera",
+    ]
+    assert result["identity_gaps"][-1]["presence_user_confirmed"] is True
+    assert data.model_dump() == saved
+
+
+@pytest.mark.asyncio
 async def test_agent_reads_knowledge_before_answer_and_follows_source_evidence(
     tool_context, tmp_path
 ):

@@ -11,6 +11,7 @@
   "transport.js",
   "markdown.js",
   "message-view.js",
+  "composer-controls.js",
   "shell-view.js",
   "knowledge-actions.js",
   "knowledge.js",

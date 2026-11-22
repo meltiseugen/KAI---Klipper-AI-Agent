@@ -150,6 +150,7 @@ class ChatService:
                 PendingInvestigation(
                     message=payload.message,
                     mode=payload.mode,
+                    model=payload.model,
                     artifacts=payload.artifacts,
                     history=payload.history,
                 ),
@@ -171,6 +172,7 @@ class ChatService:
             thread_id=investigation.id,
             message=pending.message,
             mode=pending.mode,
+            model=pending.model,
             artifacts=pending.artifacts,
             history=pending.history,
         )
@@ -214,7 +216,7 @@ class ChatService:
         on_event: EventSink | None,
         owner: str | None = None,
     ) -> ChatResponse:
-        with track_model_usage(on_event) as usage:
+        with track_model_usage(on_event, chat_model=payload.model) as usage:
             try:
                 return await self._execute(payload, investigation, on_event, owner, usage)
             except Exception as exc:

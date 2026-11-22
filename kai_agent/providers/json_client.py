@@ -9,7 +9,7 @@ from kai_agent.domain.provider_settings import ModelProfile
 from kai_agent.domain.redaction import redact_text
 from kai_agent.providers.normalization import _parse_json_object
 from kai_agent.providers.usage import UsageGuard
-from kai_agent.runtime.model_usage import model_request
+from kai_agent.runtime.model_usage import model_request, selected_chat_model
 
 
 class OpenAIJsonClient:
@@ -30,8 +30,9 @@ class OpenAIJsonClient:
         if not self._api_key:
             raise ValueError("OpenAI provider selected but no API key is configured.")
 
+        model = selected_chat_model(self._profile.model)
         payload: dict[str, Any] = {
-            "model": self._profile.model,
+            "model": model,
             "max_completion_tokens": self._profile.max_output_tokens,
             "messages": [
                 {"role": "system", "content": system_prompt},
@@ -51,7 +52,7 @@ class OpenAIJsonClient:
                 if self._guard
                 else nullcontext(None) as reservation
             ):
-                async with model_request(self._profile.model):
+                async with model_request(model):
                     response = await client.post(
                         "https://api.openai.com/v1/chat/completions",
                         headers=headers,

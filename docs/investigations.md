@@ -5,6 +5,11 @@ turns contain the user's question, the public result, dated tool observations,
 findings, citations and reviewed proposals. Hidden model reasoning and provider
 conversation state are never stored.
 
+An optional per-chat model ID is public request metadata. Pending requests retain
+it for restart recovery, and completed turns record it for reopening a chat.
+Omitting it uses the active printer default. Older records remain compatible.
+Model choices do not change global provider policy or credentials.
+
 Public observations now share typed artifact metadata with model inputs and the
 bounded chat API `evidence_blocks` view. IDs, provenance, freshness, collection
 timestamps and config revisions survive persistence; recalled/recovery evidence
@@ -21,6 +26,9 @@ remain readable without a schema migration. See the [evidence contract](evidence
 - Historical observations carry their collection timestamp and config revision.
   The UI labels supplied historical context separately from fresh sources.
   Prompts require current config/status/log reads before claims about current state.
+- Claims can reference the recalled observations actually supplied to the model.
+  Resolved citations retain their original dates and a Historical label; validating
+  a reference does not establish current state or duplicate the old stored evidence.
 - `memory_cross_chat: false` isolates evidence between chats. Within-chat history
   and evidence still persist. `conversation_history_pairs: 0` disables dialogue
   context, not evidence memory.

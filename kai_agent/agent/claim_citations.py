@@ -5,6 +5,33 @@ from kai_agent.domain.evidence import GroundedClaim, SourceCitation
 from kai_agent.domain.investigation import Evidence
 
 
+def text_source(item: Evidence, start: int, end: int) -> Evidence:
+    if item.content_format == "text" and item.line_basis != "none":
+        return item
+    sources = [
+        citation
+        for citation in item.citations
+        if citation.line_basis != "none"
+        and citation.line_number is not None
+        and citation.line_number <= start <= end
+        and end < citation.line_number + len(citation.excerpt.splitlines())
+    ]
+    if len(sources) != 1:
+        raise ValueError(
+            "Use zero lines for a structured observation, or lines within one attached source excerpt."
+        )
+    citation = sources[0]
+    return item.copy(
+        update={
+            "content": citation.excerpt,
+            "content_format": "text",
+            "line_basis": citation.line_basis,
+            "start_line": citation.line_number,
+            "citations": [citation],
+        }
+    )
+
+
 def resolve_claims(claims: list[CitedClaim], evidence: list[Evidence]) -> list[GroundedClaim]:
     by_id = {item.id: item for item in evidence}
     result = []
@@ -16,7 +43,21 @@ def resolve_claims(claims: list[CitedClaim], evidence: list[Evidence]) -> list[G
                 raise ValueError("Unknown or unavailable evidence reference.")
             start, end = reference.start_line, reference.end_line
             if start == end == 0:
-                if not item.citations:
+                sources = item.citations
+                if (
+                    not sources
+                    and item.content_format == "json"
+                    and item.origin in {"tool", "moonraker", "saved_profile"}
+                ):
+                    sources = [
+                        SourceCitation(
+                            label=item.label,
+                            path=item.source,
+                            excerpt=item.content[:1000],
+                            line_basis="none",
+                        )
+                    ]
+                if not sources:
                     raise ValueError(
                         "This observation has no source citations; read its source first."
                     )
@@ -28,11 +69,10 @@ def resolve_claims(claims: list[CitedClaim], evidence: list[Evidence]) -> list[G
                             "config_revision": item.config_revision,
                         }
                     )
-                    for citation in item.citations[:4]
+                    for citation in sources[:4]
                 )
                 continue
-            if item.line_basis == "none" or item.content_format != "text":
-                raise ValueError("This observation has no citable text lines.")
+            item = text_source(item, start, end)
             lines = item.content.splitlines()
             offset = item.start_line or 1
             first, last = start - offset, end - offset

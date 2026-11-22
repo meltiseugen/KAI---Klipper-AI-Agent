@@ -68,6 +68,71 @@ test("findings, evidence, actions and partial status survive reload and seed edi
   assert.equal(button(ids.messages, "Investigate finding").disabled, true);
 });
 
+test("answer receipts share one collapsed Worked group before separate next actions", async () => {
+  const { app, store, ids } = await fixture();
+  ids["message-input"].value = "Inspect the printer";
+  await app.send();
+  const entry = store.getCurrentConversation().messages.at(-1);
+  entry.agentEvents = [{ kind: "tool_completed", tool: "inspect_config", message: "Configuration checked" }];
+  entry.memorySources = [{ source: "old log", observed_at: "yesterday" }];
+  entry.contextIncluded = [{ source: "printer.cfg", status: "included", sent_to_model: true }];
+  app.render();
+  const worked = descendants(ids.messages).find(node => node.classList.contains("worked-details"));
+  assert.equal(worked.tag, "details");
+  assert.notEqual(worked.open, true);
+  assert.equal(worked.children[0].textContent, "Worked");
+  for (const label of ["LLM use for this attempt", "Evidence"]) {
+    assert.ok(descendants(worked).some(node => node.attributes["aria-label"] === label));
+  }
+  for (const name of ["agent-activity", "context-receipt"]) {
+    assert.ok(descendants(worked).some(node => node.classList.contains(name)));
+  }
+  assert.match(worked.textContent, /Historical context supplied/);
+  const article = worked.parentElement;
+  assert.equal(article.children.filter(node => node.tag === "details").length, 1);
+  const actions = article.children.find(node => node.classList.contains("next-actions-card"));
+  assert.ok(article.children.indexOf(actions) > article.children.indexOf(worked));
+  assert.ok(!descendants(worked).includes(actions));
+});
+
+test("every next action fills its exact text without sending and preserves an existing draft", async () => {
+  const { app, store, ids } = await fixture();
+  ids["message-input"].value = "Inspect the printer";
+  await app.send();
+  const card = () => descendants(ids.messages).find(node => node.classList.contains("next-actions-card"));
+  const rows = () => descendants(card()).filter(node => node.classList.contains("next-action-row"));
+  assert.ok(rows().length >= 1);
+  assert.ok(rows().every(row => row.children[1].textContent === "Add to chat"));
+  const action = rows()[0].children[0].textContent;
+  const before = store.getCurrentConversation().messages.length;
+  rows()[0].children[1].click();
+  assert.equal(ids["message-input"].value, action);
+  assert.equal(store.getCurrentConversation().messages.length, before);
+  store.getCurrentConversation().draft = "Keep this draft";
+  app.render();
+  rows()[0].children[1].click();
+  assert.equal(ids["message-input"].value, `Keep this draft\n\n${action}`);
+  app.busy = true;
+  app.render();
+  assert.ok(rows().every(row => row.children[1].disabled));
+});
+
+test("the server flag hides next actions in saved answers without deleting them", async () => {
+  const { app, server, store, ids } = await fixture();
+  ids["message-input"].value = "Inspect the printer";
+  await app.send();
+  const actions = [...store.getCurrentConversation().messages.at(-1).nextActions];
+  const bootstrap = server.bootstrap;
+  server.bootstrap = async () => ({ ...await bootstrap(), show_next_actions: false });
+  await app.recover("request_failed");
+  assert.ok(!descendants(ids.messages).some(node => node.classList.contains("next-actions-card")));
+  assert.ok(descendants(ids.messages).some(node => node.classList.contains("worked-details")));
+  assert.deepEqual([...store.getCurrentConversation().messages.at(-1).nextActions], actions);
+  server.bootstrap = bootstrap;
+  await app.recover("request_failed");
+  assert.ok(descendants(ids.messages).some(node => node.classList.contains("next-actions-card")));
+});
+
 test("failed sends retain question drafts; error text is excluded from future model history", async () => {
   const { app, store, ids, server } = await fixture();
   server.chat = async () => { throw Object.assign(new Error("Session expired"), { code: "invalid_session" }); };
