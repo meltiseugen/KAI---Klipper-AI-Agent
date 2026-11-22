@@ -176,6 +176,9 @@ def test_credential_preflight_requires_real_supported_systemd(
         program.chmod(0o755)
     result = run_shell(
         "-c",
+        'exec bash "$@"',
+        "test",
+        "-c",
         """
 set -euo pipefail
 source "$1/deployment/installer/common.sh"
@@ -200,6 +203,9 @@ preflight
 
 def test_root_service_account_remains_an_explicit_install_blocker(run_shell):
     result = run_shell(
+        "-c",
+        'exec bash "$@"',
+        "test",
         "-c",
         """
 set -euo pipefail

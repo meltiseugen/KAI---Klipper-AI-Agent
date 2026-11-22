@@ -96,7 +96,9 @@ def test_units_use_root_owned_isolated_helper_and_socket_only():
         installer.units(Path("/home/a b/python"), helper.LIBRARY)
 
 
-def test_copying_helper_refuses_redirects_and_hardlinks(tmp_path):
+def test_copying_helper_refuses_redirects_and_hardlinks(tmp_path, monkeypatch):
+    # Root ownership is tested separately; CI's disposable paths are user-owned.
+    monkeypatch.setattr(installer, "trusted_path", Mock())
     source = tmp_path / "source"
     source.write_bytes(b"safe helper")
     target = tmp_path / "target"

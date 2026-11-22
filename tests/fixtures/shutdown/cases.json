@@ -23,7 +23,7 @@
     },
     "expected_assessment": "Cause not established",
     "notes": "Real public incident; sparse unmodified startup/Stats/failure lines. USB reported by incident author; no dated kernel evidence or confirmed physical root cause is supplied.",
-    "excerpt_sha256": "674a10689f2fe7f05daca098a9d40614ffd0418247e74bf70472c971138dc90e"
+    "excerpt_sha256": "cb6090bcd4ff6f1fb9f791a151a67adc6630784d3042b22e13eacd46019945a1"
   },
   {
     "id": "can-timer",
@@ -50,6 +50,6 @@
     },
     "expected_assessment": "Invalid protocol bytes on mcu",
     "notes": "Real public incident; sparse unmodified Stats/failure lines from klippy.log inside the ZIP. No startup clock anchor exists in this window; do not invent incident wall time. Full source log is 97,607,595 bytes and outside the runtime excerpt bound. Reported CAN topology does not establish the underlying hardware/software fault.",
-    "excerpt_sha256": "15dd25c06dd14983eb0916c60a87867f5f8da74f3c19605d090517a811f6320b"
+    "excerpt_sha256": "eb9e9707b5d5b4d2b71ccbe0a03f874e5cd8503243fee309a87c9472a0cc3b31"
   }
 ]
