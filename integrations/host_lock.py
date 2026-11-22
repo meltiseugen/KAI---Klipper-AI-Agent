@@ -26,7 +26,7 @@ def locked(path: Path):
                     stream.write(b"\0")
                     stream.flush()
                 stream.seek(0)
-                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)  # type: ignore[attr-defined]
             else:
                 import fcntl
 
