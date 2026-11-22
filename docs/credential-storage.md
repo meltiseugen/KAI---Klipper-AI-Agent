@@ -108,10 +108,12 @@ installer to clean up root-owned legacy files.
 UI rotation still validates before saving and takes effect after a manual restart.
 The master stays fixed, so the web process can rotate encrypted API keys without
 root access. Browser inputs clear after submission and closing; no read/export
-endpoint returns credentials. New key submission requires HTTPS or a URL using
-localhost/loopback (for an SSH tunnel). This transport check is not administrator
-authentication. Protect the whole application with the authenticated proxy/tunnel
-described in [security.md](security.md); sessions remain conversation handles.
+endpoint returns credentials. Key submission works over HTTP on a trusted LAN
+and HTTPS, with the same session and origin checks. HTTP traffic is not encrypted;
+use HTTPS or an SSH tunnel across untrusted networks. Protect the whole application
+with the deployment boundary described in [security.md](security.md); sessions
+remain conversation handles rather than administrator authentication. Stored
+credentials remain encrypted for every supported browser transport.
 
 Uninstall offers credential purge separately from conversation-data removal. It
 removes known provider DBs and auxiliary files, the application's encrypted master

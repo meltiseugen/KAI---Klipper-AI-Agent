@@ -7263,7 +7263,7 @@
     },
     "kai_agent.web.providers": {
       "path": "kai_agent/web/providers.py",
-      "lines": 79,
+      "lines": 69,
       "symbols": [
         {
           "name": "provider_errors",

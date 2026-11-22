@@ -137,6 +137,27 @@ def shell_env(tmp_path, shell) -> dict[str, str]:
     systemctl = fake_bin / "systemctl"
     systemctl.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8", newline="\n")
     systemctl.chmod(0o755)
+    nginx_backups = (tmp_path / "nginx-backups").as_posix()
+    if os.name == "nt":
+        nginx_backups = subprocess.run(
+            [str(Path(shell).with_name("cygpath.exe")), "-u", nginx_backups],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        # Git for Windows cannot apply POSIX directory modes with install -d.
+        # Exercise directory creation here; Linux retains the real permission check.
+        real_install = Path(shell).with_name("install.exe").as_posix()
+        install = fake_bin / "install"
+        install.write_text(
+            '#!/bin/sh\nif [ "$1" = -d ]; then\n'
+            '  shift; if [ "$1" = -m ]; then shift 2; fi\n'
+            '  exec mkdir -p "$@"\nfi\n'
+            f'exec "{real_install}" "$@"\n',
+            encoding="utf-8",
+            newline="\n",
+        )
+        install.chmod(0o755)
     return {
         **os.environ,
         "PATH": os.pathsep.join((str(fake_bin), str(Path(shell).parent), os.environ["PATH"])),
@@ -144,4 +165,5 @@ def shell_env(tmp_path, shell) -> dict[str, str]:
         "MSYS2_ENV_CONV_EXCL": "KAI_PREFIX",
         "MSYS2_ARG_CONV_EXCL": "/kai;/assistant/",
         "KAI_STATE_DIR": (tmp_path / "state").as_posix(),
+        "KAI_NGINX_BACKUP_DIR": nginx_backups,
     }

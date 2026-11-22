@@ -30,6 +30,27 @@ prerequisite_git_https() {
   helpers="$(git --exec-path 2>/dev/null)" && [[ -x "$helpers/git-remote-http" ]]
 }
 
+prerequisite_python_trust() {
+  local check='import ssl; raise SystemExit(not ssl.create_default_context().get_ca_certs())'
+  "$PREREQUISITE_PYTHON" -c "$check" >/dev/null 2>&1 && return 0
+  # Respect explicitly selected trust stores; never disable certificate checks.
+  [[ -z "${SSL_CERT_FILE:-}" && -z "${SSL_CERT_DIR:-}" ]] || return 1
+  local candidate
+  if [[ "$#" -eq 0 ]]; then
+    set -- /etc/ssl/certs/ca-certificates.crt /etc/pki/tls/certs/ca-bundle.crt \
+      /etc/ssl/cert.pem /opt/etc/ssl/cert.pem /opt/etc/ssl/certs/ca-certificates.crt
+  fi
+  for candidate in "$@"; do
+    [[ -r "$candidate" && -s "$candidate" ]] || continue
+    if SSL_CERT_FILE="$candidate" "$PREREQUISITE_PYTHON" -c "$check" >/dev/null 2>&1; then
+      export SSL_CERT_FILE="$candidate"
+      log "Using existing HTTPS certificate bundle: $candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 ensure_prerequisites() {
   bootstrap_opt_path
   local -a packages=()
@@ -66,7 +87,7 @@ ensure_prerequisites() {
       apt-get) packages+=(python3 python3-venv python3-pip ca-certificates);;
       apk) packages+=(python3 py3-pip py3-virtualenv ca-certificates);;
     esac
-  elif ! "$PREREQUISITE_PYTHON" -c 'import ssl; raise SystemExit(not ssl.create_default_context().get_ca_certs())' >/dev/null 2>&1; then
+  elif ! prerequisite_python_trust; then
     [[ -n "$manager" ]] || { bootstrap_manager || die "Could not prepare a package manager."; manager="$KAI_PACKAGE_MANAGER"; }
     packages+=(ca-certificates)
     [[ "$manager" != opkg ]] || packages+=(ca-bundle)
@@ -85,7 +106,7 @@ ensure_prerequisites() {
   fi
   "$PREREQUISITE_PYTHON" -c 'import ssl, sqlite3, ctypes, asyncio, logging, email, urllib.request, zlib, multiprocessing' || die "Python is missing required standard-library modules."
   "$PREREQUISITE_PYTHON" -m pip --version >/dev/null || die "Python pip setup did not complete."
-  "$PREREQUISITE_PYTHON" -c 'import ssl; raise SystemExit(not ssl.create_default_context().get_ca_certs())' || die "Python cannot find trusted HTTPS certificates."
+  prerequisite_python_trust || die "Python cannot find trusted HTTPS certificates."
 }
 
 ensure_crypto_build_prerequisites() {

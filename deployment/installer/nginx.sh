@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
 # Sourced by install.sh; no work is performed on import.
 
+nginx_backup_path() {
+  printf '%s/%s.%s.bak' "${KAI_NGINX_BACKUP_DIR:-/etc/kai/nginx-backups}" "$1" "$TIMESTAMP"
+}
+
+backup_nginx_file() {
+  [[ -f "$1" ]] || return 0
+  local backup directory
+  backup="$(nginx_backup_path "$2")"
+  directory="${backup%/*}"
+  # sites-enabled/* loads adjacent backups as additional live servers.
+  if run_root test -L "$directory" || run_root test -e "$backup" || run_root test -L "$backup"; then
+    return 1
+  fi
+  run_root install -d -m 700 "$directory" || return 1
+  run_root cp -p -- "$1" "$backup" || return 1
+  log "Backed up $1 to $backup"
+}
+
 write_nginx_snippet() {
   local path="${1:-/etc/kai/nginx-location.conf}"
   local temp_file
@@ -28,7 +46,7 @@ location ^~ ${KAI_ROOT_PATH}/ {
 }
 EOF
 
-  backup_file "$path"
+  backup_nginx_file "$path" snippet || { rm -f "$temp_file"; return 1; }
   run_root install -m 644 "$temp_file" "$path" || { rm -f "$temp_file"; return 1; }
   rm -f "$temp_file"
 }
@@ -117,7 +135,7 @@ ensure_nginx_include() {
   mode="$(stat -c '%a' "$path")"
   owner="$(stat -c '%u' "$path")"
   group="$(stat -c '%g' "$path")"
-  backup_file "$path"
+  backup_nginx_file "$path" server || { rm -f "$temp_file"; return 1; }
   run_root install -o "$owner" -g "$group" -m "$mode" "$temp_file" "$path" || { rm -f "$temp_file"; return 1; }
   rm -f "$temp_file"
   log "Updated $path"
@@ -125,7 +143,15 @@ ensure_nginx_include() {
 
 configure_nginx() {
   local snippet="${1:-/etc/kai/nginx-location.conf}"
-  local had_snippet=no
+  local had_snippet=no role backup
+  # Refuse a timestamp collision before touching either live file. Root is
+  # needed to inspect recovery copies inside the private backup directory.
+  for role in snippet server; do
+    backup="$(nginx_backup_path "$role")"
+    if run_root test -e "$backup" || run_root test -L "$backup"; then
+      die "nginx recovery copy already exists: $backup"
+    fi
+  done
   [[ ! -f "$snippet" ]] || had_snippet=yes
   log "Generating nginx location snippet."
   write_nginx_snippet "$snippet" || die "Could not write nginx snippet: $snippet"
@@ -135,11 +161,11 @@ configure_nginx() {
   if ! (ensure_nginx_include "$snippet" && reload_nginx); then
     local server="$KAI_NGINX_SERVER_BLOCK_PATH"
     warn "nginx configuration failed. Restoring previous proxy files."
-    if [[ -f "${server}.bak.${TIMESTAMP}" ]]; then
-      run_root cp "${server}.bak.${TIMESTAMP}" "$server"
+    if run_root test -f "$(nginx_backup_path server)"; then
+      run_root cp -p -- "$(nginx_backup_path server)" "$server"
     fi
     if [[ "$had_snippet" == yes ]]; then
-      run_root cp "${snippet}.bak.${TIMESTAMP}" "$snippet"
+      run_root cp -p -- "$(nginx_backup_path snippet)" "$snippet"
     else
       run_root rm -f "$snippet"
     fi

@@ -172,7 +172,7 @@ Regenerate with `python tools/project_map.py`. Listed tests directly import the 
 | [web.knowledge](../../kai_agent/web/knowledge.py) | 140 | `KnowledgeRequest`, `SaveKnowledgeRequest`, `ReviewMappingsRequest`, `ConnectorRequest`, `DiagramRequest`, `storage_errors`, `knowledge_routes` |  |
 | [web.memory](../../kai_agent/web/memory.py) | 79 | `MemoryConfirmation`, `memory_routes` |  |
 | [web.moonraker](../../kai_agent/web/moonraker.py) | 55 | `status_events`, `moonraker_routes` | [test_moonraker_web](../../tests/test_moonraker_web.py) |
-| [web.providers](../../kai_agent/web/providers.py) | 79 | `provider_errors`, `provider_routes` |  |
+| [web.providers](../../kai_agent/web/providers.py) | 69 | `provider_errors`, `provider_routes` |  |
 | [web.security](../../kai_agent/web/security.py) | 78 | `same_origin`, `RequestSecurity` | [test_security_http](../../tests/test_security_http.py) |
 | [web.streaming](../../kai_agent/web/streaming.py) | 69 | `ChatEventStream` | [test_agent_integration](../../tests/test_agent_integration.py), [test_model_usage](../../tests/test_model_usage.py), [test_resource_bounds](../../tests/test_resource_bounds.py) |
 | [workflows.citations](../../kai_agent/workflows/citations.py) | 190 |  | [test_workflows_extra](../../tests/test_workflows_extra.py) |

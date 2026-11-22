@@ -221,6 +221,70 @@ ensure_prerequisites
     )
 
 
+def test_existing_ca_bundle_avoids_package_installation(tmp_path, run_shell):
+    bundle = tmp_path / "ca-certificates.crt"
+    bundle.write_text("fixture trusted certificates")
+    source = tmp_path / "prerequisites.sh"
+    source.write_text(
+        (ROOT / "deployment/installer/prerequisites.sh")
+        .read_text()
+        .replace("/etc/ssl/certs/ca-certificates.crt", bundle.as_posix()),
+        newline="\n",
+    )
+    result = bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1"
+BUNDLE="$2"
+unset SSL_CERT_FILE SSL_CERT_DIR
+bootstrap_opt_path() { :; }
+bootstrap_command_path() { return 0; }
+prerequisite_git_https() { return 0; }
+prerequisite_nginx_available() { return 0; }
+prerequisite_python() { PREREQUISITE_PYTHON=fixture_python; }
+fixture_python() {
+  [[ "$*" != *get_ca_certs* || "${SSL_CERT_FILE:-}" == "$BUNDLE" ]]
+}
+bootstrap_manager() { echo unexpected-package-manager >&2; exit 1; }
+bootstrap_packages() { echo unexpected-package-install >&2; exit 1; }
+log() { printf '%s\n' "$*"; }
+ensure_prerequisites
+[[ "$SSL_CERT_FILE" == "$BUNDLE" ]]
+""",
+        source.as_posix(),
+        bundle.as_posix(),
+    )
+    assert "Using existing HTTPS certificate bundle:" in result.stdout
+
+
+@pytest.mark.parametrize("explicit", ["none", "file", "directory"])
+def test_ca_discovery_fails_closed_and_respects_explicit_trust(tmp_path, run_shell, explicit):
+    bundle = tmp_path / "invalid.crt"
+    bundle.write_text("invalid certificates")
+    bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1/deployment/installer/prerequisites.sh"
+unset SSL_CERT_FILE SSL_CERT_DIR
+case "$3" in file) export SSL_CERT_FILE=operator-choice;; directory) export SSL_CERT_DIR=operator-choice;; esac
+PREREQUISITE_PYTHON=fixture_python
+fixture_python() { return 1; }
+log() { echo unexpected-success >&2; exit 1; }
+if prerequisite_python_trust "$2.missing" "$2"; then exit 99; fi
+case "$3" in
+  file) [[ "$SSL_CERT_FILE" == operator-choice ]];;
+  directory) [[ "$SSL_CERT_DIR" == operator-choice ]];;
+  none) [[ -z "${SSL_CERT_FILE:-}" && -z "${SSL_CERT_DIR:-}" ]];;
+esac
+""",
+        ROOT.as_posix(),
+        bundle.as_posix(),
+        explicit,
+    )
+
+
 def test_split_python_modules_are_repaired_automatically(tmp_path, run_shell):
     calls = tmp_path / "calls"
     bash(

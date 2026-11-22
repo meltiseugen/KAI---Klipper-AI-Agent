@@ -6,7 +6,8 @@ configuration audits. Without a key the page provides setup, connection status
 and saved information; it does not generate assistant replies. The panel manages the
 service's shared provider configuration; access uses the same trusted proxy/LAN
 boundary as the rest of the application, not a separate administrator account.
-Use HTTPS for remote access and protect every `/kai/api/` route.
+Provider setup works over HTTP on a trusted LAN, including the normal Mainsail
+printer URL. Use HTTPS for remote access and protect every `/kai/api/` route.
 
 ## Setup and rotation
 
@@ -59,8 +60,10 @@ saved policy takes precedence over those environment/config defaults, including
 an explicitly removed key. Other runtime settings remain unchanged.
 The secure installer removes legacy key assignments from its environment file
 and backups after verified migration. Manually managed `.env` files and external
-backups require administrator cleanup. New browser key submission requires HTTPS
-or localhost/loopback access through an SSH tunnel.
+backups require administrator cleanup. Browser key submission uses the same
+session and origin checks over HTTP and HTTPS. HTTP does not encrypt traffic;
+use a trusted LAN, or HTTPS/an SSH tunnel for access across untrusted networks.
+Stored API keys remain encrypted regardless of the browser transport.
 
 ## Models and usage safety
 

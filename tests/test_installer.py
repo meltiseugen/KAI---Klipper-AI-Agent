@@ -98,6 +98,64 @@ ensure_nginx_include
     assert server.stat().st_mtime_ns == modified
 
 
+def test_nginx_backups_are_outside_active_sites_and_preserve_originals(tmp_path, run_shell):
+    sites = tmp_path / "sites-enabled"
+    sites.mkdir()
+    server = sites / "mainsail"
+    snippet = tmp_path / "kai-location.conf"
+    original = "server {\n    location / { root /mainsail; }\n}\n"
+    server.write_text(original)
+    snippet.write_text("previous proxy config\n")
+    bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1/deployment/installer/common.sh"
+source "$1/deployment/installer/nginx.sh"
+PROJECT_NAME=test
+TIMESTAMP=test
+KAI_NGINX_SERVER_BLOCK_PATH="$2"
+KAI_ROOT_PATH=/kai
+KAI_PORT=8811
+PATCH_NGINX_INCLUDE=yes
+run_root() { "$@"; }
+reload_nginx() { :; }
+configure_nginx "$3"
+# Refuse to overwrite an existing recovery copy, including on a retry.
+if backup_nginx_file "$2" server; then exit 99; fi
+# A repeated timestamp must stop before changing either live file.
+if (configure_nginx "$3"); then exit 99; fi
+""",
+        ROOT.as_posix(),
+        server.as_posix(),
+        snippet.as_posix(),
+    )
+    backups = tmp_path / "nginx-backups"
+    assert list(sites.iterdir()) == [server]
+    assert (backups / "server.test.bak").read_text() == original
+    assert (backups / "snippet.test.bak").read_text() == "previous proxy config\n"
+    assert f"include {snippet.as_posix()};" in server.read_text()
+
+
+def test_nginx_backup_failure_preserves_live_configuration(tmp_path, run_shell):
+    server = tmp_path / "mainsail"
+    server.write_text("server {\n}\n")
+    bash(
+        run_shell,
+        """
+set -euo pipefail
+source "$1/deployment/installer/nginx.sh"
+TIMESTAMP=test
+KAI_NGINX_SERVER_BLOCK_PATH="$2"
+run_root() { return 1; }
+if ensure_nginx_include; then exit 99; fi
+""",
+        ROOT.as_posix(),
+        server.as_posix(),
+    )
+    assert server.read_text() == "server {\n}\n"
+
+
 @pytest.mark.parametrize("existing", [True, False])
 @pytest.mark.parametrize("failure", ["validation", "server-block"])
 def test_nginx_failure_restores_both_files(tmp_path, run_shell, existing, failure):

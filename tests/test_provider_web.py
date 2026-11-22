@@ -13,8 +13,12 @@ from tests.test_agent_integration import agent_service as agent_service
 from tests.test_provider_management import store_at
 
 
+@pytest.mark.parametrize(
+    "base_url",
+    ["https://printer.example", "http://192.168.1.22", "http://printer.local", "http://localhost"],
+)
 def test_provider_api_session_validation_secrecy_and_pending_restart(
-    monkeypatch, tmp_path, agent_service
+    monkeypatch, tmp_path, agent_service, base_url
 ):
     manager = ProviderManagement(
         store_at(tmp_path), ProviderPolicy(), None, SimpleNamespace(validate=AsyncMock())
@@ -31,7 +35,7 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
         lambda: Settings(data_dir=tmp_path / "data", root_path="/kai"),
     )
     monkeypatch.setattr(app_module, "build_container", lambda _: container)
-    with TestClient(app_module.create_app(), base_url="https://testserver") as client:
+    with TestClient(app_module.create_app(), base_url=base_url) as client:
         session = client.post("/api/ui-sessions").json()["session_id"]
         params = {"session_id": session}
         base = "/kai/api/providers"
@@ -44,14 +48,20 @@ def test_provider_api_session_validation_secrecy_and_pending_restart(
         policy = status.json()["policy"]
         policy["provider"] = "openai"
         body = {**params, "revision": 0, "policy": policy, "api_key": "write-only-secret"}
-        insecure = client.post("http://testserver" + base + "/validate", json=body)
-        assert insecure.status_code == 403 and "HTTPS" in insecure.text
-        assert "write-only-secret" not in insecure.text
-        assert client.post("http://localhost" + base + "/validate", json=body).status_code == 200
-        assert client.post(base + "/validate", json=body).status_code == 200
+        invalid = client.post(base + "/validate", json={**body, "session_id": "bad"})
+        assert invalid.status_code == 403 and "write-only-secret" not in invalid.text
+        cross_site = client.post(
+            base + "/validate",
+            json=body,
+            headers={"origin": "https://evil.example", "sec-fetch-site": "cross-site"},
+        )
+        assert cross_site.status_code == 403 and "write-only-secret" not in cross_site.text
+        validated = client.post(base + "/validate", json=body, headers={"origin": base_url})
+        assert validated.status_code == 200 and "write-only-secret" not in validated.text
         assert manager.store.load()[0] == 0
-        saved = client.put(base, json=body)
+        saved = client.put(base, json=body, headers={"origin": base_url})
         assert saved.status_code == 200 and saved.json()["restart_required"]
+        assert b"write-only-secret" not in manager.store.path.read_bytes()
         assert "write-only-secret" not in saved.text
         assert "write-only-secret" not in client.get(base, params=params).text
         assert client.put(base, json=body).status_code == 409

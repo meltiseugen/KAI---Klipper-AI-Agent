@@ -24,13 +24,29 @@ package manager, including across the initial Bash restart.
 | nginx | Keeps an existing vendor binary, including one outside PATH; installs nginx only if absent. |
 | Python 3.10+ | Prefers supported `/opt` Python over older vendor Python; installs Python and required SSL, SQLite, ctypes and other standard-library modules plus pip. |
 | Old apt-based Python | Runs the existing Python helper with one build job, using altinstall beside the distro interpreter when necessary. |
-| Trusted HTTPS | Installs CA packages when Python cannot find trusted certificates; verifies Python's trust store afterward. |
+| Trusted HTTPS | Checks Python's default trust store, then existing system CA bundles before installing missing CA packages; verifies trust afterward. |
 | Virtual environment | Uses venv or virtualenv; installs the fallback helper into the checkout's `.local/installer-python`, leaving the vendor Python's global packages alone. |
 | Encryption on native MIPS | Adds gcc, make and matching Python headers if the environment needs to build PyCryptodome; uses one make job. |
 
 Package feeds must provide compatible packages. A failed transaction or an
 unsupported interpreter stops installation with an error. Setup does not silently
 substitute an incompatible Python or disable encrypted credential storage.
+
+Some CB1 images have a custom Python whose compiled certificate path is empty
+even though Debian's CA bundle is installed. Setup discovers that bundle and
+exports `SSL_CERT_FILE` for the installer process and its children. It preserves
+explicit `SSL_CERT_FILE`/`SSL_CERT_DIR` settings and never changes system trust
+paths or apt sources. Application HTTPX clients use their own verified CA bundle.
+
+Python dependencies retain Pydantic v1 support. FastAPI is bounded below 0.126,
+where installed Pydantic v1 support was removed, avoiding resolver backtracking
+through incompatible releases on printer hosts.
+
+nginx recovery copies are stored in `/etc/kai/nginx-backups` inside a private
+directory, preserving original metadata for rollback. They are never written
+beside the selected server file: nginx configurations commonly load every file
+in `sites-enabled`, including adjacent backups. Failed validation restores the
+original proxy files before stopping installation.
 
 ## Fresh Entware on Creality hosts
 

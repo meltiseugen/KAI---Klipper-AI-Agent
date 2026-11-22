@@ -312,7 +312,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "fastapi", specifier = ">=0.115,<1.0" },
+    { name = "fastapi", specifier = ">=0.115,<0.126" },
     { name = "httpx", specifier = ">=0.28,<1.0" },
     { name = "jinja2", specifier = ">=3.1,<4.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.15,<2.0" },

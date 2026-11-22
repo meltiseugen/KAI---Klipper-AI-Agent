@@ -114,8 +114,11 @@ The installer sends the pasted key through stdin to initialize encrypted storage
 `/etc/kai/kai.env` contains non-secret metadata only. Existing key
 assignments and installer backups are sanitized after verified migration.
 `kai.cfg`, normally editable through Mainsail, rejects `openai_api_key`.
-Keys must never be added to shared printer configuration. New browser key
-submission requires HTTPS or a localhost/loopback SSH tunnel.
+Keys must never be added to shared printer configuration. Browser key submission
+is supported over HTTP on the trusted LAN and uses the same session, origin and
+JSON checks as other provider operations. HTTP does not encrypt network traffic;
+use HTTPS or an SSH tunnel across untrusted networks. Encryption at rest remains
+mandatory and independent of the browser transport.
 
 For local development, `.env` is ignored by Git but still requires appropriate
 local file permissions. On Linux use owner-only access; on Windows restrict its

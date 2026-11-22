@@ -38,14 +38,6 @@ def provider_errors() -> Iterator[None]:
 def provider_routes(get_container: Callable[[Request], AppContainer]) -> APIRouter:
     router = APIRouter(prefix="/api/providers")
 
-    def secret_transport(request: Request, payload: ProviderUpdate) -> None:
-        if (
-            payload.api_key
-            and request.url.scheme != "https"
-            and request.url.hostname not in {"localhost", "127.0.0.1", "::1"}
-        ):
-            raise HTTPException(403, "API key submission requires HTTPS or a localhost SSH tunnel.")
-
     def manager(request: Request, session_id: str):
         container = get_container(request)
         if container.sessions.get(session_id) is None:
@@ -61,7 +53,6 @@ def provider_routes(get_container: Callable[[Request], AppContainer]) -> APIRout
 
     @router.post("/validate")
     async def validate(request: Request, payload: ProviderUpdate) -> dict:
-        secret_transport(request, payload)
         with provider_errors():
             return await manager(request, payload.session_id).update(payload, save=False)
 
@@ -72,7 +63,6 @@ def provider_routes(get_container: Callable[[Request], AppContainer]) -> APIRout
 
     @router.put("")
     async def save(request: Request, payload: ProviderUpdate) -> dict:
-        secret_transport(request, payload)
         with provider_errors():
             return await manager(request, payload.session_id).update(payload, save=True)
 
