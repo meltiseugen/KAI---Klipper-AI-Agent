@@ -2,9 +2,28 @@
 
 import json
 import shlex
+import sys
+
+import pytest
 
 from tests.release_helpers import ROOT, daemon, free_port, http
 from tests.test_installer import bash
+
+
+def test_installed_smoke_cli_preserves_virtualenv_python_symlink(tmp_path, monkeypatch):
+    from tools import smoke_installed
+
+    launcher = tmp_path / "installed/bin/python"
+    launcher.parent.mkdir(parents=True)
+    try:
+        launcher.symlink_to(sys.executable)
+    except OSError:
+        pytest.skip("requires permission to create an interpreter symlink")
+    seen = []
+    monkeypatch.setattr(smoke_installed, "smoke", seen.append)
+    monkeypatch.setattr(sys, "argv", ["smoke_installed", "--python", str(launcher)])
+    smoke_installed.main()
+    assert seen == [launcher]
 
 
 def test_generated_environment_config_and_unit_boot_without_touching_printer(tmp_path, run_shell):

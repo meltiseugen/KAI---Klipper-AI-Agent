@@ -162,7 +162,8 @@ def smoke(python: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--python", required=True, type=Path)
-    smoke(parser.parse_args().python.resolve())
+    # Linux venv launchers are symlinks; resolving one loses the venv's packages.
+    smoke(parser.parse_args().python.absolute())
 
 
 if __name__ == "__main__":
