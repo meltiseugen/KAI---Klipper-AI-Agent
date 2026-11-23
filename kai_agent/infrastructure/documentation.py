@@ -66,7 +66,7 @@ class PublicDocumentationFetcher:
         self._resolver = resolver
 
     async def fetch(self, source: DocumentSource) -> tuple[bytes, str, str]:
-        url = source.url
+        url = source.download_url or source.url
         async with httpx.AsyncClient(timeout=20, follow_redirects=False, trust_env=False) as client:
             for _ in range(4):
                 # Syntax is checked before DNS; target validation also checks all resolved IPs.

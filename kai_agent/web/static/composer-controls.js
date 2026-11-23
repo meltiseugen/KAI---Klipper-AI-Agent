@@ -1,6 +1,6 @@
 // Composer disclosures; selections are owned by the active browser conversation.
 // General-purpose Responses models from OpenAI's catalog, reviewed 2026-11-22.
-// Access depends on the configured API key; custom IDs remain available below.
+// Access depends on the configured API key.
 const OPENAI_CHAT_MODELS = Object.freeze([
   "gpt-6.2-sol", "gpt-6.2-astra", "gpt-6.1-terra", "gpt-6-luna",
   "gpt-6.1-sol", "gpt-6-astra", "gpt-6-sol",
@@ -13,16 +13,21 @@ class ComposerControls {
     this.doc = doc;
     this.mode = doc.getElementById("agent-mode");
     this.model = doc.getElementById("chat-model");
+    this.thinking = doc.getElementById("chat-thinking");
     this.modeMenu = doc.getElementById("mode-menu");
     this.modelMenu = doc.getElementById("model-menu");
-    this.modelInput = doc.getElementById("chat-model-input");
+    this.thinkingMenu = doc.getElementById("thinking-menu");
     this.defaultModel = null;
     this.catalog = [];
   }
 
+  pickers() {
+    return [[this.mode, this.modeMenu, "mode-picker"], [this.model, this.modelMenu, "model-picker"], [this.thinking, this.thinkingMenu, "thinking-picker"]];
+  }
+
   bind(actions) {
     this.actions = actions;
-    for (const [button, menu, pickerId] of [[this.mode, this.modeMenu, "mode-picker"], [this.model, this.modelMenu, "model-picker"]]) {
+    for (const [button, menu, pickerId] of this.pickers()) {
       button?.addEventListener("click", () => this.toggle(button, menu));
       button?.addEventListener("keydown", event => {
         if (["ArrowDown", "ArrowUp"].includes(event.key)) {
@@ -41,8 +46,8 @@ class ComposerControls {
         this.close(this.mode, this.modeMenu, true);
       });
     }
-    this.modeMenu?.addEventListener("keydown", event => {
-      const options = [...this.modeMenu.querySelectorAll("[data-mode]")];
+    for (const [, menu] of this.pickers()) menu?.addEventListener("keydown", event => {
+      const options = [...menu.querySelectorAll("button")];
       const index = options.indexOf(this.doc.activeElement);
       let next;
       if (event.key === "ArrowDown") next = (index + 1) % options.length;
@@ -51,18 +56,17 @@ class ComposerControls {
       if (event.key === "End") next = options.length - 1;
       if (next !== undefined) { event.preventDefault(); options[next]?.focus(); }
     });
-    this.doc.getElementById("chat-model-form")?.addEventListener("submit", event => {
-      event.preventDefault();
-      if (!this.model.disabled && actions.model(this.modelInput.value)) this.close(this.model, this.modelMenu, true);
+    for (const option of this.thinkingMenu?.querySelectorAll("[data-thinking]") || []) option.addEventListener("click", () => {
+      if (!this.thinking.disabled && actions.thinking(option.dataset.thinking || null)) this.close(this.thinking, this.thinkingMenu, true);
     });
     this.doc.addEventListener("pointerdown", event => {
-      for (const [button, menu, pickerId] of [[this.mode, this.modeMenu, "mode-picker"], [this.model, this.modelMenu, "model-picker"]]) {
+      for (const [button, menu, pickerId] of this.pickers()) {
         if (!this.doc.getElementById(pickerId)?.contains(event.target)) this.close(button, menu);
       }
     });
     this.doc.addEventListener("keydown", event => {
       if (event.key !== "Escape") return;
-      for (const [button, menu] of [[this.mode, this.modeMenu], [this.model, this.modelMenu]]) {
+      for (const [button, menu] of this.pickers()) {
         if (menu && !menu.hidden) { event.preventDefault(); this.close(button, menu, true); }
       }
     });
@@ -76,14 +80,11 @@ class ComposerControls {
 
   open(button, menu, last = false) {
     if (!button || button.disabled || !menu) return;
-    this.close(this.mode, this.modeMenu);
-    this.close(this.model, this.modelMenu);
-    if (menu === this.modelMenu) this.modelInput.value = this.selectedModel || this.defaultModel || "";
+    for (const [trigger, popup] of this.pickers()) this.close(trigger, popup);
     menu.hidden = false;
     button.setAttribute("aria-expanded", "true");
     const options = [...menu.querySelectorAll("button")];
-    (menu === this.modelMenu ? this.modelInput : last ? options.at(-1) : options[0])?.focus();
-    if (menu === this.modelMenu) this.modelInput.select();
+    (last ? options.at(-1) : options[0])?.focus();
   }
 
   toggle(button, menu) {
@@ -102,6 +103,13 @@ class ComposerControls {
   render(store, { busy, providerConfigured }) {
     const conversation = store.getCurrentConversation();
     this.selectedModel = normalizeChatModel(conversation?.model);
+    const thinking = normalizeThinkingLevel(conversation?.thinkingLevel);
+    setText(this.doc.getElementById("chat-thinking-label"), `Thinking: ${thinking ? thinking[0].toUpperCase() + thinking.slice(1) : "Default"}`);
+    if (this.thinking) {
+      this.thinking.disabled = busy || !providerConfigured || Boolean(conversation?.pendingRun);
+      if (this.thinking.disabled) this.close(this.thinking, this.thinkingMenu);
+    }
+    for (const option of this.thinkingMenu?.querySelectorAll("[data-thinking]") || []) option.setAttribute("aria-checked", String((option.dataset.thinking || null) === thinking));
     const model = this.selectedModel || this.defaultModel;
     setText(this.doc.getElementById("chat-model-label"), providerConfigured ? model || "Choose model" : "Not connected");
     setText(this.doc.getElementById("model-badge"), `Model: ${model || "unavailable"}`);
@@ -117,16 +125,16 @@ class ComposerControls {
     if (!options) return;
     // Preserve focused controls while a disclosure is open.
     const recent = [...new Set([this.selectedModel, ...store.state.conversations.map(item => normalizeChatModel(item.model))].filter(Boolean))].slice(0, 8);
-    const models = [...new Set([...recent, ...this.catalog])].filter(item => item !== this.defaultModel);
+    const models = [...new Set([this.defaultModel, ...recent, ...this.catalog].filter(Boolean))];
     const key = JSON.stringify([this.defaultModel, this.selectedModel, models]);
     if (options.dataset.models === key) return;
     options.dataset.models = key;
     options.textContent = "";
-    for (const value of [null, ...models]) {
+    for (const value of models) {
       const button = this.doc.createElement("button");
       button.type = "button";
-      button.textContent = value || `Default${this.defaultModel ? ` · ${this.defaultModel}` : ""}`;
-      button.setAttribute("aria-pressed", String(value === this.selectedModel));
+      button.textContent = value;
+      button.setAttribute("aria-pressed", String(value === model));
       button.addEventListener("click", () => {
         if (!this.model.disabled && this.actions.model(value)) this.close(this.model, this.modelMenu, true);
       });

@@ -9,7 +9,11 @@ from kai_agent.domain.provider_settings import ModelProfile
 from kai_agent.domain.redaction import redact_text
 from kai_agent.providers.normalization import _parse_json_object
 from kai_agent.providers.usage import UsageGuard
-from kai_agent.runtime.model_usage import model_request, selected_chat_model
+from kai_agent.runtime.model_usage import (
+    model_request,
+    selected_chat_model,
+    selected_reasoning_effort,
+)
 
 
 class OpenAIJsonClient:
@@ -40,8 +44,9 @@ class OpenAIJsonClient:
             ],
             "response_format": {"type": "json_object"},
         }
-        if self._profile.reasoning_effort != "default":
-            payload["reasoning_effort"] = self._profile.reasoning_effort
+        effort = selected_reasoning_effort(self._profile.reasoning_effort)
+        if effort != "default":
+            payload["reasoning_effort"] = effort
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",

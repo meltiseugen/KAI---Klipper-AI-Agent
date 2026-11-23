@@ -26,6 +26,8 @@ class ComponentIdentity(BaseModel):
     revision: str = Field(default="", max_length=30)
     mcu: str = Field(default="", max_length=60, regex=r"^[A-Za-z0-9_-]*$")
     connection: Literal["unknown", "USB", "CAN", "UART", "I2C", "SPI"] = "unknown"
+    integrated_into: str = Field(default="", regex=r"^(?:[a-z][a-z0-9_-]{0,39})?$")
+    details: str = Field(default="", max_length=3000)
     confirmed: StrictBool = False
     reference_urls: list[constr(max_length=2048)] = Field(default_factory=list, max_items=3)  # type: ignore[valid-type]
 
@@ -59,6 +61,8 @@ class KnowledgeSetup(BaseModel):
     firmware_repository: str = Field(default="", max_length=200)
     firmware_commit: str = Field(default="", max_length=40)
     validation: dict = Field(default_factory=dict)
+    confirmed_documents: dict[str, str] = Field(default_factory=dict)
+    dismissed_documents: dict[str, str] = Field(default_factory=dict)
 
     @root_validator
     def pinned_firmware(cls, values: dict) -> dict:
@@ -82,6 +86,18 @@ class KnowledgeSetup(BaseModel):
     def unique_roles(cls, value: list[ComponentIdentity]) -> list[ComponentIdentity]:
         if len({item.role for item in value}) != len(value):
             raise ValueError("Each component role may appear only once.")
+        by_role = {item.role: item for item in value}
+        for item in value:
+            seen = {item.role}
+            current = item
+            while current.integrated_into:
+                parent = by_role.get(current.integrated_into)
+                if parent is None or parent.category != "board":
+                    raise ValueError("A built-in component must reference an existing board.")
+                if parent.role in seen:
+                    raise ValueError("Built-in component relationships cannot contain a cycle.")
+                seen.add(parent.role)
+                current = parent
         return value
 
     class Config:
@@ -94,6 +110,8 @@ class DocumentSource:
     title: str
     url: str
     component_key: str = ""
+    download_url: str = ""
+    repository_commit: str = ""
 
 
 class FanMapping(BaseModel):
@@ -116,6 +134,7 @@ class CachedDocument(BaseModel):
     content: str = ""
     version: str = ""
     component_key: str = ""
+    details_digest: str = ""
     fan_mappings: list[FanMapping] = Field(default_factory=list, max_items=16)
     bus_mappings: list[BusMapping] = Field(default_factory=list, max_items=64)
     firmware_commit: str = ""
@@ -136,10 +155,17 @@ class KnowledgeRepository(Protocol):
     def original(self, document_id: str, digest: str | None = None) -> bytes | None: ...
     def retain_components(self, keys: set[str]) -> None: ...
     def retain_sources(self, component_key: str, ids: set[str]) -> None: ...
+    def update_reference(
+        self, setup: KnowledgeSetup, document: CachedDocument, *, delete: bool
+    ) -> KnowledgeSetup: ...
 
 
 class DocumentationFetcher(Protocol):
     async def fetch(self, source: DocumentSource) -> tuple[bytes, str, str]: ...
+
+
+class DocumentationResolver(Protocol):
+    async def resolve(self, source: DocumentSource) -> list[DocumentSource]: ...
 
 
 class KnowledgeResearcher(Protocol):

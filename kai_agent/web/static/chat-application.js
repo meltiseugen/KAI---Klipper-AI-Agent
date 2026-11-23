@@ -19,6 +19,7 @@ class ChatApplication {
       modesEnabled: this.modesEnabled,
       providerConfigured: this.providerConfigured !== false,
       showNextActions: this.showNextActions !== false,
+      openMemory: () => this.memory?.open(),
       followUp: !this.busy && this.providerConfigured !== false && !conversation?.pendingRun ? question => this.followUp(question) : null,
       revalidate: this.persistent && conversation?.threadId && !conversation.pendingRun ? id => this.revalidate(id) : null,
     });
@@ -32,6 +33,7 @@ class ChatApplication {
       draft: value => { this.store.getCurrentConversation().draft = value; this.store.save(); this.view.setStatus(""); },
       mode: value => this.setMode(value),
       model: value => this.setModel(value),
+      thinking: value => this.setThinking(value),
       recover: code => this.recover(code),
       closeSettings: () => this.closeSettings(),
     });
@@ -72,7 +74,7 @@ class ChatApplication {
       }
       if (this.persistent) await this.restoreInvestigations();
       if (payload.features?.includes("confirmed-memory") && !this.memory) {
-        this.memory = new PrinterMemoryPanel(this.transport, () => this.store.getCurrentConversation()?.threadId);
+        this.memory = new PrinterMemoryPanel(this.transport);
         this.memory.beforeOpen = () => { this.providers?.close(); this.knowledge?.close(); };
         this.memory.bind();
       }
@@ -130,6 +132,7 @@ class ChatApplication {
           id: summary.id, threadId: summary.id, title: summary.title || "Saved chat",
           mode: summary.pending?.mode,
           model: summary.pending?.model,
+          thinkingLevel: summary.pending?.reasoning_effort,
           updatedAt: summary.updated_at, messages: summary.pending ? investigationMessages({ turns: [], pending: summary.pending }) : [],
         });
         conversation.loaded = false;
@@ -146,6 +149,7 @@ class ChatApplication {
         updatedAt: record.updated_at, draft: existing?.draft || "",
         mode: existing?.mode || record.pending?.mode || record.turns.at(-1)?.result.mode,
         model: existing ? existing.model : record.pending?.model || record.turns.at(-1)?.model,
+        thinkingLevel: existing ? existing.thinkingLevel : record.pending?.reasoning_effort || record.turns.at(-1)?.reasoning_effort,
         messages: investigationMessages(record),
       });
       conversation.pendingRun = Boolean(record.pending);
@@ -175,6 +179,7 @@ class ChatApplication {
         ...conversation, loaded: true, title: record.title, updatedAt: record.updated_at,
         mode: conversation.messages.some(item => item.role === "user") ? conversation.mode : record.pending?.mode || record.turns.at(-1)?.result.mode || conversation.mode,
         model: conversation.messages.some(item => item.role === "user") ? conversation.model : record.pending?.model || record.turns.at(-1)?.model || conversation.model,
+        thinkingLevel: conversation.messages.some(item => item.role === "user") ? conversation.thinkingLevel : record.pending?.reasoning_effort || record.turns.at(-1)?.reasoning_effort || conversation.thinkingLevel,
         messages: investigationMessages(record),
       }), { pendingRun: Boolean(record.pending) });
       this.revisions.set(record.id, `${record.revision}:${record.pending?.id || ""}:${record.pending?.attempts || 0}`);
@@ -198,6 +203,17 @@ class ChatApplication {
     this.store.save();
     this.render();
     this.view.setStatus(model ? `This chat will use ${model} for future messages.` : "This chat will use the printer's default model.");
+    return true;
+  }
+
+  setThinking(value) {
+    const conversation = this.store.getCurrentConversation();
+    if (this.busy || !conversation || conversation.pendingRun || this.providerConfigured === false) return false;
+    const level = normalizeThinkingLevel(value);
+    if (value !== null && !level) return false;
+    conversation.thinkingLevel = level;
+    this.store.save(); this.render();
+    this.view.setStatus(level ? `Thinking set to ${level} for future messages in this chat.` : "This chat will use the configured default thinking level.");
     return true;
   }
 
@@ -240,6 +256,7 @@ class ChatApplication {
     this.pending = "Collecting context for the agent";
     const request = { message, mode: this.modesEnabled ? conversation.mode : "chat", history: this.store.buildRequestHistory(conversation.messages) };
     if (conversation.model) request.model = conversation.model;
+    if (conversation.thinkingLevel) request.reasoning_effort = conversation.thinkingLevel;
     if (this.persistent) conversation.threadId ||= conversation.id;
     if (conversation.threadId) request.thread_id = conversation.threadId;
     const userEntry = { role: "user", text: message };

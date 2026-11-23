@@ -46,11 +46,30 @@ settings open as focused dialogs. The sidebar collapses on desktop and opens ove
 the conversation on small screens. Model text is rendered as text nodes, never interpreted as HTML.
 The transport owns all session retry logic; renderers do not fetch data.
 
-Provider settings separate Connection, Models and Usage limits into expandable
+Provider settings separate Connection, Models and Usage into expandable
 sections. Printer knowledge groups setup, references, source reviews and diagrams
 the same way. Component and model details open individually;
 knowledge refreshes preserve expanded sections. Dialog titles and save actions stay
 visible while their content scrolls.
+
+Usage shows recorded UTC-day request/token counters and effective local caps.
+Caps default to unlimited and are configured only through the commented-out
+`[provider_limits]` section in `kai.cfg`, not through saved provider settings.
+
+The accelerometer entry has an **Installation** selector for a separate device or
+a device built into one of the saved boards. Its summary names the containing
+board. The relationship is saved with knowledge and included in agent context;
+an unknown sensor chip may stay blank. It does not change printer configuration.
+
+Every component replaces the documentation-URL input with a visible free-form
+**Component details** textarea. Its saved details guide AI reference discovery,
+source interpretation and future answers as user-provided context. Old saved URLs
+are preserved when editing components, but no longer bypass automatic discovery.
+Each component has a Research action and linked reference cards with source
+previews and Confirm/Delete controls. The Reference library repeats those cards,
+labels their component links and includes other retained documents. Confirmation
+is version-specific; deletion persists across subsequent research. Component-only
+research uses the existing refresh progress and does not research other components.
 
 The sidebar starts with lightweight investigation summaries. Full saved answers
 load when a chat is opened; cached messages and drafts survive failed fetches.
@@ -68,7 +87,8 @@ scrollable row of status tags, without a status dropdown or Connection panel.
 Beside the composer's styled **Chat/Debug** picker, the provider
 and clickable model name stay on the same row. The model popover offers the
 printer default, recently selected chat models, 14 general-purpose OpenAI model
-choices and a model-ID input. The scrollable list includes GPT-6.2 Sol/Astra,
+choices. The custom Model ID field and Use model button are removed from this
+popover. The scrollable list includes GPT-6.2 Sol/Astra,
 GPT-6.1 Terra/Sol, GPT-6 Luna/Astra/Sol, GPT-5.6 Sol/Terra/Luna, GPT-5.5,
 GPT-5.4/mini and GPT-5.2. Choices come from the
 [OpenAI model catalog](https://developers.openai.com/api/docs/models/all), reviewed
@@ -78,6 +98,13 @@ override. It is saved with browser conversations and public server turns/pending
 requests, including automatic recovery. No provider-settings save or KAI restart
 is needed. Search and knowledge retain their configured models; token/request
 limits and the existing private credential remain in use.
+An adjacent **Thinking** dropdown offers **Default**, **Low**, **Medium** and
+**High** for this chat's future requests. Default uses the configured provider
+profile; explicit choices pass a request-scoped reasoning effort. The selection
+persists with browser conversations, saved turns and pending recovery inputs.
+It does not change the global provider profile or search/knowledge reasoning.
+Printer knowledge, Printer memory and Provider settings follow New chat in the
+sidebar, with a divider before the Chats list.
 History refresh slows to thirty seconds when idle, remains five seconds for pending
 work, and pauses in hidden tabs. See [performance.md](performance.md) for measured
 costs and the separate Linux/ARM acceptance requirements.

@@ -5,7 +5,25 @@ from hashlib import sha256
 from typing import Literal
 
 from kai_agent.domain.knowledge import CachedDocument, ComponentIdentity, KnowledgeSetup
-from kai_agent.knowledge.sources import component_documents, mapping_evidence
+from kai_agent.knowledge.repositories import repository_location
+from kai_agent.knowledge.sources import component_documents, component_key, mapping_evidence
+
+
+def reference_metadata(setup: KnowledgeSetup, document: CachedDocument) -> dict:
+    return {
+        **document.model_dump(
+            exclude={"content": True, "fan_mappings": True, "pages": {"__all__": {"text"}}}
+        ),
+        "component_roles": [
+            item.role for item in setup.components if component_key(item) == document.component_key
+        ],
+        "confirmed": setup.confirmed_documents.get(document.id) == document.digest,
+        "confirmation_stale": document.id in setup.confirmed_documents
+        and setup.confirmed_documents[document.id] != document.digest,
+        "excerpt": "Repository index only. Research this component again to cache manuals and configuration examples from inside the repository."
+        if repository_location(document.url)
+        else document.content.strip()[:600],
+    }
 
 
 def profile_setup(profile: dict) -> KnowledgeSetup:
@@ -42,13 +60,18 @@ def component_status(
     docs = component_documents(component, documents)
     gaps = []
     if not component.model.strip():
-        gaps.append("Enter the component model from the printer profile or hardware label.")
+        gaps.append(
+            "Exact built-in sensor model is unknown; inspect the containing board's documentation."
+            if component.integrated_into
+            else "Enter the component model from the printer profile or hardware label."
+        )
     if not component.confirmed or profile_changed:
         gaps.append("Confirm component identity and wiring; saved profile may have changed.")
     evidence = mapping_evidence(component, docs)
     return {
         "role": component.role,
         "model": component.model,
+        "integrated_into": component.integrated_into,
         "status": "Needs details"
         if gaps
         else "Documentation unavailable"

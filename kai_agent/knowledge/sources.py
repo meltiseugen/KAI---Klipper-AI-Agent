@@ -24,6 +24,8 @@ def component_key(component: ComponentIdentity) -> str:
         component.model.strip().casefold(),
         component.revision.strip().casefold(),
     ]
+    if component.integrated_into:
+        identity.append(component.integrated_into)
     return sha256(json.dumps(identity).encode()).hexdigest()
 
 

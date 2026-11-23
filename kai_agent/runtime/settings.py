@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     conversation_history_pairs: int = Field(default=10, ge=0, le=50)
     show_next_actions: bool = True
     memory_cross_chat: bool = True
+    memory_auto_save: bool = True
     memory_retention_days: int = Field(default=90, ge=1, le=3650)
     collect_host_logs: bool = True
     logs_dir_path: Path = Path("logs")
@@ -78,6 +79,10 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-5.4-mini"
     openai_api_key: SecretStr | None = None
     provider_storage_dir: Path = Field(default_factory=lambda: Path.home() / ".config" / "kai")
+    provider_requests_per_minute: int = Field(default=0, ge=0)
+    provider_requests_per_day: int = Field(default=0, ge=0)
+    provider_tokens_per_day: int = Field(default=0, ge=0)
+    provider_max_concurrent_requests: int = Field(default=0, ge=0)
     agent_enabled: bool = True
     web_search_enabled: bool = True
     web_search_domains: str = ""
@@ -245,6 +250,12 @@ def _load_kai_cfg_values(config_file: Path) -> dict[str, Any]:
 
     field_names = set(Settings.__fields__)
     section_aliases: dict[str, dict[str, str]] = {
+        "provider_limits": {
+            "requests_per_minute": "provider_requests_per_minute",
+            "requests_per_day": "provider_requests_per_day",
+            "tokens_per_day": "provider_tokens_per_day",
+            "max_concurrent_requests": "provider_max_concurrent_requests",
+        },
         "config_context": {
             "root_config_file": "config_root_file",
             "ignore_globs": "config_ignore_globs",

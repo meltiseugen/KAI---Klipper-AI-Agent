@@ -126,9 +126,10 @@ async def test_discovery_has_no_hardware_allowlist_and_sends_only_public_identit
         "https://example.org/a",
         "https://example.org/b",
         "https://example.org/c",
+        "https://example.org/d",
     ]
     query = search.search.call_args.args[0]
-    assert model in query and "private" not in query
+    assert model in query and "private-wiring-details" not in query and "private_mcu" not in query
     client.create.assert_not_awaited()
     with pytest.raises(ValueError, match="public product"):
         public_identity(component.copy(update={"model": "Board at 192.168.1.1"}))
@@ -233,6 +234,19 @@ async def test_public_fetcher_pins_dns_tls_redirects_and_bounds(monkeypatch):
     assert requests[0].url.host == "1.1.1.1" and requests[0].headers["Host"] == "example.org"
     assert requests[0].extensions["sni_hostname"] == "example.org"
     assert requests[0].headers["accept-encoding"] == "identity"
+    pinned = replace(
+        source,
+        download_url="https://raw.githubusercontent.com/vendor/board/" + "a" * 40 + "/manual.txt",
+    )
+    assert await fetcher.fetch(pinned) == (b"reference", "reference", "text")
+    assert requests[-1].headers["host"] == "raw.githubusercontent.com"
+    assert requests[-1].url.path.endswith("/" + "a" * 40 + "/manual.txt")
+    count = len(requests)
+    resolver.return_value = ["127.0.0.1"]
+    with pytest.raises(ValueError, match="blocked"):
+        await fetcher.fetch(replace(source, download_url="https://private.example/manual"))
+    assert len(requests) == count
+    resolver.return_value = ["1.1.1.1"]
     reply.update(
         status=302,
         content=b"",

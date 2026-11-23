@@ -36,6 +36,10 @@ def provider_management(settings: Settings) -> tuple[ProviderManagement, UsageGu
         search=profile,
         knowledge=profile,
         legacy=profile,
+        requests_per_minute=settings.provider_requests_per_minute,
+        requests_per_day=settings.provider_requests_per_day,
+        tokens_per_day=settings.provider_tokens_per_day,
+        max_concurrent_requests=settings.provider_max_concurrent_requests,
         web_search_enabled=settings.web_search_enabled,
     )
     guard = UsageGuard(store, policy)

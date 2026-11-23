@@ -7,8 +7,10 @@ from contextlib import closing
 from typing import Callable
 
 from kai_agent.domain.investigation import ConfirmedMemory
+from kai_agent.domain.memory import MemoryUpdate
 from kai_agent.domain.redaction import redact_data
 from kai_agent.domain.repositories import InvestigationConflict
+from kai_agent.infrastructure.memory_changes import apply_memory_changes
 
 
 class SqliteConfirmedMemoryRepository:
@@ -26,10 +28,11 @@ class SqliteConfirmedMemoryRepository:
                 "SELECT content FROM confirmed_memory WHERE printer_id=? ORDER BY rowid DESC",
                 (printer_id,),
             ).fetchall()
-        return [
+        notes = [
             ConfirmedMemory.parse_obj(redact_data(ConfirmedMemory.parse_raw(row[0]).model_dump()))
             for row in rows
         ]
+        return sorted(notes, key=lambda note: note.confirmed_at, reverse=True)
 
     def save(self, printer_id: str, memory: ConfirmedMemory) -> None:
         memory = ConfirmedMemory.parse_obj(redact_data(memory.model_dump()))
@@ -62,3 +65,18 @@ class SqliteConfirmedMemoryRepository:
             db.execute(
                 "DELETE FROM confirmed_memory WHERE printer_id=? AND id=?", (printer_id, memory_id)
             )
+
+    def update(self, printer_id: str, memory_id: str, content: str, revision: int) -> ConfirmedMemory:
+        with closing(self._connect()) as db, db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT content FROM confirmed_memory WHERE printer_id=? AND id=?", (printer_id, memory_id)).fetchone()
+            if row is None:
+                raise InvestigationConflict("This memory was removed. Reload memories.")
+            old = ConfirmedMemory.parse_raw(row[0])
+            apply_memory_changes(db, printer_id, [MemoryUpdate(
+                id=old.id, action="update", kind=old.kind, content=content,
+                before_content=old.content, expected_revision=revision,
+                origin="manual", source_chat_id=old.source_chat_id,
+            )])
+            updated = db.execute("SELECT content FROM confirmed_memory WHERE printer_id=? AND id=?", (printer_id, memory_id)).fetchone()
+            return ConfirmedMemory.parse_raw(updated[0])

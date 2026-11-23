@@ -13,6 +13,7 @@
   "message-view.js",
   "composer-controls.js",
   "shell-view.js",
+  "knowledge-references.js",
   "knowledge-actions.js",
   "knowledge.js",
   "memory.js",

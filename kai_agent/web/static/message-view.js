@@ -1,4 +1,14 @@
 // Renders one message; network/state changes belong to the application.
+function isLocalDailyUsageLimit(text) {
+  return text?.trim() === "Daily provider usage limit reached. Resets at midnight UTC."
+    || text?.trim().startsWith("Daily local KAI usage limit reached.");
+}
+
+function localDailyUsageText(text) {
+  if (text?.trim() !== "Daily provider usage limit reached. Resets at midnight UTC.") return text;
+  return "Daily local KAI usage limit reached. Increase `requests_per_day` or `tokens_per_day` in `[provider_limits]` in `kai.cfg`, or set the caps to `0` for unlimited, then restart KAI and retry your question. The daily counter resets at midnight UTC.";
+}
+
 class MessageView {
   constructor(template, revalidate) {
     this.template = template;
@@ -150,7 +160,7 @@ class MessageView {
     setText(meta, entry.role === "user" ? "You" : "KAI");
     content.classList.toggle("markdown", entry.role === "assistant");
     if (entry.role === "assistant") {
-      renderMarkdown(content, entry.text);
+      renderMarkdown(content, localDailyUsageText(entry.text));
     } else {
       setText(content, entry.text);
     }
@@ -165,6 +175,31 @@ class MessageView {
     }
 
     if (entry.role === "assistant") {
+      const updates = Array.isArray(entry.memoryUpdates) ? entry.memoryUpdates : [];
+      if (updates.length) {
+        const notice = document.createElement("details"); notice.className = "memory-update-notice";
+        const summary = document.createElement("summary"); summary.textContent = "Memory updated"; notice.appendChild(summary);
+        for (const update of updates) {
+          const row = document.createElement("div"); row.className = "memory-update-item";
+          const label = document.createElement("strong");
+          label.textContent = { add: "Remembered", update: "Updated", forget: "Forgotten" }[update.action] || "Changed";
+          const content = document.createElement("p"); content.textContent = update.content; row.append(label, content);
+          if (update.action === "update" && update.before_content) {
+            const previous = document.createElement("p"); previous.className = "memory-update-previous";
+            previous.textContent = `Previously: ${update.before_content}`; row.appendChild(previous);
+          }
+          notice.appendChild(row);
+        }
+        if (this.openMemory) {
+          const manage = document.createElement("button"); manage.type = "button"; manage.className = "secondary-button";
+          manage.textContent = "Manage memories"; manage.addEventListener("click", () => this.openMemory()); notice.appendChild(manage);
+        }
+        article.appendChild(notice);
+      }
+      if (entry.memoryError) {
+        const warning = document.createElement("p"); warning.className = "memory-update-error";
+        warning.setAttribute("role", "status"); warning.textContent = entry.memoryError; article.appendChild(warning);
+      }
       const findings = normalizeFindings(entry.findings);
       appendFindingCards(article, findings, this.followUp);
       const worked = document.createElement("details");
@@ -191,7 +226,9 @@ class MessageView {
       if (entry.agentStatus === "limited" || entry.agentStatus === "error") {
         const status = document.createElement("p");
         status.className = "result-status";
-        status.textContent = entry.agentStatus === "limited" ? "Partial result · Some investigation steps could not be completed." : "Investigation error · Review the available evidence before continuing.";
+        status.textContent = entry.agentStatus === "limited"
+          ? isLocalDailyUsageLimit(entry.text) ? "Investigation stopped · A local KAI usage cap was reached." : "Partial result · Some investigation steps could not be completed."
+          : "Investigation error · Review the available evidence before continuing.";
         article.appendChild(status);
       }
       AgentActivity.append(worked, entry.agentEvents);

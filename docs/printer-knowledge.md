@@ -14,11 +14,27 @@ public documentation exists or establish which board revision a printer contains
    hardware revision, Klipper MCU name and connection. Confirm the identities you
    have checked. Use **Add component** for additional boards, probes or devices.
    Uncertain information can stay blank; don't infer a board from the printer name.
-3. Record the installed firmware fork/version and confirmed wiring details.
-   Optionally supply up to three public HTTPS documentation URLs per component.
+   For an accelerometer built into a toolhead/mainboard, open its entry and set
+   **Installation** to **Built into toolhead** (or the containing board). The
+   summary shows the board and its model. The sensor model can stay blank if
+   unknown; saving records an `integrated_into` relationship for KAI rather than
+   treating the device as absent. This does not discover or verify a sensor.
+   Use **Separate / not specified** to clear the relationship. Reassign attached
+   devices before removing their board; renaming a board preserves its links.
+3. Record the installed firmware fork/version. Under **Personal touches**,
+   **Describe custom modifications** in the free-form field: modifications,
+   upgrades and custom improvements you have added. Existing notes are retained.
+   Each component has a free-form **Component details** field for its setup,
+   modifications and other information KAI should consider. Save these details
+   to make them available in future answers and the next knowledge build/refresh.
 4. Choose **Build printer knowledge**. With the OpenAI agent and web search enabled,
    the service searches for primary manufacturer documentation for these identities.
-   Supplied URLs take precedence over discovery. The UI shows progress and partial failures.
+   The AI discovers references using component identities, containing-board
+   identity when relevant, and the supplied component details. The UI shows
+   progress and partial failures. Discovery has no fixed three-source cutoff;
+   relevant returned references and legacy manual references are researched.
+   There is no documentation-URL
+   input in the component form.
 5. If fan connector candidates are found, read their source links and exact quotes.
    Confirm that the sources and mappings match the actual board and revision with
    **I verified these sources and connector mappings**. Search matches alone are
@@ -27,17 +43,63 @@ public documentation exists or establish which board revision a printer contains
    content, candidate mappings, MCU or connection makes the previous connector
    review stale. Fetching unchanged content only updates its retrieval date.
 
+Each component entry has **Research**, which saves current setup details and runs
+the same discovery/cache workflow for that component only. It skips unrelated
+components and the global firmware refresh. Discovered source cards appear inside
+the component entry and in **Reference library**, with linked component names,
+an excerpt, the original source, a cached download and **Confirm reference** /
+**Delete** controls. Candidate connector facts retain their separate source and
+hardware review controls.
+
+Reference confirmation applies to the cached document digest. Changed source
+content requires confirmation again; it does not confirm physical wiring or
+approve a printer change. Delete removes the reference's cached versions and
+associated diagram notes, and records its identity/URL so later research for that
+component does not immediately restore it. Setup revision and document digest
+checks reject stale confirm/delete actions. The model has no write/review/delete
+port; these are session-protected manual UI actions.
+
+References accumulate across refreshes. Saving changed component identities no
+longer silently deletes older library items; unrelated/previous-identity sources
+remain available as other references for manual review/removal. Existing bounded
+document/cache storage and research deadlines continue to apply.
+
+Official GitHub repository citations are starting points, not documents. Research
+resolves the requested repository/ref, walks its file tree (including nested
+Hardware and Firmware/Klipper folders), and downloads readable configuration
+examples, manuals, schematics/pinouts and related text references. Downloads are
+pinned to the resolved commit; each cached reference records that commit alongside
+its content hash. Matching manual filenames prefer the nested hardware copy over
+a root duplicate. Different README/config paths remain separate references.
+Binaries, archives and 3D/CAD assets are excluded. Public-network validation,
+8 MiB download limits and existing cache/research bounds remain in force; incomplete
+listings or more than 64 selected files require a more specific repository folder
+and report partial research. A failed listing is never replaced with homepage HTML.
+Previously saved repository indexes remain in the library, with a refresh hint,
+but their navigation text is excluded from local evidence search. Research again
+to add the useful files; existing confirmations and explicit removals are preserved.
+
 Saving details changes only KAI application storage, not `kai.cfg` or
 printer files. A change in the saved profile detected on application restart
 requires the user to recheck and save the knowledge identities. Component names
 are unique lowercase identifiers; `all` is reserved for document search.
 
 Automatic discovery and extraction use the configured provider and may consume
-credits. Search receives manufacturer, model, revision, printer model and firmware
-flavor/version. Extraction receives component identity and a bounded public-source
-excerpt. Private configs, logs, MCU assignments and wiring notes are excluded from
-these research calls. Use public product names in those identity fields.
+credits. Search receives manufacturer, model, revision, printer model, firmware
+flavor/version, containing-board identity when known, and the component details
+the user enters. Extraction receives component identity/details and a bounded
+public-source excerpt. Credential patterns in details are redacted on save/read
+and at the research boundary. Raw printer configs/logs, separate MCU-assignment
+fields and global Personal touches notes are excluded from research calls.
+User details guide research and future answers; they are not independently
+verified manufacturer facts or instructions to follow.
 Normal chat/debug context follows its own documented context policy.
+
+Component details are separate from identity/cache keys, so editing notes does
+not delete existing references. Refresh reinterprets source candidates when the
+details change, even if the downloaded document content is unchanged. Existing
+component records default to an empty details field, and legacy reference URLs
+remain stored.
 
 Without an active API key, users can view saved details and cached documents.
 Public URLs can still supply document downloads for the webpage, but automatic

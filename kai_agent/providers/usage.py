@@ -23,7 +23,10 @@ class UsageGuard:
     async def request(
         self, payload: dict[str, Any], output_tokens: int
     ) -> AsyncIterator[tuple[str, int]]:
-        if self.active >= self.policy.max_concurrent_requests:
+        if (
+            self.policy.max_concurrent_requests
+            and self.active >= self.policy.max_concurrent_requests
+        ):
             raise ProviderLimitError("Too many provider requests are already running.")
         # UTF-8 bytes plus framing/output reserve is deliberately conservative.
         # Hosted search context is provider-owned; this is not an invoice estimate.

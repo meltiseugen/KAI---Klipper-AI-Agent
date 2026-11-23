@@ -26,17 +26,32 @@ class ProviderManagement:
         self.environment_key = environment_key
         self.validator = validator
         self.active_revision, saved, key = store.load()
-        self.active_policy = saved or defaults
+        self.active_policy = self._configured_policy(saved or defaults)
         self.active_key = key if saved is not None else environment_key
         self._lock = asyncio.Lock()
+
+    def _configured_policy(self, policy: ProviderPolicy) -> ProviderPolicy:
+        """Local usage caps belong to config, independently of saved models/keys."""
+        return policy.copy(
+            update={
+                name: getattr(self.defaults, name)
+                for name in (
+                    "requests_per_minute",
+                    "requests_per_day",
+                    "tokens_per_day",
+                    "max_concurrent_requests",
+                )
+            }
+        )
 
     def status(self) -> dict:
         revision, saved, key = self.store.load()
         return {
             "revision": revision,
             "credential_storage_available": self.store.credential_storage_available,
-            "policy": (saved or self.defaults).dict(),
+            "policy": self._configured_policy(saved or self.defaults).dict(),
             "active_policy": self.active_policy.dict(),
+            "limits_source": "kai.cfg [provider_limits]",
             "credential_configured": bool(key if saved else self.environment_key),
             "credential_source": "stored"
             if saved and key
@@ -49,6 +64,7 @@ class ProviderManagement:
         }
 
     async def update(self, update: ProviderUpdate, *, save: bool) -> dict:
+        update = update.copy(update={"policy": self._configured_policy(update.policy)})
         if self._lock.locked():
             raise ProviderConflict("Provider validation is already running. Try again shortly.")
         async with self._lock:

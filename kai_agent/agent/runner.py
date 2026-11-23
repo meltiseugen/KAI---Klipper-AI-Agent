@@ -79,6 +79,7 @@ class AgentRun:
                 "agent_events": [event.model_dump() for event in self.events],
                 "agent_status": self.status,
                 "evidence": self.context.evidence,
+                "memory_proposals": self.answer.memory_proposals,
             }
         )
 

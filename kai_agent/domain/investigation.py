@@ -19,6 +19,7 @@ from kai_agent.domain.evidence import (
     SourceCitation,
 )
 from kai_agent.domain.messages import ChatHistoryMessage
+from kai_agent.domain.memory import MemoryProposal, MemoryUpdate
 from kai_agent.domain.model_usage import ModelUsage
 from kai_agent.domain.proposals import ConfigProposal, PatchProposal
 
@@ -54,6 +55,9 @@ class InvestigationRequest(BaseModel):
     conversation_context: str = ""
     artifacts: list[ArtifactInput] = Field(default_factory=list)
     memory: list[Evidence] = Field(default_factory=list)
+    memory_catalog: list[dict] = Field(default_factory=list, max_items=100)
+    memory_available: bool = False
+    memory_automatic: bool = True
 
 
 class MemorySource(BaseModel):
@@ -81,6 +85,9 @@ class InvestigationResult(BaseModel):
     agent_events: list[AgentEvent] = Field(default_factory=list)
     agent_status: Literal["completed", "limited", "error"] = "completed"
     memory_sources: list[MemorySource] = Field(default_factory=list)
+    memory_proposals: list[MemoryProposal] = Field(default_factory=list, max_items=3)
+    memory_updates: list[MemoryUpdate] = Field(default_factory=list, max_items=3)
+    memory_error: str = ""
 
     @validator("response_text", pre=True)
     def _strip_response(cls, value: str) -> str:
@@ -92,6 +99,7 @@ class InvestigationTurn(BaseModel):
     created_at: str = Field(default_factory=utc_now)
     question: str
     model: str | None = None
+    reasoning_effort: Literal["low", "medium", "high"] | None = None
     result: InvestigationResult
     imported_history: list[ChatHistoryMessage] = Field(default_factory=list)
 
@@ -103,6 +111,7 @@ class PendingInvestigation(BaseModel):
     created_at: str = Field(default_factory=utc_now)
     mode: AgentMode = "chat"
     model: str | None = Field(default=None, regex=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$")
+    reasoning_effort: Literal["low", "medium", "high"] | None = None
     message: str
     artifacts: list[ArtifactInput] = Field(default_factory=list)
     history: list[ChatHistoryMessage] = Field(default_factory=list)
@@ -117,14 +126,22 @@ class ConfirmedMemory(BaseModel):
     confirmed_at: str = Field(default_factory=utc_now)
     investigation_id: str | None = None
     evidence: list[Evidence] = Field(default_factory=list, max_items=6)
+    revision: int = Field(default=0, ge=0)
+    origin: Literal["manual", "automatic", "requested"] = "manual"
+    source_quote: str = Field(default="", max_length=2000)
+    source_chat_id: str | None = None
 
     def as_evidence(self) -> Evidence:
+        label = "User-confirmed" if self.origin == "manual" else "Saved conversational"
         return Evidence(
             id=self.id,
-            source=f"user-confirmed:{self.kind}",
+            source=(
+                f"user-confirmed:{self.kind}"
+                if self.origin == "manual" else f"saved-memory:{self.kind}"
+            ),
             observed_at=self.confirmed_at,
             content=(
-                f"User-confirmed {self.kind}: {self.content}\n"
+                f"{label} {self.kind}: {self.content}\n"
                 "This is a dated user statement, not independent verification or live state."
             ),
         )

@@ -52,6 +52,7 @@ moonraker_socket_path:  # Empty uses <printer_data_root>/comms/moonraker.sock.
 show_next_actions: true  # Show suggested next actions for new and saved answers.
 conversation_history_pairs: 10  # Previous user/assistant pairs sent with each request. Use 0 to disable. Examples: 0, 5, 10
 memory_cross_chat: true  # Reuse dated evidence from other chats about this printer.
+memory_auto_save: true  # Remember useful user-stated facts/preferences in chat; explicit remember/forget still work when false.
 memory_retention_days: 90  # Retain application-owned investigation records for this many days.
 
 [llm]
@@ -73,6 +74,15 @@ agent_run_timeout_seconds: 180
 agent_max_context_chars: 120000
 agent_max_result_chars: 16000
 agent_max_output_tokens: 6000
+
+# Optional local provider caps. All are unlimited by default; usage is still recorded.
+# Uncomment the section and only the limits you want. Omitted values or 0 = unlimited.
+# Restart KAI after editing. These caps override any previously saved UI limits.
+# [provider_limits]
+# requests_per_minute: 20
+# requests_per_day: 200
+# tokens_per_day: 2000000  # Recorded daily token budget; resets at midnight UTC.
+# max_concurrent_requests: 2
 
 [logs]
 collect_host_logs: true  # Whether to collect host logs. Examples: true, false

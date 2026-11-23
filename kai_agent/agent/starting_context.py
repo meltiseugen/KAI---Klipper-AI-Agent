@@ -34,6 +34,9 @@ async def prepare_context(
         "recent_conversation": request.conversation_context,
         "historical_evidence": [item.historical_context() for item in request.memory],
         "artifacts": [item.model_dump() for item in supplied],
+        "saved_memory_catalog": request.memory_catalog,
+        "memory_available": request.memory_available,
+        "automatic_memory_enabled": request.memory_automatic,
     }
     for source, content, detail in [
         (

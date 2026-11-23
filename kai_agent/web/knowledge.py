@@ -28,6 +28,15 @@ class SaveKnowledgeRequest(KnowledgeRequest):
     setup: KnowledgeSetup
 
 
+class RefreshKnowledgeRequest(KnowledgeRequest):
+    role: str | None = Field(default=None, regex=r"^[a-z][a-z0-9_-]{0,39}$")
+
+
+class ReferenceReviewRequest(KnowledgeRequest):
+    digest: str = Field(regex=r"^[a-f0-9]{64}$")
+    revision: int = Field(ge=0)
+
+
 class ReviewMappingsRequest(KnowledgeRequest):
     role: str = Field(regex=r"^[a-z][a-z0-9_-]{0,39}$")
     signature: str = Field(regex=r"^[a-f0-9]{64}$")
@@ -77,9 +86,31 @@ def knowledge_routes(get_service: Callable[[Request], ChatService]) -> APIRouter
             return await knowledge(request, payload.session_id).save(payload.setup)
 
     @router.post("/refresh", status_code=202)
-    async def refresh(payload: KnowledgeRequest, request: Request) -> dict:
+    async def refresh(payload: RefreshKnowledgeRequest, request: Request) -> dict:
         with storage_errors():
-            return await knowledge(request, payload.session_id).start_refresh()
+            return await knowledge(request, payload.session_id).start_refresh(payload.role)
+
+    @router.post("/documents/{document_id}/confirm")
+    async def confirm_reference(
+        document_id: str, payload: ReferenceReviewRequest, request: Request
+    ) -> KnowledgeSetup:
+        if not re.fullmatch(r"[a-f0-9]{32}", document_id):
+            raise HTTPException(404, "Document not found.")
+        with storage_errors():
+            return await knowledge(request, payload.session_id).review_reference(
+                document_id, payload.digest, payload.revision
+            )
+
+    @router.delete("/documents/{document_id}")
+    async def delete_reference(
+        document_id: str, payload: ReferenceReviewRequest, request: Request
+    ) -> KnowledgeSetup:
+        if not re.fullmatch(r"[a-f0-9]{32}", document_id):
+            raise HTTPException(404, "Document not found.")
+        with storage_errors():
+            return await knowledge(request, payload.session_id).review_reference(
+                document_id, payload.digest, payload.revision, delete=True
+            )
 
     @router.get("/documents/{document_id}")
     async def download(document_id: str, request: Request, session_id: str) -> Response:

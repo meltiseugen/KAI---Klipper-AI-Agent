@@ -45,6 +45,17 @@ class InvestigationMemory:
     async def forget_confirmed(self, memory_id: str) -> None:
         await asyncio.to_thread(self._repository.confirmed.delete, self._printer_id, memory_id)
 
+    async def edit_confirmed(self, memory_id: str, content: str, revision: int) -> ConfirmedMemory:
+        return await asyncio.to_thread(
+            self._repository.confirmed.update, self._printer_id, memory_id, content, revision
+        )
+
+    async def memories_for_chat(self, investigation: Investigation) -> list[ConfirmedMemory]:
+        return [
+            item for item in await self.confirmed()
+            if self._cross_chat or (item.investigation_id or item.source_chat_id) == investigation.id
+        ]
+
     async def begin(
         self, investigation: Investigation, run: PendingInvestigation, owner: str
     ) -> None:
@@ -133,7 +144,7 @@ class InvestigationMemory:
         statements = [
             item.as_evidence()
             for item in await self.confirmed()
-            if (self._cross_chat or item.investigation_id == investigation.id)
+            if (self._cross_chat or (item.investigation_id or item.source_chat_id) == investigation.id)
             and (
                 item.kind == "preference"
                 or tokens & set(re.findall(r"[a-z0-9_]{3,}", item.content.lower()))
@@ -153,6 +164,9 @@ class InvestigationMemory:
         turn = InvestigationTurn(
             question=question,
             model=investigation.pending.model if investigation.pending else None,
+            reasoning_effort=investigation.pending.reasoning_effort
+            if investigation.pending
+            else None,
             result=result,
             imported_history=imported_history if not investigation.turns else [],
         )

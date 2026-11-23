@@ -33,6 +33,8 @@ def chat_response(
         agent_events=outcome.agent_events,
         agent_status=outcome.agent_status,
         memory_sources=outcome.memory_sources,
+        memory_updates=outcome.memory_updates,
+        memory_error=outcome.memory_error,
         evidence_blocks=blocks,
         evidence_blocks_omitted=max(0, len({item.id for item in outcome.evidence}) - len(blocks)),
     )

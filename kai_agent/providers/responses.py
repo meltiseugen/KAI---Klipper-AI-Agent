@@ -11,7 +11,11 @@ from kai_agent.agent.models import ModelTurn, ToolCall
 from kai_agent.domain.provider_settings import ModelProfile, ProviderPolicy
 from kai_agent.domain.redaction import redact_data, redact_text
 from kai_agent.providers.usage import UsageGuard
-from kai_agent.runtime.model_usage import model_request, selected_chat_model
+from kai_agent.runtime.model_usage import (
+    model_request,
+    selected_chat_model,
+    selected_reasoning_effort,
+)
 
 
 class ProviderError(RuntimeError):
@@ -69,6 +73,11 @@ class ResponsesClient:
             else ModelProfile(model=self._model, max_output_tokens=self._max_output_tokens)
         )
         model = selected_chat_model(profile.model) if purpose == "agent" else profile.model
+        effort = (
+            selected_reasoning_effort(profile.reasoning_effort)
+            if purpose == "agent"
+            else profile.reasoning_effort
+        )
         limit = min(
             payload.get("max_output_tokens", profile.max_output_tokens), profile.max_output_tokens
         )
@@ -78,8 +87,8 @@ class ResponsesClient:
             "store": False,
             "max_output_tokens": limit,
         }
-        if profile.reasoning_effort != "default":
-            body["reasoning"] = {"effort": profile.reasoning_effort}
+        if effort != "default":
+            body["reasoning"] = {"effort": effort}
         try:
             async with (
                 self._guard.request(body, limit)

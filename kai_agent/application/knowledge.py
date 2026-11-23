@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import replace
 
 from kai_agent.agent.ports import ConfigReader, PrinterReader
 from kai_agent.application.hardware_validation import validate_hardware
@@ -11,13 +12,14 @@ from kai_agent.application.knowledge_observations import (
     record_connector,
     record_diagram,
 )
-from kai_agent.application.knowledge_refresh import cache_source
+from kai_agent.application.knowledge_refresh import cache_source, component_sources
 from kai_agent.domain.hardware import ConnectorObservation, DiagramNote
 from kai_agent.domain.investigation import utc_now
 from kai_agent.domain.knowledge import (
     CachedDocument,
     ComponentIdentity,
     DocumentationFetcher,
+    DocumentationResolver,
     KnowledgeConflict,
     KnowledgeRepository,
     KnowledgeResearcher,
@@ -25,10 +27,9 @@ from kai_agent.domain.knowledge import (
 )
 from kai_agent.domain.redaction import redact_text
 from kai_agent.knowledge.buses import bus_evidence
-from kai_agent.knowledge.firmware import firmware_key, firmware_sources
-from kai_agent.knowledge.identity import component_status, profile_setup
+from kai_agent.knowledge.firmware import firmware_sources
+from kai_agent.knowledge.identity import component_status, profile_setup, reference_metadata
 from kai_agent.knowledge.sources import (
-    component_key,
     document_source,
     mapping_evidence,
 )
@@ -43,9 +44,11 @@ class PrinterKnowledge:
         researcher: KnowledgeResearcher | None = None,
         printer: PrinterReader | None = None,
         config: ConfigReader | None = None,
+        resolver: DocumentationResolver | None = None,
     ):
         self._repository = repository
         self._fetcher = fetcher
+        self._resolver = resolver
         self._seed = profile_setup(profile)
         self.researcher = researcher
         self._printer, self._config = printer, config
@@ -61,14 +64,19 @@ class PrinterKnowledge:
 
     async def read(self) -> tuple[KnowledgeSetup, list[CachedDocument], bool]:
         setup = await asyncio.to_thread(self._repository.setup) or self._seed.copy(deep=True)
-        setup = setup.copy(update={"facts": redact_text(setup.facts)})
-        keys = {component_key(item) for item in setup.components}
-        if setup.firmware_commit:
-            keys.add(firmware_key(setup))
+        setup = setup.copy(
+            update={
+                "facts": redact_text(setup.facts),
+                "components": [
+                    item.copy(update={"details": redact_text(item.details)})
+                    for item in setup.components
+                ],
+            }
+        )
         docs = [
             doc
             for doc in await asyncio.to_thread(self._repository.documents)
-            if doc.component_key in keys
+            if doc.id not in setup.dismissed_documents
         ]
         return setup, docs, setup.profile_signature != self._seed.profile_signature
 
@@ -83,12 +91,7 @@ class PrinterKnowledge:
                 )
                 for item in setup.components
             ],
-            "documents": [
-                doc.model_dump(
-                    exclude={"content": True, "fan_mappings": True, "pages": {"__all__": {"text"}}}
-                )
-                for doc in docs
-            ],
+            "documents": [reference_metadata(setup, doc) for doc in docs],
             "connector_inventory": {
                 item.role: connector_observations(setup, item) for item in setup.components
             },
@@ -112,6 +115,10 @@ class PrinterKnowledge:
                     "profile_signature": self._seed.profile_signature,
                     "updated_at": utc_now(),
                     "facts": redact_text(setup.facts),
+                    "components": [
+                        item.copy(update={"details": redact_text(item.details)})
+                        for item in setup.components
+                    ],
                     "reviewed_fan_mappings": previous.reviewed_fan_mappings,
                     "reviewed_bus_mappings": previous.reviewed_bus_mappings
                     if (previous.firmware_repository, previous.firmware_commit)
@@ -120,14 +127,11 @@ class PrinterKnowledge:
                     "connectors": previous.connectors,
                     "diagram_notes": previous.diagram_notes,
                     "validation": previous.validation,
+                    "confirmed_documents": previous.confirmed_documents,
+                    "dismissed_documents": previous.dismissed_documents,
                 }
             )
             saved = await asyncio.to_thread(self._repository.save_setup, updated)
-            await asyncio.to_thread(
-                self._repository.retain_components,
-                {component_key(item) for item in saved.components}
-                | ({firmware_key(saved)} if saved.firmware_commit else set()),
-            )
             return saved
 
     async def review_mappings(self, role: str, signature: str, revision: int) -> KnowledgeSetup:
@@ -163,23 +167,54 @@ class PrinterKnowledge:
                 ),
             )
 
-    async def start_refresh(self) -> dict:
+    async def start_refresh(self, role: str | None = None) -> dict:
         async with self._lock:
             if self._task and not self._task.done():
+                if role != self.job.get("component_role"):
+                    raise KnowledgeConflict(
+                        "Another research job is running. Wait for it to finish."
+                    )
                 return dict(self.job)
             setup, docs, _ = await self.read()
-            components = [item for item in setup.components if item.model.strip()]
+            if role is not None and not any(item.role == role for item in setup.components):
+                raise KnowledgeConflict("This component no longer exists. Reload printer details.")
+            components = [
+                item
+                for item in setup.components
+                if (role is None or item.role == role)
+                and (
+                    item.model.strip().casefold() not in {"", "none", "unknown"}
+                    or item.details.strip()
+                    or item.integrated_into
+                )
+            ]
+            if role is not None and not components:
+                raise KnowledgeConflict("Enter a component model or details before researching it.")
             self.job = {
                 "state": "running",
                 "completed": 0,
                 "total": len(components),
                 "message": "Researching your printer components.",
                 "changes": [],
+                "component_role": role,
             }
             self._task = asyncio.create_task(
-                self._run(setup, components, {doc.id: doc for doc in docs})
+                self._run(setup, components, {doc.id: doc for doc in docs}, role is None)
             )
             return dict(self.job)
+
+    async def review_reference(
+        self, document_id: str, digest: str, revision: int, *, delete: bool = False
+    ) -> KnowledgeSetup:
+        async with self._lock:
+            self._idle()
+            setup, docs, _ = await self.read()
+            document = next((item for item in docs if item.id == document_id), None)
+            if setup.revision != revision or document is None or document.digest != digest:
+                raise KnowledgeConflict("This reference changed. Reload before reviewing it.")
+            return await asyncio.to_thread(
+                self._repository.update_reference, setup, document, delete=delete
+            )
 
     async def review_buses(self, role: str, signature: str, revision: int) -> KnowledgeSetup:
         async with self._lock:
@@ -241,9 +276,12 @@ class PrinterKnowledge:
         setup: KnowledgeSetup,
         components: list[ComponentIdentity],
         previous: dict[str, CachedDocument],
+        include_firmware: bool = True,
     ) -> None:
         try:
-            await asyncio.wait_for(self._refresh(setup, components, previous), timeout=600)
+            await asyncio.wait_for(
+                self._refresh(setup, components, previous, include_firmware), timeout=600
+            )
         except TimeoutError:
             self.job.update(
                 state="partial",
@@ -255,6 +293,7 @@ class PrinterKnowledge:
         setup: KnowledgeSetup,
         components: list[ComponentIdentity],
         previous: dict[str, CachedDocument],
+        include_firmware: bool = True,
     ) -> None:
         failed = False
         for component in components:
@@ -264,10 +303,12 @@ class PrinterKnowledge:
             except Exception:
                 failed = True
                 self.job["changes"].append(
-                    f"{component.model}: research incomplete; cached evidence retained. Check public model details, source URLs and provider/search configuration."
+                    f"{component.model or component.role}: research incomplete; cached evidence retained. Check component details and provider/search configuration."
                 )
             self.job["completed"] += 1
-        for source in firmware_sources(setup):
+        for source in firmware_sources(setup) if include_firmware else []:
+            if source.id in setup.dismissed_documents:
+                continue
             try:
                 change = await cache_source(
                     self._repository, self._fetcher, None, source, previous, firmware=setup
@@ -293,19 +334,22 @@ class PrinterKnowledge:
         setup: KnowledgeSetup,
         previous: dict[str, CachedDocument],
     ) -> None:
-        if component.reference_urls:
-            sources = [document_source(component, url) for url in component.reference_urls]
-        elif self.researcher:
-            sources = await asyncio.wait_for(self.researcher.discover(component, setup), timeout=90)
-        else:
-            raise ValueError("Automatic research is unavailable; supply public documentation URLs.")
-        sources = list({source.id: source for source in sources}.values())[:3]
+        sources, discovery_failed = await component_sources(
+            component, setup, self.researcher, self._resolver
+        )
+        if discovery_failed:
+            self.job["changes"].append(
+                f"{component.role}: discovery or repository traversal incomplete; refreshing available references."
+            )
         if not sources:
             raise ValueError("No component documentation found.")
         failed = False
         for source in sources:
             # Rebind provider-discovered data to this component; no provider IDs are trusted.
-            source = document_source(component, source.url, source.title)
+            checked = document_source(component, source.url, source.title)
+            source = replace(
+                source, id=checked.id, component_key=checked.component_key, url=checked.url
+            )
             self.job["message"] = f"Reading {component.model}: {source.title}"
             try:
                 change = await cache_source(
@@ -317,13 +361,8 @@ class PrinterKnowledge:
                 self.job["changes"].append(
                     f"{source.title}: download or extraction unavailable; existing documents retained."
                 )
-        if failed:
+        if failed or discovery_failed:
             raise ValueError("Incomplete source refresh.")
-        await asyncio.to_thread(
-            self._repository.retain_sources,
-            component_key(component),
-            {document_source(component, source.url).id for source in sources},
-        )
 
     async def original(self, document_id: str) -> tuple[CachedDocument, bytes] | None:
         _, docs, _ = await self.read()

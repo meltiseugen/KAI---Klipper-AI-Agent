@@ -9,6 +9,9 @@ An optional per-chat model ID is public request metadata. Pending requests retai
 it for restart recovery, and completed turns record it for reopening a chat.
 Omitting it uses the active printer default. Older records remain compatible.
 Model choices do not change global provider policy or credentials.
+An optional per-chat `reasoning_effort` (low, medium or high) follows the same
+pending/turn persistence and recovery path. Omitted values use the configured
+provider default; no hidden reasoning content is stored.
 
 Public observations now share typed artifact metadata with model inputs and the
 bounded chat API `evidence_blocks` view. IDs, provenance, freshness, collection
@@ -38,19 +41,37 @@ remain readable without a schema migration. See the [evidence contract](evidence
 - Deleting a chat removes its server record and observations from future retrieval.
   Statements already quoted in another conversation remain part of that dialogue.
 
-## Explicitly confirmed memory
+## Conversational printer memory
 
-The **Printer memory** panel stores printer facts, preferences and incident
-resolutions separately from tool observations. Enter a statement, optionally link
-the current chat and up to six dated observations, then select **I confirm this
-statement is accurate and want it remembered** and **Confirm and remember**.
-Changing the statement, category or evidence clears confirmation. Model answers
-and tool results never create confirmed entries automatically; agent tools cannot
-write this memory.
+KAI's tool-using agent proposes concise durable notes in its normal structured
+answer: useful user-stated facts/preferences, explicit remember requests,
+corrections, and explicit forget requests. This adds no second provider call.
+Automatic notes must be supported by a meaningful exact quote from the current
+user message. Earlier context may resolve an explicit "remember that" request.
+Suggested fixes, model guesses, temporary status and tool output are not facts to
+save; a past fix requires the user's report that it worked. Credentials are
+excluded/redacted. The application validates these public proposals; agent tools
+remain read-only and cannot access a memory-write port or printer writes.
 
-Each entry records its category, confirmation time, source investigation (if
-selected), and snapshots of the selected observations with their original dates,
-citations and config revisions. A resolution is a user-reported outcome of an
+`memory_auto_save: true` enables automatic notes by default. False retains explicit
+remember/update/forget requests. `memory_cross_chat` controls reuse between chats.
+The model receives a bounded catalog of saved note IDs/text to match corrections
+and avoid duplicate/contradictory notes. Categories are internal; **Printer memory**
+is a list with **Edit** and **Forget**, not a manual classification/evidence form.
+The old explicitly confirmed records and manual creation API remain compatible.
+
+Accepted changes and the public chat outcome commit in the same SQLite transaction.
+A savepoint rolls back the entire memory batch on conflict/quota/storage errors
+without discarding the answer. Only committed changes produce **Memory updated**,
+which expands to the added/changed/forgotten notes, with previous text for updates.
+Failed changes show a separate warning. Receipts survive reload/recovery as turn
+metadata; no hidden reasoning is stored. Revisions and previous-content checks
+reject stale model updates or edits from another window. Exact duplicates are
+ignored. Explicit forget is required for conversational deletion.
+
+Each entry records its category, save time, revision, automatic/requested/manual
+origin and supporting user quote. Legacy entries may include linked observations
+with original dates, citations and config revisions. A resolution is a user-reported outcome of an
 incident, not proof that the same fix applies to a later failure. Confirmed facts
 are dated user statements, not live hardware discovery. Relevant entries are
 supplied alongside dated evidence; prompts still require fresh reads for current
@@ -58,12 +79,12 @@ state. Preference retrieval does not require word overlap. At most six confirmed
 entries and six historical observations are selected, with recent confirmed
 entries taking precedence when more match.
 
-Up to 100 entries per printer are retained until **Forget entry** is used; they do
-not expire with ordinary evidence. Delete an outdated entry and confirm its
-replacement to correct it. Deleting a linked chat also forgets its confirmed
-entries, even if the chat's ordinary evidence has expired. Entries without a
-linked chat are managed in Printer memory. With `memory_cross_chat: false`, only
-entries explicitly linked to the current investigation are supplied. Forgetting
+Up to 100 entries per printer are retained until **Forget** is used; they do
+not expire with ordinary evidence. New conversational notes survive deletion of
+their source chat; source provenance does not establish a deletion relationship.
+Existing manually linked notes keep their prior deletion behavior until replaced
+by a conversational update. With `memory_cross_chat: false`, only notes from or
+explicitly linked to the current investigation are supplied. Forgetting
 does not rewrite previous chat answers or recall context already sent to a model.
 
 Storage is `data_dir/investigations.sqlite3`. The configured data directory must

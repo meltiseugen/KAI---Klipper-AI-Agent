@@ -22,10 +22,10 @@ class ProviderPolicy(BaseModel):
     search: ModelProfile = Field(default_factory=ModelProfile)
     knowledge: ModelProfile = Field(default_factory=ModelProfile)
     legacy: ModelProfile = Field(default_factory=ModelProfile)
-    requests_per_minute: int = Field(default=20, ge=1, le=120)
-    requests_per_day: int = Field(default=200, ge=1, le=10000)
-    tokens_per_day: int = Field(default=2_000_000, ge=1000, le=100_000_000)
-    max_concurrent_requests: int = Field(default=2, ge=1, le=8)
+    requests_per_minute: int = Field(default=0, ge=0)
+    requests_per_day: int = Field(default=0, ge=0)
+    tokens_per_day: int = Field(default=0, ge=0)
+    max_concurrent_requests: int = Field(default=0, ge=0)
     web_search_enabled: bool = True
 
     class Config:

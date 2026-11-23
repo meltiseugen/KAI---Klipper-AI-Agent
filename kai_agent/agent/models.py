@@ -10,6 +10,7 @@ from pydantic import Field, validator
 from kai_agent.domain.base import BaseModel
 from kai_agent.domain.evidence import AgentEvent, SourceCitation
 from kai_agent.domain.investigation import Evidence
+from kai_agent.domain.memory import MemoryProposal
 from kai_agent.domain.proposals import ConfigProposal
 
 EventSink = Callable[[AgentEvent], Awaitable[None]]
@@ -20,6 +21,7 @@ class AgentAnswer(BaseModel):
     response: str = Field(min_length=1, max_length=24000)
     next_actions: list[str] = Field(default_factory=list, max_items=8)
     config_proposals: list[ConfigProposal] = Field(default_factory=list, max_items=5)
+    memory_proposals: list[MemoryProposal] = Field(default_factory=list, max_items=3)
 
     @validator("response", pre=True)
     def _strip_response(cls, value: Any) -> Any:

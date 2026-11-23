@@ -51,19 +51,59 @@ class SqliteKnowledgeRepository:
     def save_setup(self, setup: KnowledgeSetup) -> KnowledgeSetup:
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
-            row = db.execute(
-                "SELECT revision FROM setups WHERE printer=?", (self._printer,)
-            ).fetchone()
-            if setup.revision != (row[0] if row else 0):
-                raise KnowledgeConflict(
-                    "Printer knowledge changed in another window. Reload it before saving."
-                )
-            updated = setup.copy(update={"revision": setup.revision + 1})
-            db.execute(
-                "INSERT OR REPLACE INTO setups VALUES (?,?,?)",
-                (self._printer, updated.json(), updated.revision),
+            return self._save_setup(db, setup)
+
+    def _save_setup(self, db: sqlite3.Connection, setup: KnowledgeSetup) -> KnowledgeSetup:
+        row = db.execute("SELECT revision FROM setups WHERE printer=?", (self._printer,)).fetchone()
+        if setup.revision != (row[0] if row else 0):
+            raise KnowledgeConflict(
+                "Printer knowledge changed in another window. Reload it before saving."
             )
+        updated = setup.copy(update={"revision": setup.revision + 1})
+        db.execute(
+            "INSERT OR REPLACE INTO setups VALUES (?,?,?)",
+            (self._printer, updated.json(), updated.revision),
+        )
         return updated
+
+    def update_reference(
+        self, setup: KnowledgeSetup, document: CachedDocument, *, delete: bool
+    ) -> KnowledgeSetup:
+        with closing(self._connect()) as db, db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute(
+                "SELECT digest FROM documents WHERE printer=? AND id=? ORDER BY rowid DESC LIMIT 1",
+                (self._printer, document.id),
+            ).fetchone()
+            if row is None or row[0] != document.digest:
+                raise KnowledgeConflict("This reference changed. Reload before reviewing it.")
+            confirmed = dict(setup.confirmed_documents)
+            dismissed = dict(setup.dismissed_documents)
+            if delete:
+                confirmed.pop(document.id, None)
+                dismissed[document.id] = document.url
+            else:
+                confirmed[document.id] = document.digest
+            updated = self._save_setup(
+                db,
+                setup.copy(
+                    update={
+                        "confirmed_documents": confirmed,
+                        "dismissed_documents": dismissed,
+                        "diagram_notes": [
+                            note
+                            for note in setup.diagram_notes
+                            if not delete or note.document_id != document.id
+                        ],
+                    }
+                ),
+            )
+            if delete:
+                db.execute(
+                    "DELETE FROM documents WHERE printer=? AND id=?",
+                    (self._printer, document.id),
+                )
+            return updated
 
     def documents(self) -> list[CachedDocument]:
         with closing(self._connect()) as db:

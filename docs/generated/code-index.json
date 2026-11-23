@@ -899,7 +899,7 @@
     },
     "kai_agent.agent.tools.knowledge": {
       "path": "kai_agent/agent/tools/knowledge.py",
-      "lines": 263,
+      "lines": 275,
       "symbols": [
         {
           "name": "complete_config",
@@ -928,64 +928,64 @@
         },
         {
           "name": "SearchKnowledgeArguments",
-          "line": 103,
+          "line": 110,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "SearchKnowledgeTool",
-          "line": 108,
+          "line": 115,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 114
+              "line": 121
             },
             {
               "name": "execute",
-              "line": 117
+              "line": 124
             }
           ]
         },
         {
           "name": "FanPortsArguments",
-          "line": 160,
+          "line": 172,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "FanPortsTool",
-          "line": 164,
+          "line": 176,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 170
+              "line": 182
             },
             {
               "name": "execute",
-              "line": 173
+              "line": 185
             }
           ]
         },
         {
           "name": "EddyArguments",
-          "line": 221,
+          "line": 233,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "EddyCalibrationTool",
-          "line": 225,
+          "line": 237,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 231
+              "line": 243
             },
             {
               "name": "execute",
-              "line": 234
+              "line": 246
             }
           ]
         }
@@ -1377,7 +1377,7 @@
     },
     "kai_agent.application.chat": {
       "path": "kai_agent/application/chat.py",
-      "lines": 388,
+      "lines": 392,
       "symbols": [
         {
           "name": "ChatService",
@@ -1402,23 +1402,23 @@
             },
             {
               "name": "resume",
-              "line": 167
+              "line": 168
             },
             {
               "name": "_resume_run",
-              "line": 205
+              "line": 207
             },
             {
               "name": "_run",
-              "line": 212
+              "line": 214
             },
             {
               "name": "_execute",
-              "line": 226
+              "line": 230
             },
             {
               "name": "_classify_chat_intent",
-              "line": 369
+              "line": 373
             }
           ]
         }
@@ -1575,7 +1575,7 @@
     },
     "kai_agent.application.investigations": {
       "path": "kai_agent/application/investigations.py",
-      "lines": 160,
+      "lines": 163,
       "symbols": [
         {
           "name": "InvestigationMemory",
@@ -1658,72 +1658,76 @@
     },
     "kai_agent.application.knowledge": {
       "path": "kai_agent/application/knowledge.py",
-      "lines": 344,
+      "lines": 383,
       "symbols": [
         {
           "name": "PrinterKnowledge",
-          "line": 37,
+          "line": 38,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 38
+              "line": 39
             },
             {
               "name": "read",
-              "line": 62
+              "line": 65
             },
             {
               "name": "status",
-              "line": 75
+              "line": 83
             },
             {
               "name": "_idle",
-              "line": 100
+              "line": 103
             },
             {
               "name": "save",
-              "line": 106
+              "line": 109
             },
             {
               "name": "review_mappings",
-              "line": 133
+              "line": 137
             },
             {
               "name": "start_refresh",
-              "line": 166
+              "line": 170
+            },
+            {
+              "name": "review_reference",
+              "line": 206
             },
             {
               "name": "review_buses",
-              "line": 184
+              "line": 219
             },
             {
               "name": "observe",
-              "line": 212
+              "line": 247
             },
             {
               "name": "validate_live",
-              "line": 229
+              "line": 264
             },
             {
               "name": "_run",
-              "line": 239
+              "line": 274
             },
             {
               "name": "_refresh",
-              "line": 253
+              "line": 291
             },
             {
               "name": "_component",
-              "line": 290
+              "line": 331
             },
             {
               "name": "original",
-              "line": 328
+              "line": 367
             },
             {
               "name": "aclose",
-              "line": 338
+              "line": 377
             }
           ]
         }
@@ -1744,9 +1748,11 @@
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
+        "tests/test_knowledge_reference_workflow.py",
         "tests/test_knowledge_storage.py",
         "tests/test_knowledge_web.py",
         "tests/test_live_hardware_validation.py",
+        "tests/test_repository_docs.py",
         "tests/test_security_agent.py"
       ]
     },
@@ -1784,23 +1790,31 @@
     },
     "kai_agent.application.knowledge_refresh": {
       "path": "kai_agent/application/knowledge_refresh.py",
-      "lines": 59,
+      "lines": 117,
       "symbols": [
         {
+          "name": "component_sources",
+          "line": 23,
+          "kind": "AsyncFunctionDef"
+        },
+        {
           "name": "cache_source",
-          "line": 21,
+          "line": 73,
           "kind": "AsyncFunctionDef"
         }
       ],
       "imports": [
         "kai_agent.domain.investigation",
         "kai_agent.domain.knowledge",
+        "kai_agent.domain.redaction",
         "kai_agent.knowledge.buses",
         "kai_agent.knowledge.pdf_pages",
         "kai_agent.knowledge.sources"
       ],
       "tests": [
-        "tests/test_pdf_knowledge.py"
+        "tests/test_knowledge_reference_workflow.py",
+        "tests/test_pdf_knowledge.py",
+        "tests/test_repository_docs.py"
       ]
     },
     "kai_agent.application.moonraker": {
@@ -1873,7 +1887,7 @@
     },
     "kai_agent.application.providers": {
       "path": "kai_agent/application/providers.py",
-      "lines": 82,
+      "lines": 98,
       "symbols": [
         {
           "name": "ProviderManagement",
@@ -1885,12 +1899,16 @@
               "line": 17
             },
             {
-              "name": "status",
+              "name": "_configured_policy",
               "line": 33
             },
             {
+              "name": "status",
+              "line": 47
+            },
+            {
               "name": "update",
-              "line": 51
+              "line": 66
             }
           ]
         }
@@ -2048,22 +2066,22 @@
     },
     "kai_agent.bootstrap.container": {
       "path": "kai_agent/bootstrap/container.py",
-      "lines": 273,
+      "lines": 275,
       "symbols": [
         {
           "name": "AppContainer",
-          "line": 51,
+          "line": 52,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "aclose",
-              "line": 62
+              "line": 63
             }
           ]
         },
         {
           "name": "build_container",
-          "line": 76,
+          "line": 77,
           "kind": "FunctionDef"
         }
       ],
@@ -2093,6 +2111,7 @@
         "kai_agent.infrastructure.knowledge",
         "kai_agent.infrastructure.moonraker",
         "kai_agent.infrastructure.moonraker_agent",
+        "kai_agent.infrastructure.repository_docs",
         "kai_agent.profile.saved",
         "kai_agent.providers.factory",
         "kai_agent.providers.knowledge",
@@ -2111,7 +2130,7 @@
     },
     "kai_agent.bootstrap.providers": {
       "path": "kai_agent/bootstrap/providers.py",
-      "lines": 67,
+      "lines": 71,
       "symbols": [
         {
           "name": "provider_management",
@@ -2120,7 +2139,7 @@
         },
         {
           "name": "effective_settings",
-          "line": 59,
+          "line": 63,
           "kind": "FunctionDef"
         }
       ],
@@ -3246,7 +3265,7 @@
     },
     "kai_agent.contracts.api": {
       "path": "kai_agent/contracts/api.py",
-      "lines": 145,
+      "lines": 146,
       "symbols": [
         {
           "name": "DetectedAddonSummary",
@@ -3267,29 +3286,29 @@
           "methods": [
             {
               "name": "_reject_blank",
-              "line": 85
+              "line": 86
             },
             {
               "name": "_bounded_text_artifacts",
-              "line": 91
+              "line": 92
             }
           ]
         },
         {
           "name": "ChatResponse",
-          "line": 102,
+          "line": 103,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "BootstrapResponse",
-          "line": 127,
+          "line": 128,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "UiSessionResponse",
-          "line": 142,
+          "line": 143,
           "kind": "ClassDef",
           "methods": []
         }
@@ -3892,7 +3911,7 @@
     },
     "kai_agent.domain.investigation": {
       "path": "kai_agent/domain/investigation.py",
-      "lines": 153,
+      "lines": 155,
       "symbols": [
         {
           "name": "utc_now",
@@ -3941,29 +3960,29 @@
         },
         {
           "name": "PendingInvestigation",
-          "line": 99,
+          "line": 100,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "ConfirmedMemory",
-          "line": 113,
+          "line": 115,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "as_evidence",
-              "line": 121
+              "line": 123
             }
           ]
         },
         {
           "name": "Investigation",
-          "line": 133,
+          "line": 135,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "history",
-              "line": 143
+              "line": 145
             }
           ]
         }
@@ -3998,7 +4017,7 @@
     },
     "kai_agent.domain.knowledge": {
       "path": "kai_agent/domain/knowledge.py",
-      "lines": 151,
+      "lines": 177,
       "symbols": [
         {
           "name": "ComponentIdentity",
@@ -4007,107 +4026,122 @@
           "methods": [
             {
               "name": "named_component",
-              "line": 33
+              "line": 35
             }
           ]
         },
         {
           "name": "KnowledgeSetup",
-          "line": 42,
+          "line": 44,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "pinned_firmware",
-              "line": 64
+              "line": 68
             },
             {
               "name": "unique_roles",
-              "line": 82
+              "line": 86
             }
           ]
         },
         {
           "name": "DocumentSource",
-          "line": 92,
+          "line": 108,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "FanMapping",
-          "line": 99,
+          "line": 117,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "CachedDocument",
-          "line": 109,
-          "kind": "ClassDef",
-          "methods": []
-        },
-        {
-          "name": "KnowledgeConflict",
           "line": 127,
           "kind": "ClassDef",
           "methods": []
         },
         {
+          "name": "KnowledgeConflict",
+          "line": 146,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
           "name": "KnowledgeRepository",
-          "line": 131,
+          "line": 150,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "setup",
-              "line": 132
+              "line": 151
             },
             {
               "name": "save_setup",
-              "line": 133
+              "line": 152
             },
             {
               "name": "documents",
-              "line": 134
+              "line": 153
             },
             {
               "name": "save_document",
-              "line": 135
+              "line": 154
             },
             {
               "name": "original",
-              "line": 136
+              "line": 155
             },
             {
               "name": "retain_components",
-              "line": 137
+              "line": 156
             },
             {
               "name": "retain_sources",
-              "line": 138
+              "line": 157
+            },
+            {
+              "name": "update_reference",
+              "line": 158
             }
           ]
         },
         {
           "name": "DocumentationFetcher",
-          "line": 141,
+          "line": 163,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "fetch",
-              "line": 142
+              "line": 164
+            }
+          ]
+        },
+        {
+          "name": "DocumentationResolver",
+          "line": 167,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "resolve",
+              "line": 168
             }
           ]
         },
         {
           "name": "KnowledgeResearcher",
-          "line": 145,
+          "line": 171,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "discover",
-              "line": 146
+              "line": 172
             },
             {
               "name": "extract",
-              "line": 149
+              "line": 175
             }
           ]
         }
@@ -4121,10 +4155,12 @@
         "tests/test_hardware_knowledge.py",
         "tests/test_knowledge.py",
         "tests/test_knowledge_agent.py",
+        "tests/test_knowledge_reference_workflow.py",
         "tests/test_knowledge_research.py",
         "tests/test_knowledge_storage.py",
         "tests/test_knowledge_web.py",
         "tests/test_pdf_knowledge.py",
+        "tests/test_repository_docs.py",
         "tests/test_security_agent.py"
       ]
     },
@@ -5299,7 +5335,7 @@
     },
     "kai_agent.infrastructure.knowledge": {
       "path": "kai_agent/infrastructure/knowledge.py",
-      "lines": 116,
+      "lines": 156,
       "symbols": [
         {
           "name": "SqliteKnowledgeRepository",
@@ -5327,28 +5363,36 @@
               "line": 51
             },
             {
+              "name": "_save_setup",
+              "line": 56
+            },
+            {
+              "name": "update_reference",
+              "line": 69
+            },
+            {
               "name": "documents",
-              "line": 68
+              "line": 108
             },
             {
               "name": "save_document",
-              "line": 76
+              "line": 116
             },
             {
               "name": "original",
-              "line": 95
+              "line": 135
             },
             {
               "name": "retain_components",
-              "line": 103
+              "line": 143
             },
             {
               "name": "retain_sources",
-              "line": 106
+              "line": 146
             },
             {
               "name": "_prune",
-              "line": 109
+              "line": 149
             }
           ]
         }
@@ -5623,7 +5667,7 @@
     },
     "kai_agent.infrastructure.provider_store": {
       "path": "kai_agent/infrastructure/provider_store.py",
-      "lines": 167,
+      "lines": 177,
       "symbols": [
         {
           "name": "ProviderStore",
@@ -5664,15 +5708,15 @@
             },
             {
               "name": "settle",
-              "line": 148
+              "line": 158
             },
             {
               "name": "cooldown",
-              "line": 155
+              "line": 165
             },
             {
               "name": "usage",
-              "line": 162
+              "line": 172
             }
           ]
         }
@@ -5709,6 +5753,38 @@
       "tests": [
         "tests/test_knowledge_research.py",
         "tests/test_security_agent.py"
+      ]
+    },
+    "kai_agent.infrastructure.repository_docs": {
+      "path": "kai_agent/infrastructure/repository_docs.py",
+      "lines": 53,
+      "symbols": [
+        {
+          "name": "RepositoryDocumentationResolver",
+          "line": 15,
+          "kind": "ClassDef",
+          "methods": [
+            {
+              "name": "__init__",
+              "line": 16
+            },
+            {
+              "name": "_json",
+              "line": 19
+            },
+            {
+              "name": "resolve",
+              "line": 28
+            }
+          ]
+        }
+      ],
+      "imports": [
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.repositories"
+      ],
+      "tests": [
+        "tests/test_repository_docs.py"
       ]
     },
     "kai_agent.knowledge.buses": {
@@ -5845,30 +5921,38 @@
       ],
       "tests": [
         "tests/test_firmware_knowledge.py",
+        "tests/test_knowledge_reference_workflow.py",
         "tests/test_pdf_knowledge.py"
       ]
     },
     "kai_agent.knowledge.identity": {
       "path": "kai_agent/knowledge/identity.py",
-      "lines": 65,
+      "lines": 88,
       "symbols": [
         {
+          "name": "reference_metadata",
+          "line": 12,
+          "kind": "FunctionDef"
+        },
+        {
           "name": "profile_setup",
-          "line": 11,
+          "line": 29,
           "kind": "FunctionDef"
         },
         {
           "name": "component_status",
-          "line": 36,
+          "line": 54,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
         "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.repositories",
         "kai_agent.knowledge.sources"
       ],
       "tests": [
-        "tests/test_knowledge.py"
+        "tests/test_knowledge.py",
+        "tests/test_repository_docs.py"
       ]
     },
     "kai_agent.knowledge.pdf_pages": {
@@ -5922,27 +6006,49 @@
         "tests/test_knowledge_research.py"
       ]
     },
+    "kai_agent.knowledge.repositories": {
+      "path": "kai_agent/knowledge/repositories.py",
+      "lines": 77,
+      "symbols": [
+        {
+          "name": "repository_location",
+          "line": 10,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "reference_paths",
+          "line": 26,
+          "kind": "FunctionDef"
+        }
+      ],
+      "imports": [],
+      "tests": [
+        "tests/test_repository_docs.py"
+      ]
+    },
     "kai_agent.knowledge.retrieval": {
       "path": "kai_agent/knowledge/retrieval.py",
-      "lines": 61,
+      "lines": 62,
       "symbols": [
         {
           "name": "search_documents",
-          "line": 12,
+          "line": 13,
           "kind": "FunctionDef"
         },
         {
           "name": "_matches",
-          "line": 20,
+          "line": 21,
           "kind": "FunctionDef"
         }
       ],
       "imports": [
-        "kai_agent.domain.knowledge"
+        "kai_agent.domain.knowledge",
+        "kai_agent.knowledge.repositories"
       ],
       "tests": [
         "tests/test_knowledge.py",
-        "tests/test_pdf_knowledge.py"
+        "tests/test_pdf_knowledge.py",
+        "tests/test_repository_docs.py"
       ]
     },
     "kai_agent.knowledge.review": {
@@ -5969,7 +6075,7 @@
     },
     "kai_agent.knowledge.sources": {
       "path": "kai_agent/knowledge/sources.py",
-      "lines": 110,
+      "lines": 112,
       "symbols": [
         {
           "name": "component_key",
@@ -5978,22 +6084,22 @@
         },
         {
           "name": "document_source",
-          "line": 30,
+          "line": 32,
           "kind": "FunctionDef"
         },
         {
           "name": "component_documents",
-          "line": 56,
+          "line": 58,
           "kind": "FunctionDef"
         },
         {
           "name": "grounded_mapping",
-          "line": 62,
+          "line": 64,
           "kind": "FunctionDef"
         },
         {
           "name": "mapping_evidence",
-          "line": 73,
+          "line": 75,
           "kind": "FunctionDef"
         }
       ],
@@ -6003,9 +6109,11 @@
       ],
       "tests": [
         "tests/test_knowledge.py",
+        "tests/test_knowledge_reference_workflow.py",
         "tests/test_knowledge_research.py",
         "tests/test_knowledge_storage.py",
         "tests/test_pdf_knowledge.py",
+        "tests/test_repository_docs.py",
         "tests/test_security_agent.py"
       ]
     },
@@ -6470,20 +6578,20 @@
     },
     "kai_agent.providers.json_client": {
       "path": "kai_agent/providers/json_client.py",
-      "lines": 69,
+      "lines": 74,
       "symbols": [
         {
           "name": "OpenAIJsonClient",
-          "line": 15,
+          "line": 19,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 16
+              "line": 20
             },
             {
               "name": "complete_json",
-              "line": 29
+              "line": 33
             }
           ]
         }
@@ -6505,35 +6613,35 @@
     },
     "kai_agent.providers.knowledge": {
       "path": "kai_agent/providers/knowledge.py",
-      "lines": 105,
+      "lines": 124,
       "symbols": [
         {
           "name": "public_identity",
-          "line": 24,
+          "line": 25,
           "kind": "FunctionDef"
         },
         {
           "name": "ExtractedMappings",
-          "line": 46,
+          "line": 58,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "OpenAIKnowledgeResearcher",
-          "line": 53,
+          "line": 65,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 54
+              "line": 66
             },
             {
               "name": "discover",
-              "line": 58
+              "line": 70
             },
             {
               "name": "extract",
-              "line": 77
+              "line": 96
             }
           ]
         }
@@ -6541,12 +6649,14 @@
       "imports": [
         "kai_agent.domain.base",
         "kai_agent.domain.knowledge",
+        "kai_agent.domain.redaction",
         "kai_agent.knowledge.sources",
         "kai_agent.providers.normalization",
         "kai_agent.providers.responses",
         "kai_agent.providers.web_search"
       ],
       "tests": [
+        "tests/test_knowledge_reference_workflow.py",
         "tests/test_knowledge_research.py"
       ]
     },
@@ -6748,50 +6858,50 @@
     },
     "kai_agent.providers.responses": {
       "path": "kai_agent/providers/responses.py",
-      "lines": 147,
+      "lines": 156,
       "symbols": [
         {
           "name": "ProviderError",
-          "line": 17,
+          "line": 21,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "private_payload",
-          "line": 21,
+          "line": 25,
           "kind": "FunctionDef"
         },
         {
           "name": "ResponsesClient",
-          "line": 40,
+          "line": 44,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 41
+              "line": 45
             },
             {
               "name": "aclose",
-              "line": 58
+              "line": 62
             },
             {
               "name": "create",
-              "line": 61
+              "line": 65
             }
           ]
         },
         {
           "name": "OpenAIAgentModel",
-          "line": 113,
+          "line": 122,
           "kind": "ClassDef",
           "methods": [
             {
               "name": "__init__",
-              "line": 114
+              "line": 123
             },
             {
               "name": "respond",
-              "line": 117
+              "line": 126
             }
           ]
         }
@@ -6814,7 +6924,7 @@
     },
     "kai_agent.providers.usage": {
       "path": "kai_agent/providers/usage.py",
-      "lines": 49,
+      "lines": 52,
       "symbols": [
         {
           "name": "UsageGuard",
@@ -6831,11 +6941,11 @@
             },
             {
               "name": "record",
-              "line": 38
+              "line": 41
             },
             {
               "name": "throttle",
-              "line": 44
+              "line": 47
             }
           ]
         }
@@ -6930,7 +7040,7 @@
     },
     "kai_agent.runtime.model_usage": {
       "path": "kai_agent/runtime/model_usage.py",
-      "lines": 62,
+      "lines": 70,
       "symbols": [
         {
           "name": "UsageScope",
@@ -6940,17 +7050,22 @@
         },
         {
           "name": "track_model_usage",
-          "line": 23,
+          "line": 24,
           "kind": "FunctionDef"
         },
         {
           "name": "selected_chat_model",
-          "line": 36,
+          "line": 38,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "selected_reasoning_effort",
+          "line": 44,
           "kind": "FunctionDef"
         },
         {
           "name": "model_request",
-          "line": 43,
+          "line": 51,
           "kind": "AsyncFunctionDef"
         }
       ],
@@ -6982,7 +7097,7 @@
     },
     "kai_agent.runtime.settings": {
       "path": "kai_agent/runtime/settings.py",
-      "lines": 289,
+      "lines": 299,
       "symbols": [
         {
           "name": "Settings",
@@ -6991,62 +7106,62 @@
           "methods": [
             {
               "name": "_journal_units",
-              "line": 106
+              "line": 110
             },
             {
               "name": "_normalize_moonraker_socket",
-              "line": 121
+              "line": 125
             },
             {
               "name": "_normalize_optional_identity",
-              "line": 142
+              "line": 146
             },
             {
               "name": "_normalize_required_strings",
-              "line": 149
+              "line": 153
             },
             {
               "name": "_log_basename",
-              "line": 156
+              "line": 160
             },
             {
               "name": "_normalize_log_tail_lines_overrides",
-              "line": 162
+              "line": 166
             },
             {
               "name": "_normalize_excluded_logs",
-              "line": 177
+              "line": 181
             },
             {
               "name": "_normalize_provider",
-              "line": 198
+              "line": 202
             },
             {
               "name": "_enforce_read_only_runtime",
-              "line": 206
+              "line": 210
             },
             {
               "name": "host_logs_dir",
-              "line": 223
+              "line": 227
             },
             {
               "name": "agent_log_path",
-              "line": 228
+              "line": 232
             },
             {
               "name": "ensure_directories",
-              "line": 231
+              "line": 235
             }
           ]
         },
         {
           "name": "_load_kai_cfg_values",
-          "line": 236,
+          "line": 240,
           "kind": "FunctionDef"
         },
         {
           "name": "get_settings",
-          "line": 286,
+          "line": 296,
           "kind": "FunctionDef"
         }
       ],
@@ -7170,7 +7285,7 @@
     },
     "kai_agent.web.knowledge": {
       "path": "kai_agent/web/knowledge.py",
-      "lines": 140,
+      "lines": 171,
       "symbols": [
         {
           "name": "KnowledgeRequest",
@@ -7185,31 +7300,43 @@
           "methods": []
         },
         {
-          "name": "ReviewMappingsRequest",
+          "name": "RefreshKnowledgeRequest",
           "line": 31,
           "kind": "ClassDef",
           "methods": []
         },
         {
+          "name": "ReferenceReviewRequest",
+          "line": 35,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
+          "name": "ReviewMappingsRequest",
+          "line": 40,
+          "kind": "ClassDef",
+          "methods": []
+        },
+        {
           "name": "ConnectorRequest",
-          "line": 37,
+          "line": 46,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "DiagramRequest",
-          "line": 42,
+          "line": 51,
           "kind": "ClassDef",
           "methods": []
         },
         {
           "name": "storage_errors",
-          "line": 48,
+          "line": 57,
           "kind": "FunctionDef"
         },
         {
           "name": "knowledge_routes",
-          "line": 57,
+          "line": 66,
           "kind": "FunctionDef"
         }
       ],

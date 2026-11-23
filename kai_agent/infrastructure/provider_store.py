@@ -133,11 +133,21 @@ class ProviderStore:
             rpm = db.execute("SELECT COUNT(*) FROM calls").fetchone()[0]
             row = db.execute("SELECT requests, tokens FROM usage WHERE day=?", (day,)).fetchone()
             requests, used = row or (0, 0)
-            if rpm >= policy.requests_per_minute:
+            if policy.requests_per_minute and rpm >= policy.requests_per_minute:
                 raise ProviderLimitError("Provider request limit per minute reached.")
-            if requests >= policy.requests_per_day or used + tokens > policy.tokens_per_day:
+            if (policy.requests_per_day and requests >= policy.requests_per_day) or (
+                policy.tokens_per_day and used + tokens > policy.tokens_per_day
+            ):
+                setting = (
+                    "requests_per_day"
+                    if policy.requests_per_day and requests >= policy.requests_per_day
+                    else "tokens_per_day"
+                )
                 raise ProviderLimitError(
-                    "Daily provider usage limit reached. Resets at midnight UTC."
+                    "Daily local KAI usage limit reached. Increase "
+                    f"`{setting}` in `[provider_limits]` in `kai.cfg`, or set it to `0` "
+                    "for unlimited, then restart KAI and retry your question. "
+                    "The daily counter resets at midnight UTC."
                 )
             db.execute("INSERT INTO calls VALUES (?)", (now,))
             db.execute(

@@ -24,6 +24,7 @@ function investigationAnswer(result) {
     sourceCitations: result.source_citations || [],
     agentEvents: result.agent_events || [], nextActions: result.next_actions || [],
     memorySources: result.memory_sources || [],
+    memoryUpdates: result.memory_updates || [], memoryError: result.memory_error || "",
     mode: result.mode || "chat", contextIncluded: result.context_included || [],
   };
 }

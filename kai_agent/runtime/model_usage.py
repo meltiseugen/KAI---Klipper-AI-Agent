@@ -14,6 +14,7 @@ class UsageScope:
     receipt: ModelUsage
     on_event: Callable[[AgentEvent], Awaitable[None]] | None
     chat_model: str | None
+    reasoning_effort: str | None
 
 
 _scope: ContextVar[UsageScope | None] = ContextVar("model_usage", default=None)
@@ -24,9 +25,10 @@ def track_model_usage(
     on_event: Callable[[AgentEvent], Awaitable[None]] | None = None,
     *,
     chat_model: str | None = None,
+    reasoning_effort: str | None = None,
 ) -> Iterator[ModelUsage]:
     receipt = ModelUsage(status="not_used")
-    token = _scope.set(UsageScope(receipt, on_event, chat_model))
+    token = _scope.set(UsageScope(receipt, on_event, chat_model, reasoning_effort))
     try:
         yield receipt
     finally:
@@ -37,6 +39,12 @@ def selected_chat_model(default: str) -> str:
     """Resolve this request's override without changing shared provider policy."""
     scope = _scope.get()
     return scope.chat_model if scope and scope.chat_model else default
+
+
+def selected_reasoning_effort(default: str) -> str:
+    """Resolve this chat's thinking level without mutating shared profiles."""
+    scope = _scope.get()
+    return scope.reasoning_effort if scope and scope.reasoning_effort else default
 
 
 @asynccontextmanager

@@ -33,6 +33,7 @@ from kai_agent.infrastructure.investigations import SqliteInvestigationRepositor
 from kai_agent.infrastructure.knowledge import SqliteKnowledgeRepository
 from kai_agent.infrastructure.moonraker import MoonrakerClient
 from kai_agent.infrastructure.moonraker_agent import MoonrakerAgent
+from kai_agent.infrastructure.repository_docs import RepositoryDocumentationResolver
 from kai_agent.profile.saved import build_profile_from_settings
 from kai_agent.providers.factory import (
     build_config_provider,
@@ -182,6 +183,7 @@ def build_container(settings: Settings) -> AppContainer:
         profile.to_summary(),
         printer=moonraker,
         config=config_collector,
+        resolver=RepositoryDocumentationResolver(PublicDocumentationFetcher()),
     )
     responses = None
     agent = None
@@ -245,6 +247,7 @@ def build_container(settings: Settings) -> AppContainer:
         conversation_history_pairs=settings.conversation_history_pairs,
         agent_workflow=agent,
         investigations=investigations,
+        automatic_memory=settings.memory_auto_save,
         proposal_review=ProposalReviewService(
             config_collector, knowledge, printer=moonraker, profile=profile
         ),

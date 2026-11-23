@@ -19,6 +19,20 @@ class ProviderPanel {
     document.getElementById("providers-reload").addEventListener("click", () => this.load());
     document.getElementById("providers-validate").addEventListener("click", () => this.submit(false));
     document.getElementById("providers-save").addEventListener("click", () => this.submit(true));
+    document.addEventListener("pointerdown", event => {
+      for (const picker of this.panel.querySelectorAll(".settings-choice")) {
+        if (!picker.contains(event.target)) this.closePicker(picker);
+      }
+    });
+    this.panel.addEventListener("keydown", event => {
+      if (event.key !== "Escape") return;
+      const open = [...this.panel.querySelectorAll(".settings-choice")].find(picker => !picker.querySelector("[role='menu']").hidden);
+      if (open) {
+        event.preventDefault(); event.stopPropagation();
+        this.closePicker(open);
+        open.querySelector(".settings-choice-trigger").focus();
+      }
+    });
   }
 
   async show() {
@@ -31,6 +45,7 @@ class ProviderPanel {
   }
 
   close() {
+    this.panel.querySelectorAll(".settings-choice").forEach(picker => this.closePicker(picker));
     this.key.value = "";
     this.panel.hidden = true;
     this.toggle.setAttribute("aria-expanded", "false");
@@ -50,6 +65,7 @@ class ProviderPanel {
     this.key.disabled = busy || this.data?.credential_storage_available === false;
     this.remove.disabled = busy;
     Object.values(this.inputs).forEach(input => { input.disabled = busy; });
+    if (busy) this.panel.querySelectorAll(".settings-choice").forEach(picker => this.closePicker(picker));
   }
 
   async load() {
@@ -84,6 +100,70 @@ class ProviderPanel {
     this.inputs[name] = input;
   }
 
+  closePicker(picker) {
+    picker.querySelector("[role='menu']").hidden = true;
+    picker.querySelector(".settings-choice-trigger").setAttribute("aria-expanded", "false");
+  }
+
+  choice(parent, name, label, value, options, onChange = null) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "field settings-choice";
+    const title = document.createElement("span");
+    title.id = `provider-${name}-label`; title.textContent = label;
+    const trigger = document.createElement("button");
+    trigger.type = "button"; trigger.id = `provider-${name}`;
+    trigger.className = "settings-choice-trigger";
+    trigger.value = value;
+    trigger.setAttribute("aria-labelledby", `${title.id} ${trigger.id}-value`);
+    trigger.setAttribute("aria-haspopup", "menu");
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-controls", `${trigger.id}-menu`);
+    const selected = document.createElement("span");
+    selected.id = `${trigger.id}-value`;
+    selected.textContent = options.find(([key]) => key === value)?.[1] || value;
+    const arrow = document.createElement("span");
+    arrow.textContent = "⌄"; arrow.setAttribute("aria-hidden", "true");
+    trigger.append(selected, arrow);
+    const menu = document.createElement("div");
+    menu.id = `${trigger.id}-menu`; menu.className = "composer-menu settings-choice-menu";
+    menu.setAttribute("role", "menu"); menu.setAttribute("aria-labelledby", title.id); menu.hidden = true;
+    for (const [key, text] of options) {
+      const option = document.createElement("button");
+      option.type = "button"; option.value = key; option.textContent = text;
+      option.setAttribute("role", "menuitemradio");
+      option.setAttribute("aria-checked", String(key === value));
+      option.addEventListener("click", () => {
+        if (trigger.disabled) return;
+        trigger.value = key; selected.textContent = text;
+        for (const entry of menu.querySelectorAll("button")) entry.setAttribute("aria-checked", String(entry.value === key));
+        this.closePicker(wrapper); trigger.focus(); onChange?.(key);
+      });
+      menu.appendChild(option);
+    }
+    const open = last => {
+      if (trigger.disabled) return;
+      this.panel.querySelectorAll(".settings-choice").forEach(picker => this.closePicker(picker));
+      menu.hidden = false; trigger.setAttribute("aria-expanded", "true");
+      const choices = [...menu.querySelectorAll("button")];
+      (last ? choices.at(-1) : choices.find(entry => entry.value === trigger.value) || choices[0])?.focus();
+    };
+    trigger.addEventListener("click", () => menu.hidden ? open(false) : this.closePicker(wrapper));
+    trigger.addEventListener("keydown", event => {
+      if (["ArrowDown", "ArrowUp"].includes(event.key)) { event.preventDefault(); open(event.key === "ArrowUp"); }
+    });
+    menu.addEventListener("keydown", event => {
+      const choices = [...menu.querySelectorAll("button")];
+      const index = choices.indexOf(document.activeElement);
+      const next = { ArrowDown: (index + 1) % choices.length, ArrowUp: (index - 1 + choices.length) % choices.length, Home: 0, End: choices.length - 1 }[event.key];
+      if (next !== undefined) { event.preventDefault(); choices[next]?.focus(); }
+    });
+    wrapper.addEventListener("focusout", event => {
+      if (!wrapper.contains(event.relatedTarget)) this.closePicker(wrapper);
+    });
+    wrapper.append(title, trigger, menu); parent.appendChild(wrapper);
+    this.inputs[name] = trigger;
+  }
+
   render() {
     const form = document.getElementById("providers-form");
     form.textContent = "";
@@ -100,25 +180,16 @@ class ProviderPanel {
       const group = document.createElement("div");
       group.className = "settings-fields model-fields";
       content.appendChild(group);
-      this.field(group, `${role}-model`, "Model ID", policy[role].model);
-      this.field(group, `${role}-max_output_tokens`, "Maximum output tokens", policy[role].max_output_tokens, null, [256, 16000]);
-      this.field(group, `${role}-reasoning_effort`, "Reasoning effort", policy[role].reasoning_effort,
-        ["default", "none", "minimal", "low", "medium", "high"].map(value => [value, value === "default" ? "Model default" : value]));
+      const catalog = [...new Set([policy[role].model, ...OPENAI_CHAT_MODELS])];
+      this.choice(group, `${role}-model`, "Model", policy[role].model,
+        catalog.map(model => [model, model]), model => {
+          content.parentElement.querySelector(".settings-section-description").textContent = model;
+        });
+      const levels = ["minimal", "low", "medium", "high"];
+      const effort = levels.includes(policy[role].reasoning_effort) ? policy[role].reasoning_effort : "medium";
+      this.choice(group, `${role}-reasoning_effort`, "Thinking level", effort,
+        levels.map(level => [level, level[0].toUpperCase() + level.slice(1)]));
     }
-    const limits = settingsSection(form, "Usage limits", "Request frequency and daily token budgets");
-    const budgets = document.createElement("div");
-    budgets.className = "settings-fields";
-    limits.appendChild(budgets);
-    for (const [name, title, min, max] of [
-      ["requests_per_minute", "Requests per minute", 1, 120],
-      ["requests_per_day", "Requests per UTC day", 1, 10000],
-      ["tokens_per_day", "Token budget per UTC day", 1000, 100000000],
-      ["max_concurrent_requests", "Concurrent provider requests", 1, 8],
-    ]) this.field(budgets, name, title, policy[name], null, [min, max]);
-    const help = document.createElement("p");
-    help.className = "field-help";
-    help.textContent = "Limits cover all model requests and research, including failed or interrupted calls. Token budgets are not a dollar spending cap. Hosted search may add charges; set spending limits at OpenAI.";
-    limits.appendChild(help);
     this.remove.checked = false;
     this.status.textContent = this.data.credential_storage_available === false
       ? "Credential storage is locked. Rerun the secure installer to restore key storage."
@@ -130,10 +201,10 @@ class ProviderPanel {
     const policy = { provider: value("provider"), web_search_enabled: value("web_search_enabled") === "true" };
     for (const role of ["agent", "search", "knowledge", "legacy"]) policy[role] = {
       model: value(`${role}-model`).trim(),
-      max_output_tokens: Number(value(`${role}-max_output_tokens`)),
+      max_output_tokens: 16000,
       reasoning_effort: value(`${role}-reasoning_effort`),
     };
-    for (const name of ["requests_per_minute", "requests_per_day", "tokens_per_day", "max_concurrent_requests"]) policy[name] = Number(value(name));
+    for (const name of ["requests_per_minute", "requests_per_day", "tokens_per_day", "max_concurrent_requests"]) policy[name] = this.data.policy[name] || 0;
     return policy;
   }
 

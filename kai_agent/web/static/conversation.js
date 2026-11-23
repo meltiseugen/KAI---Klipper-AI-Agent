@@ -1,6 +1,8 @@
 // Conversation value normalization; no DOM or storage access.
 function normalizeAgentMode(value) { return value === "debug" ? "debug" : "chat"; }
 
+function normalizeThinkingLevel(value) { return ["low", "medium", "high"].includes(value) ? value : null; }
+
 function normalizeChatModel(value) {
   return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/.test(value) ? value : null;
 }
@@ -65,6 +67,8 @@ function normalizeConversationEntries(entries) {
         answerClaims: Array.isArray(entry.answerClaims) ? entry.answerClaims : [],
         missingEvidence: Array.isArray(entry.missingEvidence) ? entry.missingEvidence : [],
         hypotheses: Array.isArray(entry.hypotheses) ? entry.hypotheses : [],
+        memoryUpdates: Array.isArray(entry.memoryUpdates) ? entry.memoryUpdates.slice(0, 3) : [],
+        memoryError: typeof entry.memoryError === "string" ? entry.memoryError : "",
         findings: normalizeFindings(entry.findings), agentStatus: entry.agentStatus,
         followUpAvailable: Boolean(entry.followUpAvailable), error: Boolean(entry.error),
         attachments: Array.isArray(entry.attachments) ? entry.attachments.map(String) : [],

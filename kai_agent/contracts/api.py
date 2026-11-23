@@ -32,6 +32,7 @@ from kai_agent.domain.investigation import MemorySource as MemorySource
 from kai_agent.domain.messages import (
     ChatHistoryMessage as ChatHistoryMessage,
 )
+from kai_agent.domain.memory import MemoryUpdate
 from kai_agent.domain.model_usage import ModelUsage
 from kai_agent.domain.proposals import (
     ConfigProposal as ConfigProposal,
@@ -76,6 +77,7 @@ class ChatRequest(BaseModel):
     session_id: str
     mode: AgentMode = "chat"
     model: str | None = Field(default=None, regex=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$")
+    reasoning_effort: Literal["low", "medium", "high"] | None = None
     thread_id: str | None = Field(default=None, min_length=1, max_length=128)
     message: str = Field(min_length=1, max_length=40000)
     artifacts: list[ArtifactInput] = Field(default_factory=list, max_items=8)
@@ -120,6 +122,8 @@ class ChatResponse(BaseModel):
     agent_events: list[AgentEvent] = Field(default_factory=list)
     agent_status: Literal["completed", "limited", "error"] = "completed"
     memory_sources: list[MemorySource] = Field(default_factory=list)
+    memory_updates: list[MemoryUpdate] = Field(default_factory=list, max_items=3)
+    memory_error: str = ""
     evidence_blocks: list[CollectedArtifact] = Field(default_factory=list, max_items=24)
     evidence_blocks_omitted: int = Field(default=0, ge=0)
 

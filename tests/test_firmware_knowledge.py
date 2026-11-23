@@ -72,7 +72,8 @@ async def test_commit_cache_is_immutable_scoped_and_has_no_branch_fallback(tmp_p
     assert len((await service.status())["documents"]) == 3
     changed = saved.copy(update={"firmware_commit": "b" * 40})
     await service.save(changed)
-    assert (await service.read())[1] == []
+    # Library versions remain available; firmware retrieval scopes them by commit.
+    assert (await service.read())[1] == docs
     fetch.side_effect = ValueError("not found")
     await service.start_refresh()
     await service._task

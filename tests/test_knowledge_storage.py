@@ -176,8 +176,10 @@ async def test_review_requires_current_identity_and_evidence_then_invalidates_on
     assert not (await service.status())["components"][0]["fan_mappings_reviewed"]
     saved.components[0].revision = "new board revision"
     await service.save(saved)
-    assert store.documents() == []
-    assert await service.original(status["documents"][0]["id"]) is None
+    # Changing identities preserves the library, but invalidates component linkage.
+    assert store.documents()
+    assert (await service.status())["components"][0]["document_ids"] == []
+    assert await service.original(status["documents"][0]["id"]) is not None
 
 
 @pytest.mark.asyncio

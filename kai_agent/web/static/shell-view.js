@@ -190,7 +190,7 @@ class ShellView {
     }
   }
 
-  render(store, { busy, pending, revalidate, followUp, modesEnabled, recovering = false, providerConfigured = true, showNextActions = true }) {
+  render(store, { busy, pending, revalidate, followUp, modesEnabled, recovering = false, providerConfigured = true, showNextActions = true, openMemory = null }) {
     const conversation = store.getCurrentConversation();
     const entries = (conversation?.messages || []).filter(entry => !isWelcomeEntry(entry, store.introMessage));
     const empty = !entries.length && !pending && !recovering;
@@ -211,6 +211,7 @@ class ShellView {
     this.messageView.revalidate = revalidate;
     this.messageView.followUp = followUp;
     this.messageView.showNextActions = showNextActions;
+    this.messageView.openMemory = openMemory;
     this.notices.render(busy);
     this.renderHistory(store, busy);
     if (this.messages && conversation) {

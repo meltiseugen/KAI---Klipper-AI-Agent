@@ -7,6 +7,7 @@ from heapq import nsmallest
 from typing import Iterator
 
 from kai_agent.domain.knowledge import CachedDocument
+from kai_agent.knowledge.repositories import repository_location
 
 
 def search_documents(documents: list[CachedDocument], query: str, ids: set[str]) -> list[dict]:
@@ -20,7 +21,7 @@ def search_documents(documents: list[CachedDocument], query: str, ids: set[str])
 def _matches(documents: list[CachedDocument], query: str, ids: set[str]) -> Iterator[dict]:
     terms = set(re.findall(r"[a-z0-9_]{3,}", query.casefold()))
     for document in documents:
-        if document.id not in ids or not document.content:
+        if document.id not in ids or not document.content or repository_location(document.url):
             continue
         lines = document.content.splitlines()
         ranges = (

@@ -11,7 +11,8 @@ printer URL. Use HTTPS for remote access and protect every `/kai/api/` route.
 
 ## Setup and rotation
 
-1. Select OpenAI, enter a new key, and set the model IDs and limits.
+1. Select OpenAI, enter a new key, and set the model IDs. Local usage caps are
+   optional and configured separately in `kai.cfg`.
 2. Choose **Validate and save**. KAI checks access to each distinct model
    through OpenAI's model metadata endpoint before committing anything.
 3. Manually restart the KAI service. The panel distinguishes saved settings
@@ -86,6 +87,10 @@ until the service is manually restarted and the page checks its active setup.
 Separate profiles route Chat/Debug agent calls, hosted web search, knowledge
 extraction, and legacy compatibility calls. Each has a model ID, output-token
 cap, and optional reasoning effort. `Model default` omits the reasoning option.
+The in-chat Thinking selector overrides Chat/Debug reasoning for the current
+conversation with Low, Medium or High. Its Default option uses the configured
+profile. Choices affect subsequent requests, including restart recovery, and do
+not change shared provider policy or the search/knowledge profiles.
 The existing model default is preserved; the UI does not infer capabilities or
 prices from names. Choose options supported by your selected models. Hosted
 search can be disabled globally. Output caps include reasoning tokens where the
@@ -93,8 +98,12 @@ provider's API does; a smaller call-specific limit is respected.
 
 All production OpenAI clients share one guard and a persistent usage ledger:
 
-- Defaults: 20 calls/minute, 200 calls/UTC day, 2,000,000 accounted tokens/day,
-  and at most 2 simultaneous generation requests per service process.
+- Local request, recorded-token and concurrency caps are disabled by default.
+  Usage remains recorded. An omitted cap or `0` means unlimited.
+- Optional caps come from `[provider_limits]` in `kai.cfg`, independently of
+  saved model/credential settings. Old caps saved through the UI do not remain
+  active when the config section is absent. Provider settings displays the
+  current counters and effective caps; edit config and restart KAI to change caps.
 - Every model step and hosted-search/research/legacy call consumes a request.
   Metadata validation also consumes request quota but no token reservation.
 - Generation reserves UTF-8 request bytes plus framing allowance and maximum
@@ -112,6 +121,30 @@ search charges and provider-internal context cannot be bounded by local token
 estimates. Configure spending restrictions at the provider too. Existing agent
 step, deadline, context and tool-call limits continue to apply. If a run hits a
 provider guard, it stops or reports incomplete evidence using existing error paths.
+
+The example config and fresh installer include this block entirely commented
+out. Uncomment the section and only the positive caps you want to enable:
+
+```ini
+# [provider_limits]
+# requests_per_minute: 20
+# requests_per_day: 200
+# tokens_per_day: 2000000
+# max_concurrent_requests: 2
+```
+
+Equivalent environment settings use `KAI_PROVIDER_REQUESTS_PER_MINUTE`,
+`KAI_PROVIDER_REQUESTS_PER_DAY`, `KAI_PROVIDER_TOKENS_PER_DAY` and
+`KAI_PROVIDER_MAX_CONCURRENT_REQUESTS`. Recorded counters are preserved when
+caps change. Disabling caps does not reset usage or change encrypted credentials.
+
+When an enabled daily cap stops a request, the response identifies it as a local
+KAI usage limit and names `requests_per_day` or `tokens_per_day`. It tells the
+user to increase that setting under `[provider_limits]` in `kai.cfg`, or use `0`
+for unlimited, then restart KAI and retry the question. It also states the midnight
+UTC counter reset. The chat status says a local usage cap stopped the investigation.
+Older saved generic daily-limit messages receive the same actionable explanation
+when rendered; stored history and usage counters are not rewritten.
 
 ## Verification
 

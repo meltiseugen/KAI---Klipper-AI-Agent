@@ -53,6 +53,7 @@ class ConversationStore {
       draft: typeof seed.draft === "string" ? seed.draft : "",
       mode: normalizeAgentMode(seed.mode),
       model: normalizeChatModel(seed.model),
+      thinkingLevel: normalizeThinkingLevel(seed.thinkingLevel),
       updatedAt: normalizeTimestamp(seed.updatedAt),
       messages: normalizedMessages,
     };

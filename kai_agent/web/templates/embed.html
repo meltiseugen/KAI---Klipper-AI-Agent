@@ -14,16 +14,16 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-7M16 3l5 5M9 15l1-5L19 1l5 5-9 9z" transform="translate(0 1) scale(.9)"/></svg>
           New chat
         </button>
-        <section class="sidebar-history" aria-label="Conversations">
-          <h2 class="sidebar-history-title">Chats</h2>
-          <div id="history-list" class="history-list"></div>
-        </section>
-
         <nav class="sidebar-tools" aria-label="Assistant settings">
           <button id="knowledge-toggle" type="button" class="sidebar-link" aria-controls="knowledge-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v16M3 4c4-1 6 0 9 2 3-2 5-3 9-2v15c-4-1-6 0-9 2-3-2-5-3-9-2z"/></svg>Printer knowledge</button>
           <button id="memory-toggle" type="button" class="sidebar-link" aria-controls="memory-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM4 7h3m-3 5h3m-3 5h3M10 8h4m-4 4h4"/></svg>Printer memory</button>
           <button id="providers-toggle" type="button" class="sidebar-link" aria-controls="providers-panel" aria-expanded="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3H5v18h14V3h-4M9 3v4h6V3zM9 12h6m-6 4h4"/></svg>Provider settings</button>
         </nav>
+        <hr class="sidebar-divider" />
+        <section class="sidebar-history" aria-label="Conversations">
+          <h2 class="sidebar-history-title">Chats</h2>
+          <div id="history-list" class="history-list"></div>
+        </section>
         <div class="sidebar-footnote">Read-only access to your printer</div>
       </aside>
 
@@ -49,14 +49,10 @@
         <main class="workspace-main">
           <section id="memory-panel" class="knowledge-panel" role="dialog" aria-modal="true" aria-labelledby="memory-title" hidden>
             <div class="panel-heading"><h2 id="memory-title">Printer memory</h2><button id="memory-close" type="button" class="quiet-button">Close</button></div>
-            <p class="panel-intro">Facts and preferences you want the agent to remember.</p>
-            <label class="field"><span>Entry type</span><select id="memory-kind"><option value="fact">Printer fact</option><option value="preference">Preference</option><option value="resolution">Incident resolution</option></select></label>
-            <label class="field"><span>Statement to remember</span><textarea id="memory-content" rows="3" maxlength="2000"></textarea></label>
-            <label><input id="memory-link" type="checkbox" /> Link this chat and selected evidence</label>
-            <div id="memory-evidence" class="memory-evidence"></div>
-            <label><input id="memory-confirmed" type="checkbox" /> I confirm this statement is accurate and want it remembered.</label>
-            <div class="actions"><button id="memory-save" type="button" disabled>Confirm and remember</button><button id="memory-reload" type="button" class="secondary-button">Reload entries</button></div>
-            <details class="settings-help"><summary>How memory works</summary><p>Only statements you explicitly confirm are saved. These are dated user statements; current config and status are checked again. Entries stay until forgotten. Deleting a linked chat also forgets its entries. With cross-chat memory disabled, only entries linked to the current chat are supplied.</p></details>
+            <p class="panel-intro">KAI can remember useful details and preferences as you chat. You can also say “Remember this”, correct a detail, or ask KAI to forget something.</p>
+            <p class="field-help">“Memory updated” in a reply shows exactly what changed. Review your saved notes here, edit them, or choose Forget.</p>
+            <div class="actions"><button id="memory-reload" type="button" class="secondary-button">Reload memories</button></div>
+            <details class="settings-help"><summary>How KAI uses memory</summary><p>Saved details help KAI answer related questions; preferences guide its replies. A past fix is remembered only when you report that it worked. Memory is user-provided context, so KAI still checks current printer evidence. New conversational memories stay until forgotten, independently of chat deletion. If cross-chat memory is disabled, notes are used only in their source chat. You can disable automatic saving with memory_auto_save: false in kai.cfg; explicit remember/update/forget requests still work.</p></details>
             <p id="memory-status" role="status" aria-live="polite"></p>
             <div id="memory-records"></div>
           </section>
@@ -101,7 +97,7 @@
                 </div>
               </details>
               <div id="knowledge-records" class="settings-stack"></div>
-              <details class="settings-help"><summary>About research and source review</summary><p>Build/Refresh uses your model provider and may use credits. Research sends public product names, revisions and firmware versions, not printer configs, logs, MCU identifiers or wiring notes. Use public product details. Check discovered sources and connector mappings against the exact hardware. PDFs and diagrams remain available for download. Unclear hardware identities need confirmation.</p></details>
+              <details class="settings-help"><summary>About research and source review</summary><p>Build/Refresh uses your model provider and may use credits. The AI discovers reference documentation using component identities and the component details you enter. These details also inform future answers. Research does not automatically read printer configs or logs, and global Personal touches notes stay separate. Component details are user-provided context; source quotes establish documented hardware facts. Check discovered sources and connector mappings against the exact hardware. PDFs and diagrams remain available for download. Unclear hardware identities need confirmation.</p></details>
             </div>
             <div class="panel-footer">
               <p id="knowledge-status" role="status" aria-live="polite"></p>
@@ -143,11 +139,16 @@
                       <div id="model-menu" class="composer-menu model-menu" role="dialog" aria-labelledby="chat-model-heading" hidden>
                         <h2 id="chat-model-heading">Model for this chat</h2>
                         <div id="chat-model-options" class="chat-model-options"></div>
-                        <form id="chat-model-form">
-                          <label class="field" for="chat-model-input">Model ID<input id="chat-model-input" type="text" maxlength="120" pattern="[A-Za-z0-9][A-Za-z0-9._:\-]{0,119}" placeholder="Enter an OpenAI model ID" autocomplete="off" spellcheck="false" required /></label>
-                          <button class="secondary-button" type="submit">Use model</button>
-                        </form>
                         <p>Applies to future messages in this chat. Use a model available to your API key that supports tools and structured responses. Provider limits still apply.</p>
+                      </div>
+                    </div>
+                    <div class="composer-picker" id="thinking-picker">
+                      <button id="chat-thinking" class="composer-trigger" type="button" aria-label="Thinking level for this chat" aria-haspopup="menu" aria-controls="thinking-menu" aria-expanded="false" disabled><span id="chat-thinking-label">Thinking: Default</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"/></svg></button>
+                      <div id="thinking-menu" class="composer-menu thinking-menu" role="menu" aria-label="Thinking level for this chat" hidden>
+                        <button type="button" role="menuitemradio" aria-checked="true" data-thinking=""><span>Default</span><small>Use the configured provider default</small></button>
+                        <button type="button" role="menuitemradio" aria-checked="false" data-thinking="low">Low</button>
+                        <button type="button" role="menuitemradio" aria-checked="false" data-thinking="medium">Medium</button>
+                        <button type="button" role="menuitemradio" aria-checked="false" data-thinking="high">High</button>
                       </div>
                     </div>
                   </div>

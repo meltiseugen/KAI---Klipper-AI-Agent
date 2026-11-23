@@ -22,6 +22,7 @@ from kai_agent.domain.repositories import (
 from kai_agent.infrastructure.confirmed_memory import SqliteConfirmedMemoryRepository
 from kai_agent.infrastructure.investigation_records import ensure_revision
 from kai_agent.infrastructure.investigation_runs import SqliteRunRepository
+from kai_agent.infrastructure.memory_changes import apply_memory_changes
 from kai_agent.infrastructure.private_files import open_private_file
 
 
@@ -129,6 +130,7 @@ class SqliteInvestigationRepository:
     def save_turn(
         self, investigation: Investigation, turn: InvestigationTurn, owner: str | None = None
     ) -> None:
+        original_turn = turn
         turn = InvestigationTurn.parse_obj(redact_data(turn.model_dump()))
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
@@ -151,6 +153,16 @@ class SqliteInvestigationRepository:
                     "Wait for this investigation to finish before rechecking."
                 )
             ensure_revision(db, investigation)
+            db.execute("SAVEPOINT conversational_memory")
+            try:
+                turn.result.memory_updates = apply_memory_changes(
+                    db, investigation.printer_id, turn.result.memory_updates
+                )
+            except (InvestigationConflict, ValueError, sqlite3.Error):
+                db.execute("ROLLBACK TO conversational_memory")
+                turn.result.memory_updates = []
+                turn.result.memory_error = "Memory could not be updated. Open Printer memory to reload and try again."
+            db.execute("RELEASE conversational_memory")
             db.execute(
                 "UPDATE investigations SET revision = revision + 1, updated_at = ? WHERE id = ? AND printer_id = ? AND revision = ?",
                 (
@@ -174,6 +186,8 @@ class SqliteInvestigationRepository:
                 "DELETE FROM investigations WHERE id NOT IN (SELECT investigation_id FROM turns) AND id NOT IN (SELECT investigation_id FROM pending_runs)"
             )
             db.execute("DELETE FROM investigations WHERE updated_at < ?", (cutoff,))
+        # A successful commit is the only source of UI save receipts.
+        original_turn.result = turn.result
 
     def delete(self, printer_id: str, investigation_id: str) -> None:
         with closing(self._connect()) as db, db:

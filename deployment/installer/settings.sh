@@ -105,6 +105,15 @@ agent_max_context_chars: 120000
 agent_max_result_chars: 16000
 agent_max_output_tokens: 6000
 
+# Optional local provider caps. All are unlimited by default; usage is still recorded.
+# Uncomment the section and only the limits you want. Omitted values or 0 = unlimited.
+# Restart KAI after editing. These caps override any previously saved UI limits.
+# [provider_limits]
+# requests_per_minute: 20
+# requests_per_day: 200
+# tokens_per_day: 2000000  # Recorded daily token budget; resets at midnight UTC.
+# max_concurrent_requests: 2
+
 [logs]
 collect_host_logs: $KAI_COLLECT_HOST_LOGS  # Whether to collect host logs. Examples: true, false
 logs_dir_path: $KAI_LOGS_DIR_PATH  # Directory that contains printer-host logs. Examples: /home/biqu/printer_data/logs, /srv/printer_data/logs

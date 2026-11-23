@@ -11,6 +11,7 @@ from kai_agent.agent.models import EventSink
 from kai_agent.agent.workflow import AgentWorkflow
 from kai_agent.application.chat_bootstrap import bootstrap_response
 from kai_agent.application.chat_response import chat_response
+from kai_agent.application.conversation_memory import memory_catalog, prepare_memory_updates
 from kai_agent.application.intent import (
     ChatIntentOutput,
     classify_deterministic_intent,
@@ -65,6 +66,7 @@ class ChatService:
     investigations: InvestigationMemory | None = None
     proposal_review: ProposalReviewService | None = None
     knowledge: PrinterKnowledge | None = None
+    automatic_memory: bool = True
     _run_lock: asyncio.Lock = field(default_factory=asyncio.Lock, init=False, repr=False)
 
     async def create_ui_session(self) -> UiSessionResponse:
@@ -151,6 +153,7 @@ class ChatService:
                     message=payload.message,
                     mode=payload.mode,
                     model=payload.model,
+                    reasoning_effort=payload.reasoning_effort,
                     artifacts=payload.artifacts,
                     history=payload.history,
                 ),
@@ -173,6 +176,7 @@ class ChatService:
             message=pending.message,
             mode=pending.mode,
             model=pending.model,
+            reasoning_effort=pending.reasoning_effort,
             artifacts=pending.artifacts,
             history=pending.history,
         )
@@ -216,7 +220,9 @@ class ChatService:
         on_event: EventSink | None,
         owner: str | None = None,
     ) -> ChatResponse:
-        with track_model_usage(on_event, chat_model=payload.model) as usage:
+        with track_model_usage(
+            on_event, chat_model=payload.model, reasoning_effort=payload.reasoning_effort
+        ) as usage:
             try:
                 return await self._execute(payload, investigation, on_event, owner, usage)
             except Exception as exc:
@@ -232,6 +238,10 @@ class ChatService:
         usage: ModelUsage,
     ) -> ChatResponse:
         thread_id = investigation.id if investigation else payload.thread_id or str(uuid4())
+        saved_memories = (
+            await self.investigations.memories_for_chat(investigation)
+            if self.investigations and investigation else []
+        )
         history = (
             investigation.history() if investigation and investigation.turns else payload.history
         )
@@ -270,6 +280,9 @@ class ChatService:
             "artifacts": [artifact.model_dump() for artifact in request_artifacts],
             "chat_intent": chat_intent.model_dump(),
             "memory": [item.model_dump() for item in memory],
+            "memory_catalog": memory_catalog(saved_memories),
+            "memory_available": self.investigations is not None,
+            "memory_automatic": self.automatic_memory,
         }
         if memory and not self.agent_workflow:
             state["conversation_context"] += (
@@ -351,9 +364,19 @@ class ChatService:
         outcome = InvestigationResult.parse_obj(redact_data(outcome.model_dump()))
         outcome.findings.sort(key=lambda item: item.severity_rank, reverse=True)
         if self.investigations and investigation:
-            await self.investigations.remember(
+            # Models only propose public notes; application validation owns KAI storage.
+            outcome.memory_updates, outcome.memory_error = prepare_memory_updates(
+                outcome.memory_proposals, payload.message, saved_memories, thread_id,
+                automatic=self.automatic_memory,
+            )
+            outcome.memory_proposals = []
+            saved_turn = await self.investigations.remember(
                 investigation, payload.message, outcome, payload.history, owner
             )
+            outcome = saved_turn.result
+        else:
+            outcome.memory_proposals = []
+            outcome.memory_updates = []
         logger.info(
             "Chat response thread_id=%s route=%s findings=%s config_proposals=%s patch_proposals=%s source_citations=%s moonraker_reachable=%s",
             thread_id,

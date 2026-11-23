@@ -1,4 +1,4 @@
-"""Only explicit UI confirmation can create durable printer statements."""
+"""Session-protected management of KAI's saved conversational memory."""
 
 from __future__ import annotations
 
@@ -39,6 +39,21 @@ class MemoryConfirmation(BaseModel):
         extra = "forbid"
 
 
+class MemoryEdit(BaseModel):
+    session_id: str
+    content: str = Field(min_length=1, max_length=2000)
+    revision: int = Field(ge=0)
+
+    @validator("content")
+    def nonblank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Enter what KAI should remember.")
+        return redact_text(value.strip())
+
+    class Config:
+        extra = "forbid"
+
+
 def memory_routes(get_service: Callable[[Request], ChatService]) -> APIRouter:
     router = APIRouter(prefix="/api/memory")
 
@@ -70,6 +85,13 @@ def memory_routes(get_service: Callable[[Request], ChatService]) -> APIRouter:
             raise HTTPException(409, str(exc)) from exc
         except ValueError as exc:
             raise HTTPException(400, str(exc)) from exc
+
+    @router.put("/{memory_id}")
+    async def edit(memory_id: str, request: Request, payload: MemoryEdit) -> ConfirmedMemory:
+        try:
+            return await memory(request, payload.session_id).edit_confirmed(memory_id, payload.content, payload.revision)
+        except InvestigationConflict as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     @router.delete("/{memory_id}", status_code=204)
     async def forget(memory_id: str, request: Request, session_id: str) -> Response:

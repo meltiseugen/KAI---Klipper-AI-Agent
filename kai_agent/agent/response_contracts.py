@@ -10,6 +10,7 @@ from pydantic import Field, StrictStr, conint
 from kai_agent.config.targeting import infer_config_request_target, looks_like_config_request
 from kai_agent.domain.base import BaseModel
 from kai_agent.domain.investigation import InvestigationRequest
+from kai_agent.domain.memory import MemoryProposal
 from kai_agent.domain.proposals import ConfigFeature
 
 WorkflowKind = Literal["general", "diagnosis", "config_explanation", "config_draft"]
@@ -51,6 +52,7 @@ class GeneralAnswer(BaseModel):
     claims: list[CitedClaim] = Field(default_factory=list, max_items=12)
     missing_evidence: list[StrictStr] = Field(default_factory=list, max_items=8)
     config_proposals: list[DraftProposal] = Field(default_factory=list, max_items=0)
+    memory_proposals: list[MemoryProposal] = Field(default_factory=list, max_items=3)
 
     class Config:
         extra = "forbid"

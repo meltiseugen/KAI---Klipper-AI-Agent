@@ -89,6 +89,20 @@ def test_session_protected_refresh_saved_details_downloads_and_restart(
         review = {**params, "role": "mainboard", "signature": evidence["signature"], "revision": 1}
         assert client.post(base + "/review-mappings", json=review).status_code == 200
         assert client.post(base + "/review-mappings", json=review).status_code == 409
+        reference_review = {**params, "digest": doc.digest, "revision": 2}
+        for method, suffix in (("POST", "/confirm"), ("DELETE", "")):
+            assert (
+                client.request(
+                    method, base + "/documents/invalid" + suffix, json=reference_review
+                ).status_code
+                == 404
+            )
+        reference_url = base + "/documents/" + doc.id
+        assert client.post(reference_url + "/confirm", json=reference_review).status_code == 200
+        assert client.post(reference_url + "/confirm", json=reference_review).status_code == 409
+        reference_review["revision"] = 3
+        assert client.request("DELETE", reference_url, json=reference_review).status_code == 200
+        assert client.get(reference_url, params=params).status_code == 404
         monkeypatch.setattr(
             restarted,
             "status",
